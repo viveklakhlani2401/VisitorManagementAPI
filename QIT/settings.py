@@ -86,18 +86,27 @@ WSGI_APPLICATION = 'QIT.wsgi.application'
 #     }
 # }
 
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.mysql',
+#         'NAME': 'qitsolution_qitsolution_vms',
+#         'USER': 'qitsolution_tempuser',
+#         'PASSWORD': 'Qit123@#india',
+#         'HOST': '164.52.208.110',  # Change this to your MySQL server's hostname or IP address
+#         'PORT': '3306',       # Change this to your MySQL server's port
+#     }
+# }
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'qitsolution_qitsolution_vms',
-        'USER': 'qitsolution_tempuser',
-        'PASSWORD': 'Qit123@#india',
-        'HOST': '164.52.208.110',  # Change this to your MySQL server's hostname or IP address
-        'PORT': '3306',       # Change this to your MySQL server's port
+        'NAME': 'qit_vms',
+        'USER': 'avnadmin',
+        'PASSWORD': 'AVNS_K7ugaJRQZR9S9YdFL6H',
+        'HOST': 'mysql-33f5cf4a-lvihan24-558c.i.aivencloud.com',  # Change this to your MySQL server's hostname or IP address
+        'PORT': '16414',       # Change this to your MySQL server's port
     }
 }
-
-
 
 # Password validation
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
