@@ -89,10 +89,10 @@ WSGI_APPLICATION = 'QIT.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'qit_vms',
-        'USER': 'root',
-        'PASSWORD': '',
-        'HOST': '192.168.1.98',  # Change this to your MySQL server's hostname or IP address
+        'NAME': 'qitsolution_qitsolution_vms',
+        'USER': 'qitsolution_tempuser',
+        'PASSWORD': 'Qit123@#india',
+        'HOST': '164.52.208.110',  # Change this to your MySQL server's hostname or IP address
         'PORT': '3306',       # Change this to your MySQL server's port
     }
 }
