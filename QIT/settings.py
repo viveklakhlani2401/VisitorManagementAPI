@@ -13,6 +13,7 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 from pathlib import Path
 import os
 from dotenv import load_dotenv
+import pymysql
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -27,7 +28,7 @@ SECRET_KEY = 'django-insecure-)zu$!@y1z%%je9k-&ut*t%)*#x6amm$ya7!@*andh=-7p*tit-
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ["aawjo.vercel.app","192.168.1.98","192.168.1.68"]
+ALLOWED_HOSTS = ["aawjo.vercel.app","192.168.1.98","192.168.1.68","*"]
 CORS_ORIGIN_ALLOW_ALL = True
 
 # Application definition
@@ -96,11 +97,11 @@ WSGI_APPLICATION = 'QIT.wsgi.application'
 #         'PORT': '3306',       # Change this to your MySQL server's port
 #     }
 # }
-
+pymysql.install_as_MySQLdb()
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'qit_vms',
+        'NAME': 'QIT_VMS',
         'USER': 'avnadmin',
         'PASSWORD': 'AVNS_K7ugaJRQZR9S9YdFL6H',
         'HOST': 'mysql-33f5cf4a-lvihan24-558c.i.aivencloud.com',  # Change this to your MySQL server's hostname or IP address
