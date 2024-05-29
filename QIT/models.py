@@ -29,7 +29,7 @@ class QitOtp(models.Model):
     e_mail = models.CharField(db_column='E_Mail', max_length=50)  # Field name made lowercase.
     verifyotp = models.IntegerField(db_column='VerifyOTP')  # Field name made lowercase.
     status = models.CharField(db_column='Status', max_length=2)  # Field name made lowercase.
-    entrytime = models.DateTimeField(db_column='EntryTime')  # Field name made lowercase.
+    entrytime = models.DateTimeField(db_column='EntryTime',auto_now=True)  # Field name made lowercase.
 
     class Meta:
         managed = False
