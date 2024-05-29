@@ -36,15 +36,15 @@ def GenerateOTP(request):
             OTPEntry = QitOtp.objects.get(e_mail = body_data["E_Mail"])
             print(OTPEntry)
             OTPEntry.verifyotp = new_OTP
-            OTPEntry.Status = "N"
-            OTPEntry.EntryTime = timezone.now()
+            OTPEntry.status = "N"
+            # OTPEntry.entrytime = timezone.now()
             OTPEntry.save()
 
  
 
         except QitOtp.DoesNotExist :
             print("finally here")
-            OTPEntry = QitOtp.objects.create(e_mail = body_data["e_mail"],verifyotp = new_OTP, Status = "N")
+            OTPEntry = QitOtp.objects.create(e_mail = body_data["E_Mail"],verifyotp = new_OTP, status = "N")
     except Exception as e:
         return Response({
             'Status': 400,
@@ -91,20 +91,20 @@ def VerifyOTP(request):
 
         OTPEntry = QitOtp.objects.get(e_mail = body_data["E_Mail"], verifyotp = body_data["VerifyOTP"])
         
-        if(OTPEntry.Status == "Y"):
+        if(OTPEntry.status == "Y"):
             return Response({
                 'Status':200,
                 'StatusMsg':"OTP already veryfied..!!"
             })
         
-        time_difference = timezone.now() - OTPEntry.EntryTime
+        time_difference = timezone.now() - OTPEntry.entrytime
         if time_difference.total_seconds() > 300:  # 5 minutes = 300 seconds
             return Response({
                 'Status': 400,
                 'StatusMsg': "OTP has expired..!!"
             })
         
-        OTPEntry.Status = "Y"
+        OTPEntry.status = "Y"
         OTPEntry.save()
         
         return Response({
