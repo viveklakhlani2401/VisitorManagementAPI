@@ -56,6 +56,8 @@ def GenerateOTP(request):
     if(OTPEntry):
         email_thread = threading.Thread(target=Send_OTP,args=(body_data["E_Mail"],"TEST","OTP : "+new_OTP))
         email_thread.start()
+        print(f"email thread start for {body_data["E_Mail"]}")
+
         return Response({
             'Status':200,
             'StatusMsg':"OTP send successfully..!!"
@@ -69,8 +71,6 @@ def GenerateOTP(request):
 def generate_otp():
     otp = ''.join(random.choices(string.digits, k=6))
     return otp
-
-    
 
 @csrf_exempt
 @api_view(["POST"])

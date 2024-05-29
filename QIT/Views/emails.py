@@ -4,6 +4,7 @@ from QIT.settings import EMAIL_HOST_USER
 def Send_OTP(email, subject, message):
     try:
         send_mail(subject, message, EMAIL_HOST_USER, [email] )
+        print(f"OTP sent for ${email}")
         return True
     except Exception as e:
         print(e)
