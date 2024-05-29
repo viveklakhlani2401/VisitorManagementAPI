@@ -57,11 +57,11 @@ def GenerateOTP(request):
 
     if(OTPEntry):
         message = "OTP : "+new_OTP
-        email_thread = threading.Thread(target=Send_OTP,args=(body_data["E_Mail"],"TEST",message))
-        email_thread.start()
+        # email_thread = threading.Thread(target=Send_OTP,args=(body_data["E_Mail"],"TEST",message))
+        # email_thread.start()
         print(f"email thread start for {body_data["E_Mail"]}")
         print(f"message {message}")
-
+        Send_OTP(body_data["E_Mail"],"TEST",message)
         return Response({
             'Status':200,
             'StatusMsg':"OTP send successfully..!!"
