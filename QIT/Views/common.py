@@ -38,12 +38,14 @@ def GenerateOTP(request):
             OTPEntry.verifyotp = new_OTP
             OTPEntry.status = "N"
             # OTPEntry.entrytime = timezone.now()
+            print(f"OTP while save : {new_OTP}")
             OTPEntry.save()
 
  
 
         except QitOtp.DoesNotExist :
             print("finally here")
+            print(f"OTP while create : {new_OTP}")
             OTPEntry = QitOtp.objects.create(e_mail = body_data["E_Mail"],verifyotp = new_OTP, status = "N")
     except Exception as e:
         return Response({
@@ -54,9 +56,11 @@ def GenerateOTP(request):
         
 
     if(OTPEntry):
-        email_thread = threading.Thread(target=Send_OTP,args=(body_data["E_Mail"],"TEST","OTP : "+new_OTP))
+        message = "OTP : "+new_OTP
+        email_thread = threading.Thread(target=Send_OTP,args=(body_data["E_Mail"],"TEST",message))
         email_thread.start()
         print(f"email thread start for {body_data["E_Mail"]}")
+        print(f"message {message}")
 
         return Response({
             'Status':200,
