@@ -4,7 +4,7 @@ from .emails import Send_OTP
 from rest_framework.response import Response
 import random
 import string
-from QIT.models import OTP, Company_Master
+from QIT.models import QitOtp, QitCompanymaster
 import threading
 from django.views.decorators.csrf import csrf_exempt
 from django.utils import timezone
@@ -23,7 +23,7 @@ def GenerateOTP(request):
             })
         print("first check in comapny master")
         
-        emailExistInComapny = Company_Master.objects.filter(E_Mail = body_data["E_Mail"])
+        emailExistInComapny = QitCompanymaster.objects.filter(e_mail = body_data["E_Mail"])
 
         if(emailExistInComapny):
             return Response({
@@ -33,18 +33,18 @@ def GenerateOTP(request):
         
         try:
             print("first check in otp master")
-            OTPEntry = OTP.objects.get(E_Mail = body_data["E_Mail"])
+            OTPEntry = QitOtp.objects.get(e_mail = body_data["E_Mail"])
             print(OTPEntry)
-            OTPEntry.VerifyOTP = new_OTP
+            OTPEntry.verifyotp = new_OTP
             OTPEntry.Status = "N"
             OTPEntry.EntryTime = timezone.now()
             OTPEntry.save()
 
  
 
-        except OTP.DoesNotExist :
+        except QitOtp.DoesNotExist :
             print("finally here")
-            OTPEntry = OTP.objects.create(E_Mail = body_data["E_Mail"],VerifyOTP = new_OTP, Status = "N")
+            OTPEntry = QitOtp.objects.create(e_mail = body_data["e_mail"],verifyotp = new_OTP, Status = "N")
     except Exception as e:
         return Response({
             'Status': 400,
@@ -89,7 +89,7 @@ def VerifyOTP(request):
                 'StatusMsg':"OTP is required..!!"
             })
 
-        OTPEntry = OTP.objects.get(E_Mail = body_data["E_Mail"], VerifyOTP = body_data["VerifyOTP"])
+        OTPEntry = QitOtp.objects.get(e_mail = body_data["E_Mail"], verifyotp = body_data["VerifyOTP"])
         
         if(OTPEntry.Status == "Y"):
             return Response({
@@ -111,7 +111,7 @@ def VerifyOTP(request):
             'Status':200,
             'StatusMsg':"OTP veryfied..!!"
         })
-    except OTP.DoesNotExist:
+    except QitOtp.DoesNotExist:
         return Response({
             'Status':400,
             'StatusMsg':"Invalid Email or OTP ..!!"

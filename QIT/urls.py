@@ -16,10 +16,11 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
-from QIT.Views import common
+from QIT.Views import common,company_master
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('VMS/GenerateOTP', common.GenerateOTP),
     path('VMS/VerifyOTP', common.VerifyOTP),
+    path('VMS/Register', company_master.CreateCompany),
 ]
