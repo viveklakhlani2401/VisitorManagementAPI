@@ -1,13 +1,13 @@
 from QIT.serializers import GenerateOTPSerializer,UserSerializer
 from rest_framework.decorators import api_view,authentication_classes
 from .emails import Send_OTP
-from rest_framework.response import Response
 import random
 import string
 from QIT.models import QitOtp, QitCompanymaster, QitUserlogin
 import threading
 from django.views.decorators.csrf import csrf_exempt
 from django.utils import timezone
+from django.contrib.auth.hashers import make_password
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.decorators import api_view
 from rest_framework.response import Response

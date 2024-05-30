@@ -16,7 +16,7 @@ class QitCompanymaster(models.Model):
     businesslocation = models.CharField(db_column='BusinessLocation', max_length=500)  # Field name made lowercase.
     qrcodeid = models.CharField(db_column='QRCodeId', max_length=100)  # Field name made lowercase.
     status = models.CharField(db_column='Status', max_length=2)  # Field name made lowercase.
-    entrydate = models.DateTimeField(db_column='EntryDate',auto_now=True)  # Field name made lowercase.
+    entrydate = models.DateTimeField(db_column='EntryDate', auto_now=True)  # Field name made lowercase.
     updatedate = models.DateTimeField(db_column='UpdateDate', blank=True, null=True)  # Field name made lowercase.
 
     class Meta:
@@ -41,6 +41,7 @@ class QitUserlogin(models.Model):
     useremail = models.CharField(db_column='UserEmail', unique=True, max_length=50)  # Field name made lowercase.
     password = models.CharField(db_column='Password', max_length=100)  # Field name made lowercase.
     userrole = models.CharField(db_column='UserRole', max_length=100)  # Field name made lowercase.
+
     @property
     def id(self):
         return self.transid
