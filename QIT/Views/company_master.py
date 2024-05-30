@@ -1,9 +1,23 @@
-from QIT.models import QitCompanymaster
+from QIT.models import QitCompanymaster, QitOtp
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from QIT.serializers import CompanyMasterSerializer
 from rest_framework import status
+import hashlib
+from cryptography.fernet import Fernet
+from dotenv import load_dotenv
+import os
+load_dotenv()
+from .common import create_userlogin
+from QIT.serializers import CompanyMasterGetSerializer
+
+
+def encrypt_text(secret_key, text):
+    fernet = Fernet(secret_key)
+    encrypted_text = fernet.encrypt(text.encode())
+    return encrypted_text
+
 @csrf_exempt
 @api_view(["POST"])
 def CreateCompany(request):
@@ -30,6 +44,19 @@ def CreateCompany(request):
                 'StatusMsg':"BUsinessLocation is required..!!"
             })
         
+        OTPEntry = QitOtp.objects.filter(e_mail=body_data["e_mail"]).first()
+        if OTPEntry is None:
+            return Response({
+                'Status': 400,
+                'StatusMsg': "Email is not verified..!!."
+            })
+ 
+        if OTPEntry.status != 'Y':
+            return Response({
+                'Status': 400,
+                'StatusMsg': "OTP is not verified..!!"
+            })
+        
         emailExistInComapny = QitCompanymaster.objects.filter(e_mail = body_data["e_mail"])
         if(emailExistInComapny):
             return Response({
@@ -39,14 +66,130 @@ def CreateCompany(request):
         
         serializer = CompanyMasterSerializer(data=request.data)
         if serializer.is_valid():
-            company_master = QitCompanymaster(**serializer.validated_data)
+            company_master = serializer.save()
             company_master.status = "A"
-            company_master.qrcodeid = "hgfvgh"
+            unique_string = f"{body_data['e_mail']}_{body_data['businessname']}_{body_data['businesslocation']}"
+            unique_hash = hashlib.sha256(unique_string.encode('utf-8')).hexdigest()
+            company_master.qrcodeid = unique_hash
             company_master.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
+            create_userlogin(body_data["e_mail"],body_data["password"],"COMPANY")
+            frontendURL = os.getenv("FRONTEND_URL")
+            secret = os.getenv("SECRETE")
+            if QitCompanymaster.objects.filter(transid=company_master.transid).exists():
+                frontendURL = os.getenv("FRONTEND_URL")
+                if frontendURL is None:
+                    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+                return Response({
+                    # 'data': serializer.data,
+                    'status': status.HTTP_201_CREATED,
+                    'StatusMsg':"Registered successfully..!!",
+                    'encodedString': f"{frontendURL}{unique_hash}"
+                })
+        
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     except Exception as e:
         return Response({
             'Status': 400,
             'StatusMsg': "Error : " + str(e)
         })  
+# def CreateCompany(request):
+#     body_data = request.data
+#     try:
+#         if not body_data["e_mail"]:
+#             return Response({
+#                 'Status':400,
+#                 'StatusMsg':"Email is required..!!"
+#             })
+#         if not body_data["password"]:
+#             return Response({
+#                 'Status':400,
+#                 'StatusMsg':"Password is required..!!"
+#             })
+#         if not body_data["businessname"]:
+#             return Response({
+#                 'Status':400,
+#                 'StatusMsg':"BusinessName is required..!!"
+#             })
+#         if not body_data["businesslocation"]:
+#             return Response({
+#                 'Status':400,
+#                 'StatusMsg':"BUsinessLocation is required..!!"
+#             })
+        
+#         OTPEntry = QitOtp.objects.filter(e_mail=body_data["e_mail"]).first()
+#         if OTPEntry is None:
+#             return Response({
+#                 'Status': 400,
+#                 'StatusMsg': "Email is not verified..!!."
+#             })
+ 
+#         if OTPEntry.status != 'Y':
+#             return Response({
+#                 'Status': 400,
+#                 'StatusMsg': "OTP is not verified..!!"
+#             })
+        
+#         emailExistInComapny = QitCompanymaster.objects.filter(e_mail = body_data["e_mail"])
+#         if(emailExistInComapny):
+#             return Response({
+#                 'Status':400,
+#                 'StatusMsg':"This email alredy register as comapny..!!"
+#             })
+        
+#         serializer = CompanyMasterSerializer(data=request.data)
+#         if serializer.is_valid():
+#             company_master = serializer.save()
+#             company_master.status = "A"
+#             unique_string = f"{body_data['e_mail']}_{body_data['businessname']}_{body_data['businesslocation']}"
+#             unique_hash = hashlib.sha256(unique_string.encode('utf-8')).hexdigest()
+#             company_master.qrcodeid = unique_hash
+#             company_master.save()
+#             create_userlogin(body_data["e_mail"],body_data["password"],"COMPANY")
+#             frontendURL = os.getenv("FRONTEND_URL")
+#             secrete = os.getenv("SECRETE")
+#             if QitCompanymaster.objects.filter(transid=company_master.transid).exists():
+#                 frontendURL = os.getenv("FRONTEND_URL")
+#                 key = os.getenv("SECRETE")
+#                 if frontendURL is None:
+#                     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+#                 encoded_string = f"{unique_hash}"
+#                 key = Fernet.generate_key()
+#                 fernet = Fernet(key)
+
+#                 encrypted_string = fernet.encrypt(encoded_string.encode('utf-8'))
+
+#                 return Response({
+#                     # 'data': serializer.data,
+#                     'status': status.HTTP_201_CREATED,
+#                     'StatusMsg':"Registered successfully..!!",
+#                     'encodedString': f"{frontendURL}{encrypted_string.decode('utf-8')}",
+#                     'encryptionKey': key.decode('utf-8')  # Include the key for decryption on the frontend
+#                 })
+        
+#         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+#     except Exception as e:
+#         return Response({
+#             'Status': 400,
+#             'StatusMsg': "Error : " + str(e)
+#         })  
+
+
+@csrf_exempt
+@api_view(["GET"])
+def GetComapnyData(request):
+    # print()
+    qrCode = request.query_params.get("qrCode")
+
+    resDB = QitCompanymaster.objects.filter(qrcodeid = qrCode)
+    print(resDB)
+    serializer = CompanyMasterGetSerializer(resDB,many=True)
+    print(serializer.data)
+    if resDB:
+        return Response(serializer.data)
+    else:
+        return Response({
+            'Status':400,
+            'StatusMsg':"Invalid QR Code..!!"
+        })

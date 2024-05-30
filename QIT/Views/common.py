@@ -4,10 +4,11 @@ from .emails import Send_OTP
 from rest_framework.response import Response
 import random
 import string
-from QIT.models import QitOtp, QitCompanymaster
+from QIT.models import QitOtp, QitCompanymaster, QitUserlogin
 import threading
 from django.views.decorators.csrf import csrf_exempt
 from django.utils import timezone
+from django.contrib.auth.hashers import make_password
 
 @csrf_exempt
 @api_view(["POST"])
@@ -121,4 +122,8 @@ def VerifyOTP(request):
             'StatusMsg':"Invalid Email or OTP ..!!"
         })
     
-    
+
+def create_userlogin(useremail, password, userrole):
+    userlogin = QitUserlogin(useremail=useremail, password=make_password(password), userrole=userrole)
+    userlogin.save()
+    return userlogin    
