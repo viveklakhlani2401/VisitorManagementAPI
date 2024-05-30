@@ -42,6 +42,9 @@ class QitUserlogin(models.Model):
     password = models.CharField(db_column='Password', max_length=100)  # Field name made lowercase.
     userrole = models.CharField(db_column='UserRole', max_length=100)  # Field name made lowercase.
 
+    @property
+    def id(self):
+        return self.transid
     class Meta:
         managed = False
         db_table = 'QIT_UserLogIn'

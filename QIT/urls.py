@@ -24,4 +24,8 @@ urlpatterns = [
     path('VMS/VerifyOTP', common.VerifyOTP),
     path('VMS/Register', company_master.CreateCompany),
     path('VMS/GetComapnyData', company_master.GetComapnyData),
+    path('VMS/Login', common.login_view),
+    path('VMS/CompanyData', company_master.getCompany),
+     path('VMS/secure', common.secure_view),
+     path('VMS/refreshToken', common.token_refresh),
 ]
