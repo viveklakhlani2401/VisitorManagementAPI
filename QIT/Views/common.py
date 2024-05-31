@@ -181,3 +181,60 @@ def login_view(request):
 @authentication_classes([CustomAuthentication])
 def secure_view(request):
     return Response({'message': 'This is a secured view!'})
+
+
+# Create User login for ALL type of User
+def create_userlogin(useremail, password, userrole):
+    userlogin = QitUserlogin(useremail=useremail, password=password, userrole=userrole)
+    userlogin.save()
+    return userlogin
+
+@csrf_exempt
+@api_view(['POST'])
+def Forget_Password(request):
+    try:
+        body_data = request.data
+        print(body_data["e_mail"])
+        resDB = QitUserlogin.objects.filter(useremail = body_data["e_mail"]).first()
+        resDB = QitUserlogin.objects.filter(useremail=body_data["e_mail"]).first()
+        if resDB is not None:
+            print(resDB.userrole)
+            print(resDB.userrole is "COMPANY")
+        else:
+            print("No user found with this email.")
+        if not resDB:
+            return Response({
+                'Status':400,
+                'StatusMsg':"Invalid User..!!"
+            })
+        
+        if resDB.userrole == "COMPANY":
+            new_OTP = generate_otp()
+            message = f"Forget Email OTP : {new_OTP}"
+            Send_OTP(body_data["e_mail"],"Forget Email OTP",message)
+            return Response({
+                'Status':200,
+                'StatusMsg':"Valid User..!!",
+                'Role':"Company"
+            })
+        
+        if resDB.userrole == "USER":
+            return Response({
+                'Status':200,
+                'StatusMsg':"Valid User..!!",
+                'Role':"USER"
+            })
+        
+        if resDB.userrole == "VISITOR":
+            return Response({
+                'Status':200,
+                'StatusMsg':"Valid User..!!",
+                'Role':"VISITOR"
+            })
+        
+    except Exception as e:
+        return Response({
+            'Status':400,
+            'StatusMsg':e,
+        })
+    

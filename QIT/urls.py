@@ -26,6 +26,7 @@ urlpatterns = [
     path('VMS/GetComapnyData', company_master.GetComapnyData),
     path('VMS/Login', common.login_view),
     path('VMS/CompanyData', company_master.getCompany),
-     path('VMS/secure', common.secure_view),
-     path('VMS/refreshToken', common.token_refresh),
+    path('VMS/secure', common.secure_view),
+    path('VMS/refreshToken', common.token_refresh),
+    path('VMS/ForgetPassword', common.Forget_Password),
 ]
