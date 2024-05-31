@@ -16,7 +16,8 @@ from django.contrib.auth.hashers import check_password
 from rest_framework_simplejwt.tokens import AccessToken
 from rest_framework.authentication import BaseAuthentication
 from rest_framework.exceptions import AuthenticationFailed
-
+from django.core.cache import cache
+import json
 # Custom Authentication class
 class CustomAuthentication(BaseAuthentication):
     def authenticate(self, request):
@@ -86,7 +87,7 @@ def GenerateOTP(request):
         message = "OTP : "+new_OTP
         # email_thread = threading.Thread(target=Send_OTP,args=(body_data["E_Mail"],"TEST",message))
         # email_thread.start()
-        print(f"email thread start for {body_data["E_Mail"]}")
+        # print(f"email thread start for {body_data["E_Mail"]}")
         print(f"message {message}")
         Send_OTP(body_data["E_Mail"],"TEST",message)
         return Response({
@@ -173,6 +174,8 @@ def login_view(request):
                 })
             else:
                 return Response({'detail': 'Invalid credentials'}, status=status.HTTP_401_UNAUTHORIZED)
+        else:
+            return Response({'detail': 'Invalid credentials'}, status=status.HTTP_401_UNAUTHORIZED)
     except QitUserlogin.DoesNotExist:
         return Response({'detail': 'User does not exist'}, status=status.HTTP_404_NOT_FOUND)
     
@@ -182,21 +185,19 @@ def login_view(request):
 def secure_view(request):
     return Response({'message': 'This is a secured view!'})
 
-
 # Create User login for ALL type of User
 def create_userlogin(useremail, password, userrole):
-    userlogin = QitUserlogin(useremail=useremail, password=password, userrole=userrole)
+    userlogin = QitUserlogin(useremail=useremail, password=make_password(password), userrole=userrole)
     userlogin.save()
     return userlogin
 
 @csrf_exempt
 @api_view(['POST'])
-def Forget_Password(request):
+def Forget_Password_Send_OTP(request):
     try:
         body_data = request.data
         print(body_data["e_mail"])
         resDB = QitUserlogin.objects.filter(useremail = body_data["e_mail"]).first()
-        resDB = QitUserlogin.objects.filter(useremail=body_data["e_mail"]).first()
         if resDB is not None:
             print(resDB.userrole)
             print(resDB.userrole is "COMPANY")
@@ -210,6 +211,9 @@ def Forget_Password(request):
         
         if resDB.userrole == "COMPANY":
             new_OTP = generate_otp()
+            # globalOTPStorage['email'] = body_data["e_mail"]
+            # globalOTPStorage['otp'] = new_OTP
+            set_otp(body_data["e_mail"],new_OTP)
             message = f"Forget Email OTP : {new_OTP}"
             Send_OTP(body_data["e_mail"],"Forget Email OTP",message)
             return Response({
@@ -238,3 +242,128 @@ def Forget_Password(request):
             'StatusMsg':e,
         })
     
+# Verify OTP API
+@csrf_exempt
+@api_view(["POST"])
+def VerifyForgetpasswordOTP(request):
+    body_data = request.data
+    try:
+        if not body_data["E_Mail"]:
+            return Response({
+                'Status':400,
+                'StatusMsg':"Email is required..!!"
+            })
+        if not body_data["VerifyOTP"]:
+            return Response({
+                'Status':400,
+                'StatusMsg':"OTP is required..!!"
+            })
+        email = body_data["E_Mail"]
+        otp = body_data["VerifyOTP"]
+        stored_data_json = cache.get(f"otp_{email}")
+        if stored_data_json:
+            stored_data = json.loads(stored_data_json)
+            stored_otp = stored_data['otp']
+            if stored_otp:
+                print(f"Comparing OTPs: '{stored_otp}' == '{otp}'")
+                if str(stored_otp).strip() == str(otp).strip():
+                    stored_data['status'] = 1
+                    cache.set(f"otp_{email}", json.dumps(stored_data), timeout=300)
+                    response = {
+                        'Status': 200,
+                        'StatusMsg': "OTP verified..!!"
+                    }
+                    return Response(response)
+                else:
+                    response = {
+                        'Status': 400,
+                        'StatusMsg': "Invalid OTP ..!!"
+                    }
+                    return Response(response)
+            else:
+                response = {
+                    'Status': 400,
+                    'StatusMsg': "Email not found or OTP expired..!!"
+                }
+                return Response(response)
+        else:
+            response = {
+                    'Status': 400,
+                    'StatusMsg': "Something wrong..!!"
+                }
+            return Response(response)
+    except:
+        return Response({
+            'Status':400,
+            'StatusMsg':"Invalid Email or OTP ..!!"
+        })
+
+def set_otp(email, otp, status=0):
+    data = json.dumps({'otp': otp, 'status': status})
+    cache.set(f"otp_{email}", data, timeout=300)
+
+@csrf_exempt
+@api_view(["POST"])
+def generate_newPassword(request):
+    try:
+        body_data = request.data
+        if not body_data["e_mail"]:
+            return Response({'error': 'Email ID is required'}, status=400)
+        if not body_data["password"]:
+            return Response({'error': 'New Password is required'}, status=400)
+        email = body_data["e_mail"]
+        stored_data_json = cache.get(f"otp_{email}")
+        if stored_data_json:
+            stored_data = json.loads(stored_data_json)
+            stored_status = stored_data['status']
+            if stored_status == 1 :
+                resDB1 = QitCompanymaster.objects.filter(e_mail = body_data["e_mail"]).first()
+                resDB = QitUserlogin.objects.filter(useremail = body_data["e_mail"]).first()
+                if not resDB:
+                    return Response({
+                        'Status':400,
+                        'StatusMsg':"Invalid User..!!"
+                    })
+                
+                if resDB.userrole == "COMPANY":
+                    newPassword = make_password(body_data["password"])
+                    resDB.password = newPassword
+                    resDB.save()
+                    resDB1.password = newPassword
+                    resDB1.save()
+                    return Response({
+                        'Status':200,
+                        'StatusMsg':"Company Password Updated..!!",
+                        'Role':"Company"
+                    })
+                
+                if resDB.userrole == "USER":
+                    return Response({
+                        'Status':200,
+                        'StatusMsg':"Valid User..!!",
+                        'Role':"USER"
+                    })
+                
+                if resDB.userrole == "VISITOR":
+                    return Response({
+                        'Status':200,
+                        'StatusMsg':"Valid User..!!",
+                        'Role':"VISITOR"
+                    })
+            else:
+                response = {
+                    'Status': 400,
+                    'StatusMsg': "OTP is not verified..!!"
+                }
+                return Response(response)
+        else:
+            response = {
+                    'Status': 400,
+                    'StatusMsg': "Email not found or OTP expired..!!"
+                }
+            return Response(response)
+    except Exception as e:
+        return Response({
+            'Status':400,
+            'StatusMsg':e,
+        })
