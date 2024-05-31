@@ -123,12 +123,6 @@ def GetComapnyData(request):
             'StatusMsg':"Invalid QR Code..!!"
         })
 
-    
-# Create User login for ALL type of User
-def create_userlogin(useremail, password, userrole):
-    userlogin = QitUserlogin(useremail=useremail, password=password, userrole=userrole)
-    userlogin.save()
-    return userlogin
 
 # All companys data
 @csrf_exempt
