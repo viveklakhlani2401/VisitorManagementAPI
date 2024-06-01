@@ -202,7 +202,6 @@ def Forget_Password_Send_OTP(request):
         resDB = QitUserlogin.objects.filter(useremail = body_data["e_mail"]).first()
         if resDB is not None:
             print(resDB.userrole)
-            print(resDB.userrole is "COMPANY")
         else:
             print("No user found with this email.")
         if not resDB:
