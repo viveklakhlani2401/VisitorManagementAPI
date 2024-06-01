@@ -28,15 +28,17 @@ SECRET_KEY = 'django-insecure-)zu$!@y1z%%je9k-&ut*t%)*#x6amm$ya7!@*andh=-7p*tit-
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ["aawjo.vercel.app","192.168.1.98","192.168.1.68","*"]
+ALLOWED_HOSTS = ["aawjo.vercel.app","192.168.1.98","192.168.1.69","192.168.1.68","*"]
 CORS_ORIGIN_ALLOW_ALL = True
 
 # Application definition
 
 INSTALLED_APPS = [
+    'daphne',
     'rest_framework',
     'rest_framework_simplejwt',
     'QIT',
+    'channels',
     'corsheaders',
     'django.contrib.admin',
     'django.contrib.auth',
@@ -76,6 +78,12 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'QIT.wsgi.application'
+ASGI_APPLICATION = 'QIT.asgi.application'
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'channels.layers.InMemoryChannelLayer',
+    },
+}
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
