@@ -31,4 +31,5 @@ urlpatterns = [
     path('VMS/ForgetPasswordOTP', common.Forget_Password_Send_OTP),
     path('VMS/VerifyForgetPasswordOTP', common.VerifyForgetpasswordOTP),
     path('VMS/GenerateNewPassword', common.generate_newPassword),
+    path("VMS/test", common.getWebsocketTest),
 ]

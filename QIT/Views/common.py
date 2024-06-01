@@ -18,6 +18,8 @@ from rest_framework.authentication import BaseAuthentication
 from rest_framework.exceptions import AuthenticationFailed
 from django.core.cache import cache
 import json
+from asgiref.sync import async_to_sync
+from channels.layers import get_channel_layer
 # Custom Authentication class
 class CustomAuthentication(BaseAuthentication):
     def authenticate(self, request):
@@ -367,3 +369,22 @@ def generate_newPassword(request):
             'Status':400,
             'StatusMsg':e,
         })
+
+# for testing websocket
+@csrf_exempt
+@api_view(['GET'])
+def getWebsocketTest(request):
+    user_ids = request.GET.getlist('user_ids[]')  # Retrieving list of user IDs from query parameters
+    message = "Hello"  # Message to be sent
+
+    channel_layer = get_channel_layer()
+    for user_id in user_ids:
+        async_to_sync(channel_layer.group_send)(
+            f"user_{user_id}",
+            {
+                'type': 'send.message',
+                'text': message,
+            }
+        )
+
+    return Response({"status": True}, status=status.HTTP_200_OK)
