@@ -28,9 +28,9 @@ SECRET_KEY = 'django-insecure-)zu$!@y1z%%je9k-&ut*t%)*#x6amm$ya7!@*andh=-7p*tit-
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ["aawjo.vercel.app","192.168.1.98","192.168.1.69","192.168.1.68","*"]
+ALLOWED_HOSTS = ["aawjo.vercel.app","192.168.1.98","192.168.1.69","192.168.1.68","8037qq7p-8000.inc1.devtunnels.ms","0.0.0.0.","*"]
 CORS_ORIGIN_ALLOW_ALL = True
-
+CORS_ALLOW_ALL_ORIGINS = True
 # Application definition
 
 INSTALLED_APPS = [
@@ -79,9 +79,17 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'QIT.wsgi.application'
 ASGI_APPLICATION = 'QIT.asgi.application'
+# CHANNEL_LAYERS = {
+#     'default': {
+#         'BACKEND': 'channels.layers.InMemoryChannelLayer',
+#     },
+# }
 CHANNEL_LAYERS = {
     'default': {
-        'BACKEND': 'channels.layers.InMemoryChannelLayer',
+        'BACKEND': 'channels_redis.core.RedisChannelLayer',
+        'CONFIG': {
+            'hosts': [('127.0.0.1', 6379)],
+        },
     },
 }
 
