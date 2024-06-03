@@ -25,7 +25,7 @@ from django.urls import re_path
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'QIT.settings')
 
 # websocket_urlpatterns = [
-#     path(r'ws/path/$', ChatConsumer.as_asgi()),
+#     path('ws/path/', ChatConsumer.as_asgi()),
 # ]
 websocket_urlpatterns = [
    re_path(r'^ws/path/$',ChatConsumer.as_asgi()),
