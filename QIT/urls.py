@@ -16,7 +16,9 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
-from QIT.Views import common,company_master
+from QIT.Views import common,company_master,user_master
+from rest_framework.routers import DefaultRouter
+from django.urls import path, include
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -32,4 +34,9 @@ urlpatterns = [
     path('VMS/VerifyForgetPasswordOTP', common.VerifyForgetpasswordOTP),
     path('VMS/GenerateNewPassword', common.generate_newPassword),
     path("VMS/test", common.getWebsocketTest),
+    path('VMS/User/Get/<int:cmpId>', user_master.get_user),
+    path('VMS/User/GetById/<int:cmpId>/<int:transid>', user_master.get_user_by_id),
+    path('VMS/User/Save', user_master.save_user),
+    path('VMS/User/Update/<int:cmpId>/<int:transid>', user_master.update_user),
+    path('VMS/User/Delete/<int:cmpId>/<int:transid>', user_master.delete_user),
 ]
