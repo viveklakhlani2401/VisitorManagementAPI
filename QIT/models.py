@@ -39,7 +39,7 @@ class QitOtp(models.Model):
     e_mail = models.CharField(db_column='E_Mail', max_length=50)  # Field name made lowercase.
     verifyotp = models.IntegerField(db_column='VerifyOTP')  # Field name made lowercase.
     status = models.CharField(db_column='Status', max_length=2)  # Field name made lowercase.
-    entrytime = models.DateTimeField(db_column='EntryTime',auto_now=True)  # Field name made lowercase.
+    entrytime = models.DateTimeField(db_column='EntryTime')  # Field name made lowercase.
 
     class Meta:
         managed = False
@@ -51,9 +51,11 @@ class QitUserlogin(models.Model):
     useremail = models.CharField(db_column='UserEmail', unique=True, max_length=50)  # Field name made lowercase.
     password = models.CharField(db_column='Password', max_length=100)  # Field name made lowercase.
     userrole = models.CharField(db_column='UserRole', max_length=100)  # Field name made lowercase.
+
     @property
     def id(self):
         return self.transid
+
     class Meta:
         managed = False
         db_table = 'QIT_UserLogIn'

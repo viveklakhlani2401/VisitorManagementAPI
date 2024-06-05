@@ -1,6 +1,8 @@
 from rest_framework import serializers
 from django.contrib.auth.hashers import make_password
-from .models import QitCompanymaster,QitOtp,QitUserlogin,QitUsermaster
+
+from .models import QitCompanymaster,QitOtp,QitUserlogin,QitDepartmentmaster,QitUsermaster
+
 class CompanyMasterSerializer(serializers.ModelSerializer):
     class Meta:
         model = QitCompanymaster
@@ -25,12 +27,19 @@ class CompanyMasterSerializer(serializers.ModelSerializer):
 class CompanyMasterGetSerializer(serializers.ModelSerializer):
     class Meta:
         model = QitCompanymaster
-        fields = ['e_mail', 'password', 'businessname', 'businesslocation','qrcodeid','status','entrydate']
+        fields = ['transid','e_mail', 'password', 'businessname', 'businesslocation','qrcodeid','status','entrydate']
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = QitUserlogin
         fields = ['useremail','userrole']
+
+
+class DepartmentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = QitDepartmentmaster
+        fields = ['transid','deptname','cmptransid']
+
         
 class QitUsermasterSerializer(serializers.ModelSerializer):
     class Meta:
