@@ -16,14 +16,14 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
-from QIT.Views import common,company_master
+from QIT.Views import common,company_master,dept_master
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('VMS/GenerateOTP', common.GenerateOTP),
     path('VMS/VerifyOTP', common.VerifyOTP),
     path('VMS/Register', company_master.CreateCompany),
-    path('VMS/GetComapnyData', company_master.GetComapnyData),
+    path('VMS/GetComapnyData/<str:qrCode>', company_master.GetComapnyData),
     path('VMS/Login', common.login_view),
     path('VMS/CompanyData', company_master.getCompany),
     path('VMS/secure', common.secure_view),
@@ -32,4 +32,8 @@ urlpatterns = [
     path('VMS/VerifyForgetPasswordOTP', common.VerifyForgetpasswordOTP),
     path('VMS/GenerateNewPassword', common.generate_newPassword),
     path("VMS/test", common.getWebsocketTest),
+    path("VMS/Department/Save", dept_master.SaveDepartment),
+    path("VMS/Department/GetByCid/<int:cid>", dept_master.GetAllDeptByCId),
+    path("VMS/Department/Update", dept_master.EditDepartment),
+    path("VMS/Department/Delete/<int:did>/<int:cid>", dept_master.DeleteDepartment),
 ]

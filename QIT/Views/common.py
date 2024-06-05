@@ -54,7 +54,7 @@ def GenerateOTP(request):
     new_OTP = generate_otp()
 
     try:
-        if not body_data["E_Mail"]:
+        if not body_data.get("E_Mail"):
             return Response({
                 'Status':400,
                 'StatusMsg':"Email is required..!!"
@@ -109,12 +109,12 @@ def GenerateOTP(request):
 def VerifyOTP(request):
     body_data = request.data
     try:
-        if not body_data["E_Mail"]:
+        if not body_data.get("E_Mail"):
             return Response({
                 'Status':400,
                 'StatusMsg':"Email is required..!!"
             })
-        if not body_data["VerifyOTP"]:
+        if not body_data.get("VerifyOTP"):
             return Response({
                 'Status':400,
                 'StatusMsg':"OTP is required..!!"
@@ -164,10 +164,14 @@ def login_view(request):
     password = request.data.get('password')
     try:
         user = QitUserlogin.objects.get(useremail=email)
+        print(check_password(password, user.password))
         if user and check_password(password, user.password):
+            print("here")
             if user is not None:
-                refresh = RefreshToken.for_user(user)
+                print("here")
                 user_serializer = UserSerializer(user)
+                print("here",user_serializer.data)
+                refresh = RefreshToken.for_user(user)
 
                 return Response({
                     'user': user_serializer.data,

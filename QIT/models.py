@@ -16,7 +16,7 @@ class QitCompanymaster(models.Model):
     businesslocation = models.CharField(db_column='BusinessLocation', max_length=500)  # Field name made lowercase.
     qrcodeid = models.CharField(db_column='QRCodeId', max_length=100)  # Field name made lowercase.
     status = models.CharField(db_column='Status', max_length=2)  # Field name made lowercase.
-    entrydate = models.DateTimeField(db_column='EntryDate', auto_now=True)  # Field name made lowercase.
+    entrydate = models.DateTimeField(db_column='EntryDate')  # Field name made lowercase.
     updatedate = models.DateTimeField(db_column='UpdateDate', blank=True, null=True)  # Field name made lowercase.
 
     class Meta:
@@ -24,12 +24,22 @@ class QitCompanymaster(models.Model):
         db_table = 'QIT_CompanyMaster'
 
 
+class QitDepartmentmaster(models.Model):
+    transid = models.AutoField(db_column='TransID', primary_key=True)  # Field name made lowercase.
+    deptname = models.CharField(db_column='DeptName', max_length=45)  # Field name made lowercase.
+    cmptransid = models.ForeignKey(QitCompanymaster, models.DO_NOTHING, db_column='CmpTransID')  # Field name made lowercase.
+
+    class Meta:
+        managed = False
+        db_table = 'QIT_DepartmentMaster'
+
+
 class QitOtp(models.Model):
     transid = models.AutoField(db_column='TransId', primary_key=True)  # Field name made lowercase.
     e_mail = models.CharField(db_column='E_Mail', max_length=50)  # Field name made lowercase.
     verifyotp = models.IntegerField(db_column='VerifyOTP')  # Field name made lowercase.
     status = models.CharField(db_column='Status', max_length=2)  # Field name made lowercase.
-    entrytime = models.DateTimeField(db_column='EntryTime',auto_now=True)  # Field name made lowercase.
+    entrytime = models.DateTimeField(db_column='EntryTime')  # Field name made lowercase.
 
     class Meta:
         managed = False
@@ -42,12 +52,28 @@ class QitUserlogin(models.Model):
     password = models.CharField(db_column='Password', max_length=100)  # Field name made lowercase.
     userrole = models.CharField(db_column='UserRole', max_length=100)  # Field name made lowercase.
 
-    @property
-    def id(self):
-        return self.transid
     class Meta:
         managed = False
         db_table = 'QIT_UserLogIn'
+
+
+class QitUsermaster(models.Model):
+    transid = models.AutoField(db_column='TransID', primary_key=True)  # Field name made lowercase.
+    username = models.CharField(db_column='UserName', max_length=100)  # Field name made lowercase.
+    password = models.CharField(db_column='Password', max_length=100)  # Field name made lowercase.
+    useremail = models.CharField(db_column='UserEmail', max_length=100)  # Field name made lowercase.
+    phone = models.CharField(db_column='Phone', max_length=20, blank=True, null=True)  # Field name made lowercase.
+    cmptransid = models.ForeignKey(QitCompanymaster, models.DO_NOTHING, db_column='CmpTransID')  # Field name made lowercase.
+    cmpdeptid = models.ForeignKey(QitDepartmentmaster, models.DO_NOTHING, db_column='CmpDeptID')  # Field name made lowercase.
+    gender = models.CharField(db_column='Gender', max_length=7)  # Field name made lowercase.
+    useravatar = models.CharField(db_column='UserAvatar', max_length=500, blank=True, null=True)  # Field name made lowercase.
+    changepassstatus = models.CharField(db_column='ChangePassStatus', max_length=2)  # Field name made lowercase.
+    entrydate = models.DateTimeField(db_column='EntryDate')  # Field name made lowercase.
+    updateddate = models.DateTimeField(db_column='UpdatedDate', blank=True, null=True)  # Field name made lowercase.
+
+    class Meta:
+        managed = False
+        db_table = 'QIT_UserMaster'
 
 
 class AuthGroup(models.Model):

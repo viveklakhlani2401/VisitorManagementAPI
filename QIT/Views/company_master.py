@@ -1,4 +1,4 @@
-from QIT.models import QitCompanymaster,QitOtp,QitUserlogin
+from QIT.models import QitCompanymaster,QitOtp
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
@@ -107,9 +107,9 @@ def CreateCompany(request):
 
 @csrf_exempt
 @api_view(["GET"])
-def GetComapnyData(request):
+def GetComapnyData(request,qrCode):
     # print()
-    qrCode = request.query_params.get("qrCode")
+    # qrCode = request.query_params.get("qrCode")
 
     resDB = QitCompanymaster.objects.filter(qrcodeid = qrCode)
     print(resDB)
