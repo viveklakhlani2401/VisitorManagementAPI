@@ -3,7 +3,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from QIT.models import QitUsermaster,QitUserlogin
 from QIT.serializers import QitUsermasterSerializer,UserMasterDataSerializer,UserMasterResetSerializer
-from .common import create_userlogin
+from .common import create_userlogin,create_comp_auth
 from django.contrib.auth.hashers import make_password
 @api_view(['POST'])
 def save_user(request):
@@ -12,7 +12,8 @@ def save_user(request):
         serializer = QitUsermasterSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
-            userlogin = QitUserlogin(useremail=body_data["useremail"], password=make_password(body_data["password"]), userrole="USER")
+            userlogin = QitUserlogin(useremail=body_data["useremail"], password=make_password(body_data["password"]), userrole=body_data["userrole"].toupper())
+            create_comp_auth(body_data["useremail"],serializer.data.cmptransid,body_data["userrole"].toupper())
             userlogin.save()
             return Response({
                     'Status':status.HTTP_201_CREATED,
