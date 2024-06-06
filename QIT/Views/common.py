@@ -3,7 +3,7 @@ from rest_framework.decorators import api_view,authentication_classes
 from .emails import Send_OTP
 import random
 import string
-from QIT.models import QitOtp, QitCompanymaster, QitUserlogin
+from QIT.models import QitOtp, QitCompany, QitUserlogin,QitAuthenticationrule
 import threading
 from django.views.decorators.csrf import csrf_exempt
 from django.utils import timezone
@@ -20,6 +20,7 @@ from django.core.cache import cache
 import json
 from asgiref.sync import async_to_sync
 from channels.layers import get_channel_layer
+from QIT.utils import modules
 # Custom Authentication class
 class CustomAuthentication(BaseAuthentication):
     def authenticate(self, request):
@@ -60,47 +61,54 @@ def GenerateOTP(request):
                 'StatusMsg':"Email is required..!!"
             })
         print("first check in comapny master")
-        emailExistInComapny = QitCompanymaster.objects.filter(e_mail = body_data["E_Mail"])
+        emailExistInComapny = QitCompany.objects.filter(e_mail = body_data["E_Mail"])
         if(emailExistInComapny):
             return Response({
                 'Status':400,
                 'StatusMsg':"This email alredy register as comapny..!!"
             })
-        try:
-            print("first check in otp master")
-            OTPEntry = QitOtp.objects.get(e_mail = body_data["E_Mail"])
-            print(OTPEntry)
-            OTPEntry.verifyotp = new_OTP
-            OTPEntry.status = "N"
-            # OTPEntry.entrytime = timezone.now()
-            print(f"OTP while save : {new_OTP}")
-            OTPEntry.save()
-        except QitOtp.DoesNotExist :
-            print("finally here")
-            print(f"OTP while create : {new_OTP}")
-            OTPEntry = QitOtp.objects.create(e_mail = body_data["E_Mail"],verifyotp = new_OTP, status = "N")
+        # try:
+        #     print("first check in otp master")
+        #     OTPEntry = QitOtp.objects.get(e_mail = body_data["E_Mail"])
+        #     print(OTPEntry)
+        #     OTPEntry.verifyotp = new_OTP
+        #     OTPEntry.status = "N"
+        #     # OTPEntry.entrytime = timezone.now()
+        #     print(f"OTP while save : {new_OTP}")
+        #     OTPEntry.save()
+        # except QitOtp.DoesNotExist :
+        #     print("finally here")
+        #     print(f"OTP while create : {new_OTP}")
+        #     OTPEntry = QitOtp.objects.create(e_mail = body_data["E_Mail"],verifyotp = new_OTP, status = "N")
+        set_otp(body_data["E_Mail"],new_OTP)
+        message = "OTP : "+new_OTP
+        Send_OTP(body_data["E_Mail"],"TEST",message)
+        return Response({
+            'Status':200,
+            'StatusMsg':"OTP send successfully..!!"
+        })
     except Exception as e:
         return Response({
             'Status': 400,
             'StatusMsg': "Error while sending OTP: " + str(e)
         })
 
-    if(OTPEntry):
-        message = "OTP : "+new_OTP
-        # email_thread = threading.Thread(target=Send_OTP,args=(body_data["E_Mail"],"TEST",message))
-        # email_thread.start()
-        # print(f"email thread start for {body_data["E_Mail"]}")
-        print(f"message {message}")
-        Send_OTP(body_data["E_Mail"],"TEST",message)
-        return Response({
-            'Status':200,
-            'StatusMsg':"OTP send successfully..!!"
-        })
+    # if(OTPEntry):
+    #     message = "OTP : "+new_OTP
+    #     # email_thread = threading.Thread(target=Send_OTP,args=(body_data["E_Mail"],"TEST",message))
+    #     # email_thread.start()
+    #     # print(f"email thread start for {body_data["E_Mail"]}")
+    #     print(f"message {message}")
+    #     Send_OTP(body_data["E_Mail"],"TEST",message)
+    #     return Response({
+    #         'Status':200,
+    #         'StatusMsg':"OTP send successfully..!!"
+    #     })
     
-    return Response({
-        'Status':400,
-        'StatusMsg':"Error while sending OTP..!!"
-    })
+    # return Response({
+    #     'Status':400,
+    #     'StatusMsg':"Error while sending OTP..!!"
+    # })
 
 
 # Verify OTP API
@@ -119,24 +127,61 @@ def VerifyOTP(request):
                 'Status':400,
                 'StatusMsg':"OTP is required..!!"
             })
-        OTPEntry = QitOtp.objects.get(e_mail = body_data["E_Mail"], verifyotp = body_data["VerifyOTP"])
-        if(OTPEntry.status == "Y"):
-            return Response({
-                'Status':200,
-                'StatusMsg':"OTP already veryfied..!!"
-            })
-        time_difference = timezone.now() - OTPEntry.entrytime
-        if time_difference.total_seconds() > 300:  # 5 minutes = 300 seconds
-            return Response({
-                'Status': 400,
-                'StatusMsg': "OTP has expired..!!"
-            })
-        OTPEntry.status = "Y"
-        OTPEntry.save()
-        return Response({
-            'Status':200,
-            'StatusMsg':"OTP veryfied..!!"
-        })
+        
+        email = body_data.get("E_Mail")
+        otp = body_data.get("VerifyOTP")
+        stored_data_json = cache.get(f"otp_{email}")
+        if stored_data_json:
+            stored_data = json.loads(stored_data_json)
+            stored_otp = stored_data['otp']
+            if stored_otp:
+                print(f"Comparing OTPs: '{stored_otp}' == '{otp}'")
+                if str(stored_otp).strip() == str(otp).strip():
+                    stored_data['status'] = 1
+                    cache.set(f"otp_{email}", json.dumps(stored_data), timeout=300)
+                    response = {
+                        'Status': 200,
+                        'StatusMsg': "OTP verified..!!"
+                    }
+                    return Response(response)
+                else:
+                    response = {
+                        'Status': 400,
+                        'StatusMsg': "Invalid OTP ..!!"
+                    }
+                    return Response(response)
+            else:
+                response = {
+                    'Status': 400,
+                    'StatusMsg': "Email not found or OTP expired..!!"
+                }
+                return Response(response)
+        else:
+            response = {
+                    'Status': 400,
+                    'StatusMsg': "Something wrong..!!"
+                }
+            return Response(response)
+        # OTPEntry = QitOtp.objects.get(e_mail = body_data["E_Mail"], verifyotp = body_data["VerifyOTP"])
+        # if(OTPEntry.status == "Y"):
+        #     return Response({
+        #         'Status':200,
+        #         'StatusMsg':"OTP already veryfied..!!"
+        #     })
+        # print(timezone.now())
+        # print(OTPEntry.entrytime)
+        # time_difference = timezone.now() - OTPEntry.entrytime
+        # if time_difference.total_seconds() > 300:  # 5 minutes = 300 seconds
+        #     return Response({
+        #         'Status': 400,
+        #         'StatusMsg': "OTP has expired..!!"
+        #     })
+        # OTPEntry.status = "Y"
+        # OTPEntry.save()
+        # return Response({
+        #     'Status':200,
+        #     'StatusMsg':"OTP veryfied..!!"
+        # })
     except QitOtp.DoesNotExist:
         return Response({
             'Status':400,
@@ -196,6 +241,19 @@ def create_userlogin(useremail, password, userrole):
     userlogin = QitUserlogin(useremail=useremail, password=make_password(password), userrole=userrole)
     userlogin.save()
     return userlogin
+
+def create_comp_auth(useremail, cmptransid, userrole):
+    print("=============> ",useremail," ", cmptransid," ", userrole)
+    modulesdata = None
+    if userrole == "COMPANY":
+        modulesdata = modules.module_classes
+    elif userrole == "USER":
+        modulesdata = modules.user_module_classes
+    elif userrole == "ADMIN":
+        modulesdata = modules.user_module_classes
+    compuserauth = QitAuthenticationrule(user_id=useremail,cmptransid=cmptransid, userrole=userrole,auth_rule_detail=modulesdata)
+    compuserauth.save()
+    return compuserauth
 
 @csrf_exempt
 @api_view(['POST'])
@@ -322,7 +380,7 @@ def generate_newPassword(request):
             stored_data = json.loads(stored_data_json)
             stored_status = stored_data['status']
             if stored_status == 1 :
-                resDB1 = QitCompanymaster.objects.filter(e_mail = body_data["e_mail"]).first()
+                resDB1 = QitCompany.objects.filter(e_mail = body_data["e_mail"]).first()
                 resDB = QitUserlogin.objects.filter(useremail = body_data["e_mail"]).first()
                 if not resDB:
                     return Response({

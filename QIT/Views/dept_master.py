@@ -2,7 +2,7 @@ from rest_framework.views import APIView
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from django.views.decorators.csrf import csrf_exempt
-from QIT.models import QitDepartmentmaster,QitCompanymaster
+from QIT.models import QitDepartment,QitCompany
 from QIT.serializers import DepartmentSerializer
 from rest_framework.exceptions import NotFound
 
@@ -13,14 +13,14 @@ def SaveDepartment(request):
     try:
         reqData = request.data
         cid = reqData["company_id"]
-        cmpEntry = QitCompanymaster.objects.filter(transid=cid).first()
+        cmpEntry = QitCompany.objects.filter(transid=cid).first()
         if not cmpEntry:
             return Response({
                 'is_save':"N",
                 'Status':400,
                 'StatusMsg':"Company not found..!!"
             })
-        res = QitDepartmentmaster.objects.create(deptname=reqData["dept_name"],cmptransid=cmpEntry)
+        res = QitDepartment.objects.create(deptname=reqData["dept_name"],cmptransid=cmpEntry)
         if res:
             return Response({
                 'is_save':"Y",
@@ -48,13 +48,13 @@ def GetAllDeptByCId(request,cid):
     try:
         # cid = request.query_params.get("cid")
         if not cid:
-            deptData = DepartmentSerializer(QitDepartmentmaster.objects.all(),many=True)
+            deptData = DepartmentSerializer(QitDepartment.objects.all(),many=True)
             return Response(deptData.data)
         else:
-            cmpEntry = QitCompanymaster.objects.filter(transid=cid).first()
+            cmpEntry = QitCompany.objects.filter(transid=cid).first()
             if not cmpEntry:
                 raise NotFound(detail="Company data not found..!!",code=400)
-            serializedData = QitDepartmentmaster.objects.filter(cmptransid=cmpEntry)
+            serializedData = QitDepartment.objects.filter(cmptransid=cmpEntry)
             if not serializedData:
                 raise NotFound(detail="Data not found..!!",code=400)
             res = DepartmentSerializer(serializedData,many=True)
@@ -78,7 +78,7 @@ def EditDepartment(request):
             raise NotFound(detail="deptname is required..!!",code=400)
         if not reqData.get("cmptransid"):
             raise NotFound(detail="cmptransid is required..!!",code=400)
-        deptData = QitDepartmentmaster.objects.filter(transid = reqData["transid"],cmptransid=reqData["cmptransid"]).first()
+        deptData = QitDepartment.objects.filter(transid = reqData["transid"],cmptransid=reqData["cmptransid"]).first()
         if not deptData:
             raise NotFound(detail="Department data not found..!!",code=400)
         serialized_data = DepartmentSerializer(deptData, data=reqData, partial=True)
@@ -106,7 +106,7 @@ def DeleteDepartment(request,did,cid):
             raise NotFound(detail="Department Id is required..!!")
         if not cid:
             raise NotFound(detail="Company Id is required..!!")
-        deptEntry = QitDepartmentmaster.objects.get(transid=did,cmptransid=cid)
+        deptEntry = QitDepartment.objects.get(transid=did,cmptransid=cid)
         if not deptEntry:
             raise NotFound(detail="Department not found..!!")
         res = deptEntry.delete()

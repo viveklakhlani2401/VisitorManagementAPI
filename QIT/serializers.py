@@ -1,11 +1,11 @@
 from rest_framework import serializers
 from django.contrib.auth.hashers import make_password
 
-from .models import QitCompanymaster,QitOtp,QitUserlogin,QitDepartmentmaster,QitUsermaster
+from .models import QitCompany,QitOtp,QitUserlogin,QitDepartment,QitUsermaster
 
 class CompanyMasterSerializer(serializers.ModelSerializer):
     class Meta:
-        model = QitCompanymaster
+        model = QitCompany
         fields = "__all__"
 
 class GenerateOTPSerializer(serializers.ModelSerializer):
@@ -15,8 +15,8 @@ class GenerateOTPSerializer(serializers.ModelSerializer):
 
 class CompanyMasterSerializer(serializers.ModelSerializer):
     class Meta:
-        model = QitCompanymaster
-        fields = ['e_mail', 'password', 'businessname', 'businesslocation']
+        model = QitCompany
+        fields = ['e_mail', 'password', 'bname', 'blocation']
 
     def create(self, validated_data):
         # Encrypt the password
@@ -26,8 +26,8 @@ class CompanyMasterSerializer(serializers.ModelSerializer):
 
 class CompanyMasterGetSerializer(serializers.ModelSerializer):
     class Meta:
-        model = QitCompanymaster
-        fields = ['transid','e_mail', 'password', 'businessname', 'businesslocation','qrcodeid','status','entrydate']
+        model = QitCompany
+        fields = ['transid','e_mail', 'password', 'bname', 'blocation','qrstring','status','entrydate']
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
@@ -37,7 +37,7 @@ class UserSerializer(serializers.ModelSerializer):
 
 class DepartmentSerializer(serializers.ModelSerializer):
     class Meta:
-        model = QitDepartmentmaster
+        model = QitDepartment
         fields = ['transid','deptname','cmptransid']
 
         
@@ -80,3 +80,10 @@ class UserMasterResetSerializer(serializers.ModelSerializer):
             instance.password = make_password(validated_data['password'])
         instance.save()
         return instance
+
+
+class GetDataClassSerializer(serializers.Serializer):
+    useremail = serializers.CharField(max_length=255)
+    userrole = serializers.CharField(max_length=10)
+    cmptransid = serializers.IntegerField()
+    module_classes = serializers.JSONField()

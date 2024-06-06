@@ -8,30 +8,64 @@
 from django.db import models
 
 
-class QitCompanymaster(models.Model):
+class QitAuthenticationrule(models.Model):
+    authentication_rule_id = models.AutoField(db_column='Authentication_Rule_ID', primary_key=True)  # Field name made lowercase.
+    user_id = models.IntegerField(db_column='User_ID')  # Field name made lowercase.
+    cmptransid = models.ForeignKey('QitCompany', models.DO_NOTHING, db_column='CmpTransID')  # Field name made lowercase.
+    auth_rule_detail = models.TextField(db_column='Auth_Rule_Detail')  # Field name made lowercase.
+    userrole = models.CharField(db_column='userRole', max_length=45)  # Field name made lowercase.
+
+    class Meta:
+        managed = False
+        db_table = 'QIT_AuthenticationRule'
+
+
+class QitCompany(models.Model):
     transid = models.AutoField(db_column='TransId', primary_key=True)  # Field name made lowercase.
     e_mail = models.CharField(db_column='E_Mail', unique=True, max_length=50)  # Field name made lowercase.
     password = models.CharField(db_column='Password', max_length=100)  # Field name made lowercase.
-    businessname = models.CharField(db_column='BusinessName', max_length=200)  # Field name made lowercase.
-    businesslocation = models.CharField(db_column='BusinessLocation', max_length=500)  # Field name made lowercase.
-    qrcodeid = models.CharField(db_column='QRCodeId', max_length=100)  # Field name made lowercase.
+    bname = models.CharField(db_column='BName', max_length=200)  # Field name made lowercase.
+    blocation = models.CharField(db_column='BLocation', max_length=500)  # Field name made lowercase.
+    state = models.CharField(db_column='State', max_length=50, blank=True, null=True)  # Field name made lowercase.
+    country = models.CharField(db_column='Country', max_length=50, blank=True, null=True)  # Field name made lowercase.
+    zipcode = models.CharField(db_column='ZipCode', max_length=20, blank=True, null=True)  # Field name made lowercase.
+    address1 = models.CharField(db_column='Address1', max_length=50, blank=True, null=True)  # Field name made lowercase.
+    address2 = models.CharField(db_column='Address2', max_length=50, blank=True, null=True)  # Field name made lowercase.
+    phone1 = models.CharField(db_column='Phone1', max_length=20, blank=True, null=True)  # Field name made lowercase.
+    phone2 = models.CharField(db_column='Phone2', max_length=20, blank=True, null=True)  # Field name made lowercase.
+    qrstring = models.CharField(db_column='QRString', max_length=100)  # Field name made lowercase.
     status = models.CharField(db_column='Status', max_length=2)  # Field name made lowercase.
+    isactive = models.CharField(db_column='IsActive', max_length=2)  # Field name made lowercase.
+    cmplogo = models.TextField(db_column='CmpLogo', blank=True, null=True)  # Field name made lowercase.
+    websitelink = models.CharField(db_column='WebsiteLink', max_length=100, blank=True, null=True)  # Field name made lowercase.
     entrydate = models.DateTimeField(db_column='EntryDate',auto_now=True)  # Field name made lowercase.
     updatedate = models.DateTimeField(db_column='UpdateDate', blank=True, null=True)  # Field name made lowercase.
 
     class Meta:
         managed = False
-        db_table = 'QIT_CompanyMaster'
+        db_table = 'QIT_Company'
 
 
-class QitDepartmentmaster(models.Model):
+class QitDepartment(models.Model):
     transid = models.AutoField(db_column='TransID', primary_key=True)  # Field name made lowercase.
     deptname = models.CharField(db_column='DeptName', max_length=45)  # Field name made lowercase.
-    cmptransid = models.ForeignKey(QitCompanymaster, models.DO_NOTHING, db_column='CmpTransID')  # Field name made lowercase.
+    cmptransid = models.ForeignKey(QitCompany, models.DO_NOTHING, db_column='CmpTransID')  # Field name made lowercase.
 
     class Meta:
         managed = False
-        db_table = 'QIT_DepartmentMaster'
+        db_table = 'QIT_Department'
+
+
+class QitNotifiicationrule(models.Model):
+    n_rule_id = models.AutoField(db_column='N_Rule_ID', primary_key=True)  # Field name made lowercase.
+    user_id = models.IntegerField(db_column='User_ID')  # Field name made lowercase.
+    cmptransid = models.ForeignKey(QitCompany, models.DO_NOTHING, db_column='CmpTransID')  # Field name made lowercase.
+    n_rule_detail = models.TextField(db_column='N_Rule_Detail', blank=True, null=True)  # Field name made lowercase.
+    userrole = models.CharField(db_column='userRole', max_length=45)  # Field name made lowercase.
+
+    class Meta:
+        managed = False
+        db_table = 'QIT_NotifiicationRule'
 
 
 class QitOtp(models.Model):
@@ -51,11 +85,9 @@ class QitUserlogin(models.Model):
     useremail = models.CharField(db_column='UserEmail', unique=True, max_length=50)  # Field name made lowercase.
     password = models.CharField(db_column='Password', max_length=100)  # Field name made lowercase.
     userrole = models.CharField(db_column='UserRole', max_length=100)  # Field name made lowercase.
-
     @property
     def id(self):
         return self.transid
-
     class Meta:
         managed = False
         db_table = 'QIT_UserLogIn'
@@ -65,130 +97,52 @@ class QitUsermaster(models.Model):
     transid = models.AutoField(db_column='TransID', primary_key=True)  # Field name made lowercase.
     username = models.CharField(db_column='UserName', max_length=100)  # Field name made lowercase.
     password = models.CharField(db_column='Password', max_length=100)  # Field name made lowercase.
-    useremail = models.CharField(db_column='UserEmail', max_length=100)  # Field name made lowercase.
+    useremail = models.CharField(db_column='UserEmail', unique=True, max_length=100)  # Field name made lowercase.
     phone = models.CharField(db_column='Phone', max_length=20, blank=True, null=True)  # Field name made lowercase.
-    cmptransid = models.ForeignKey(QitCompanymaster, models.DO_NOTHING, db_column='CmpTransID')  # Field name made lowercase.
-    cmpdeptid = models.ForeignKey(QitDepartmentmaster, models.DO_NOTHING, db_column='CmpDeptID')  # Field name made lowercase.
+    cmptransid = models.ForeignKey(QitCompany, models.DO_NOTHING, db_column='CmpTransID')  # Field name made lowercase.
+    cmpdeptid = models.ForeignKey(QitDepartment, models.DO_NOTHING, db_column='CmpDeptID')  # Field name made lowercase.
     gender = models.CharField(db_column='Gender', max_length=7)  # Field name made lowercase.
-    useravatar = models.CharField(db_column='UserAvatar', max_length=500, blank=True, null=True)  # Field name made lowercase.
+    useravatar = models.TextField(db_column='UserAvatar', blank=True, null=True)  # Field name made lowercase.
     changepassstatus = models.CharField(db_column='ChangePassStatus', max_length=2)  # Field name made lowercase.
-    entrydate = models.DateTimeField(db_column='EntryDate',auto_now=True)  # Field name made lowercase.
+    entrydate = models.DateTimeField(db_column='EntryDate')  # Field name made lowercase.
     updateddate = models.DateTimeField(db_column='UpdatedDate', blank=True, null=True)  # Field name made lowercase.
+    usertype = models.CharField(db_column='UserType', max_length=45, blank=True, null=True)  # Field name made lowercase.
+    createdby = models.TextField(db_column='CreatedBy', blank=True, null=True)  # Field name made lowercase.
 
     class Meta:
         managed = False
         db_table = 'QIT_UserMaster'
 
 
-class AuthGroup(models.Model):
-    name = models.CharField(unique=True, max_length=150)
+class QitVisitorinout(models.Model):
+    transid = models.AutoField(db_column='TransId', primary_key=True)  # Field name made lowercase.
+    vavatar = models.TextField(db_column='VAvatar')  # Field name made lowercase.
+    cnctperson = models.CharField(db_column='CnctPerson', max_length=100)  # Field name made lowercase.
+    cmpdepartmentid = models.ForeignKey(QitDepartment, models.DO_NOTHING, db_column='CmpDepartmentId')  # Field name made lowercase.
+    timeslot = models.DateTimeField(db_column='TimeSlot')  # Field name made lowercase.
+    anyhardware = models.CharField(db_column='AnyHardware', max_length=100, blank=True, null=True)  # Field name made lowercase.
+    purposeofvisit = models.CharField(db_column='PurposeOfVisit', max_length=200)  # Field name made lowercase.
+    checkinstatus = models.CharField(db_column='CheckInStatus', max_length=2, blank=True, null=True)  # Field name made lowercase.
+    cmptransid = models.ForeignKey(QitCompany, models.DO_NOTHING, db_column='CmpTransId')  # Field name made lowercase.
+    reason = models.CharField(db_column='Reason', max_length=200, blank=True, null=True)  # Field name made lowercase.
+    status = models.CharField(db_column='Status', max_length=2)  # Field name made lowercase.
+    checkintime = models.DateTimeField(db_column='CheckInTime', blank=True, null=True)  # Field name made lowercase.
+    checkouttime = models.DateTimeField(db_column='CheckOutTime', blank=True, null=True)  # Field name made lowercase.
+    entrydate = models.DateTimeField(db_column='EntryDate')  # Field name made lowercase.
+    createdby = models.TextField(db_column='CreatedBy', blank=True, null=True)  # Field name made lowercase.
 
     class Meta:
         managed = False
-        db_table = 'auth_group'
+        db_table = 'QIT_VisitorInOut'
 
 
-class AuthGroupPermissions(models.Model):
-    id = models.BigAutoField(primary_key=True)
-    group = models.ForeignKey(AuthGroup, models.DO_NOTHING)
-    permission = models.ForeignKey('AuthPermission', models.DO_NOTHING)
-
-    class Meta:
-        managed = False
-        db_table = 'auth_group_permissions'
-        unique_together = (('group', 'permission'),)
-
-
-class AuthPermission(models.Model):
-    name = models.CharField(max_length=255)
-    content_type = models.ForeignKey('DjangoContentType', models.DO_NOTHING)
-    codename = models.CharField(max_length=100)
+class QitVisitormaster(models.Model):
+    transid = models.AutoField(db_column='TransId', primary_key=True)  # Field name made lowercase.
+    vname = models.CharField(db_column='VName', max_length=45)  # Field name made lowercase.
+    phone1 = models.CharField(db_column='Phone1', unique=True, max_length=45)  # Field name made lowercase.
+    vcmpname = models.CharField(db_column='VCmpName', max_length=45)  # Field name made lowercase.
+    vlocation = models.CharField(db_column='VLocation', max_length=45)  # Field name made lowercase.
 
     class Meta:
         managed = False
-        db_table = 'auth_permission'
-        unique_together = (('content_type', 'codename'),)
-
-
-class AuthUser(models.Model):
-    password = models.CharField(max_length=128)
-    last_login = models.DateTimeField(blank=True, null=True)
-    is_superuser = models.IntegerField()
-    username = models.CharField(unique=True, max_length=150)
-    first_name = models.CharField(max_length=150)
-    last_name = models.CharField(max_length=150)
-    email = models.CharField(max_length=254)
-    is_staff = models.IntegerField()
-    is_active = models.IntegerField()
-    date_joined = models.DateTimeField()
-
-    class Meta:
-        managed = False
-        db_table = 'auth_user'
-
-
-class AuthUserGroups(models.Model):
-    id = models.BigAutoField(primary_key=True)
-    user = models.ForeignKey(AuthUser, models.DO_NOTHING)
-    group = models.ForeignKey(AuthGroup, models.DO_NOTHING)
-
-    class Meta:
-        managed = False
-        db_table = 'auth_user_groups'
-        unique_together = (('user', 'group'),)
-
-
-class AuthUserUserPermissions(models.Model):
-    id = models.BigAutoField(primary_key=True)
-    user = models.ForeignKey(AuthUser, models.DO_NOTHING)
-    permission = models.ForeignKey(AuthPermission, models.DO_NOTHING)
-
-    class Meta:
-        managed = False
-        db_table = 'auth_user_user_permissions'
-        unique_together = (('user', 'permission'),)
-
-
-class DjangoAdminLog(models.Model):
-    action_time = models.DateTimeField()
-    object_id = models.TextField(blank=True, null=True)
-    object_repr = models.CharField(max_length=200)
-    action_flag = models.PositiveSmallIntegerField()
-    change_message = models.TextField()
-    content_type = models.ForeignKey('DjangoContentType', models.DO_NOTHING, blank=True, null=True)
-    user = models.ForeignKey(AuthUser, models.DO_NOTHING)
-
-    class Meta:
-        managed = False
-        db_table = 'django_admin_log'
-
-
-class DjangoContentType(models.Model):
-    app_label = models.CharField(max_length=100)
-    model = models.CharField(max_length=100)
-
-    class Meta:
-        managed = False
-        db_table = 'django_content_type'
-        unique_together = (('app_label', 'model'),)
-
-
-class DjangoMigrations(models.Model):
-    id = models.BigAutoField(primary_key=True)
-    app = models.CharField(max_length=255)
-    name = models.CharField(max_length=255)
-    applied = models.DateTimeField()
-
-    class Meta:
-        managed = False
-        db_table = 'django_migrations'
-
-
-class DjangoSession(models.Model):
-    session_key = models.CharField(primary_key=True, max_length=40)
-    session_data = models.TextField()
-    expire_date = models.DateTimeField()
-
-    class Meta:
-        managed = False
-        db_table = 'django_session'
+        db_table = 'QIT_VisitorMaster'
