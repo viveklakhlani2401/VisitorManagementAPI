@@ -10,33 +10,33 @@ from django.core.cache import cache
 from .common import set_otp,generate_otp
 from .emails import Send_OTP
 
-@api_view(["POST"])
-def Company_User_GenerateOTP(request):
-    try:
-        if not request.data:
-            return Response({
-                'Status':400,
-                'StatusMsg':"e_mail is required..!!"
-            },status=400)
-        body_data = request.data["e_mail"]
-        if not body_data:
-            return Response({
-                'Status':400,
-                'StatusMsg':"e_mail is required..!!"
-            },status=200)
-        new_OTP = generate_otp()
-        set_otp(body_data,new_OTP)
-        message = f"New User Email OTP : {new_OTP}"
-        Send_OTP(body_data,"New User Email OTP",message)
-        return Response({
-            'Status':200,
-            'StatusMsg':f"OTP send successfully on email : {body_data}..!!"
-        },status=200)
-    except Exception as e:
-        return Response({
-            'Status':400,
-            'StatusMsg':str(e)
-        },status=400)
+# @api_view(["POST"])
+# def Company_User_GenerateOTP(request):
+#     try:
+#         if not request.data:
+#             return Response({
+#                 'Status':400,
+#                 'StatusMsg':"e_mail is required..!!"
+#             },status=400)
+#         body_data = request.data["e_mail"]
+#         if not body_data:
+#             return Response({
+#                 'Status':400,
+#                 'StatusMsg':"e_mail is required..!!"
+#             },status=200)
+#         new_OTP = generate_otp()
+#         set_otp(body_data,new_OTP)
+#         message = f"New User Email OTP : {new_OTP}"
+#         Send_OTP(body_data,"New User Email OTP",message)
+#         return Response({
+#             'Status':200,
+#             'StatusMsg':f"OTP send successfully on email : {body_data}..!!"
+#         },status=200)
+#     except Exception as e:
+#         return Response({
+#             'Status':400,
+#             'StatusMsg':str(e)
+#         },status=400)
 
 @api_view(['POST'])
 def save_user(request):
@@ -46,12 +46,13 @@ def save_user(request):
         if stored_data_json:
             stored_data = json.loads(stored_data_json)
             stored_status = stored_data['status']
-            if stored_status == 1 :
+            stored_role = stored_data['role']
+            if stored_status == 1 and stored_role.upper() == "USER" :
                 serializer = QitUsermasterSerializer(data=request.data)
                 if serializer.is_valid():
                     serializer.save()
-                    userlogin = QitUserlogin(e_mail=body_data["e_mail"], password=make_password(body_data["password"]), userrole=body_data["userrole"].upper())
-                    create_comp_auth(serializer.data["transid"],QitCompany.objects.filter(transid=serializer.data["cmptransid"]).first(),body_data["userrole"].upper())
+                    userlogin = QitUserlogin(e_mail=body_data["e_mail"], password=make_password(body_data["password"]), userrole=body_data["usertype"].upper())
+                    create_comp_auth(serializer.data["transid"],QitCompany.objects.filter(transid=serializer.data["cmptransid"]).first(),body_data["usertype"].upper())
                     userlogin.save()
                     return Response({
                         'Status':status.HTTP_201_CREATED,

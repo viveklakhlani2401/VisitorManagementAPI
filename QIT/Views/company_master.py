@@ -79,7 +79,9 @@ def CreateCompany(request):
         if stored_data_json:
             stored_data = json.loads(stored_data_json)
             stored_status = stored_data['status']
-            if stored_status == 1 :
+            stored_role = stored_data['role']
+            print(stored_role)
+            if stored_status == 1 and stored_role.upper() == "COMPANY" :
                 serializer = CompanyMasterSerializer(data=request.data)
                 if serializer.is_valid():
                     company_master = serializer.save()
