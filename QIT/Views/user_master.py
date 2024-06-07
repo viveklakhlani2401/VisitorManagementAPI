@@ -1,30 +1,80 @@
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
-from QIT.models import QitUsermaster,QitUserlogin
+from QIT.models import QitUsermaster,QitUserlogin,QitCompany
 from QIT.serializers import QitUsermasterSerializer,UserMasterDataSerializer,UserMasterResetSerializer
 from .common import create_userlogin,create_comp_auth
 from django.contrib.auth.hashers import make_password
+import json
+from django.core.cache import cache
+from .common import set_otp,generate_otp
+from .emails import Send_OTP
+
+@api_view(["POST"])
+def Company_User_GenerateOTP(request):
+    try:
+        if not request.data:
+            return Response({
+                'Status':400,
+                'StatusMsg':"e_mail is required..!!"
+            },status=400)
+        body_data = request.data["e_mail"]
+        if not body_data:
+            return Response({
+                'Status':400,
+                'StatusMsg':"e_mail is required..!!"
+            },status=200)
+        new_OTP = generate_otp()
+        set_otp(body_data,new_OTP)
+        message = f"New User Email OTP : {new_OTP}"
+        Send_OTP(body_data,"New User Email OTP",message)
+        return Response({
+            'Status':200,
+            'StatusMsg':f"OTP send successfully on email : {body_data}..!!"
+        },status=200)
+    except Exception as e:
+        return Response({
+            'Status':400,
+            'StatusMsg':str(e)
+        },status=400)
+
 @api_view(['POST'])
 def save_user(request):
     try:
         body_data = request.data
-        serializer = QitUsermasterSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            userlogin = QitUserlogin(useremail=body_data["useremail"], password=make_password(body_data["password"]), userrole=body_data["userrole"].toupper())
-            create_comp_auth(body_data["useremail"],serializer.data.cmptransid,body_data["userrole"].toupper())
-            userlogin.save()
-            return Response({
-                    'Status':status.HTTP_201_CREATED,
-                    'StatusMsg':"User Save Successfully..!!"
-                }, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        stored_data_json = cache.get(f"otp_{body_data["e_mail"]}")
+        if stored_data_json:
+            stored_data = json.loads(stored_data_json)
+            stored_status = stored_data['status']
+            if stored_status == 1 :
+                serializer = QitUsermasterSerializer(data=request.data)
+                if serializer.is_valid():
+                    serializer.save()
+                    userlogin = QitUserlogin(e_mail=body_data["e_mail"], password=make_password(body_data["password"]), userrole=body_data["userrole"].upper())
+                    create_comp_auth(serializer.data["transid"],QitCompany.objects.filter(transid=serializer.data["cmptransid"]).first(),body_data["userrole"].upper())
+                    userlogin.save()
+                    return Response({
+                        'Status':status.HTTP_201_CREATED,
+                        'StatusMsg':"User Save Successfully..!!"
+                    }, status=status.HTTP_201_CREATED)
+                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            else:
+                response = {
+                    'Status': 400,
+                    'StatusMsg': "OTP is not verified..!!"
+                }
+                return Response(response)
+        else:
+            response = {
+                'Status': 400,
+                'StatusMsg': "Email not found or OTP expired..!!"
+            }
+            return Response(response)  
     except Exception as e:
         return Response({
-                    'Status':400,
-                    'StatusMsg':str(e)
-                })
+            'Status':400,
+            'StatusMsg':str(e)
+        })
 
 @api_view(['GET'])
 def get_user(request,cmpId):
