@@ -208,7 +208,7 @@ def login_view(request):
     email = request.data.get('email')
     password = request.data.get('password')
     try:
-        user = QitUserlogin.objects.get(useremail=email)
+        user = QitUserlogin.objects.get(e_mail=email)
         print(check_password(password, user.password))
         if user and check_password(password, user.password):
             print("here")
@@ -260,7 +260,6 @@ def create_comp_auth(useremail, cmptransid, userrole):
 def Forget_Password_Send_OTP(request):
     try:
         body_data = request.data
-        print(body_data["e_mail"])
         resDB = QitUserlogin.objects.filter(useremail = body_data["e_mail"]).first()
         if resDB is not None:
             print(resDB.userrole)
@@ -308,10 +307,16 @@ def Forget_Password_Send_OTP(request):
 # Verify OTP API
 @csrf_exempt
 @api_view(["POST"])
-def VerifyForgetpasswordOTP(request):
+def VerifyOTP(request):
     body_data = request.data
+
     try:
-        if not body_data["E_Mail"]:
+        if not body_data :
+            return Response({
+                'Status':400,
+                'StatusMsg':"Payload is required..!!"
+            },status=400)
+        if not body_data["e_mail"]:
             return Response({
                 'Status':400,
                 'StatusMsg':"Email is required..!!"
@@ -321,9 +326,12 @@ def VerifyForgetpasswordOTP(request):
                 'Status':400,
                 'StatusMsg':"OTP is required..!!"
             })
-        email = body_data["E_Mail"]
+        email = body_data["e_mail"]
         otp = body_data["VerifyOTP"]
+        print(email)
+        print(otp)
         stored_data_json = cache.get(f"otp_{email}")
+        print(stored_data_json)
         if stored_data_json:
             stored_data = json.loads(stored_data_json)
             stored_otp = stored_data['otp']

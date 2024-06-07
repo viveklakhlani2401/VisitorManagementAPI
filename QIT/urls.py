@@ -31,7 +31,7 @@ urlpatterns = [
     path('VMS/secure', common.secure_view),
     path('VMS/refreshToken', common.token_refresh),
     path('VMS/ForgetPasswordOTP', common.Forget_Password_Send_OTP),
-    path('VMS/VerifyForgetPasswordOTP', common.VerifyForgetpasswordOTP),
+    path('VMS/VerifyOTP', common.VerifyOTP),
     path('VMS/GenerateNewPassword', common.generate_newPassword),
     path("VMS/test", common.getWebsocketTest),
     path("VMS/Department/Save", dept_master.SaveDepartment),
@@ -43,5 +43,6 @@ urlpatterns = [
     path('VMS/User/Save', user_master.save_user),
     path('VMS/User/Update/<int:cmpId>/<int:transid>', user_master.update_user),
     path('VMS/User/Delete/<int:cmpId>/<int:transid>', user_master.delete_user),
+    path('VMS/User/GenerateOTP', user_master.Company_User_GenerateOTP),
     path('VMS/AuthUser/Save', authorization_master.SaveAuthRule),
 ]
