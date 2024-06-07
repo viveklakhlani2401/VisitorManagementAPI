@@ -32,7 +32,7 @@ class CompanyMasterGetSerializer(serializers.ModelSerializer):
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = QitUserlogin
-        fields = ['useremail','userrole']
+        fields = ['e_mail','userrole']
 
 
 class DepartmentSerializer(serializers.ModelSerializer):
