@@ -42,36 +42,36 @@ user_module_classes= [
             "text": "Visitors",
             "path": "/visitors",
             "icon": "ri-user-add-line",
-            "hasAccess": True
+            "hasAccess": False
         },
         {
             "text": "Verify Visitors",
             "path": "/verifyvisitors",
             "icon": "ri-user-follow-line",
-            "hasAccess": True
+            "hasAccess": False
         },
         {
             "text": "User Settings",
             "path": "/usersettings",
             "icon": "ri-user-settings-line",
-            "hasAccess": True
+            "hasAccess": False
         },
         {
             "text": "Notification",
             "path": "/notification",
             "icon": "bell-icon",
-            "hasAccess": True
+            "hasAccess": False
         },
         {
             "text": "Profile",
             "path": "/profile",
             "icon": "settings",
-            "hasAccess": True
+            "hasAccess": False
         },
         {
             "text": "General Settings",
             "path": "/settings",
             "icon": "settings",
-            "hasAccess": True
+            "hasAccess": False
         }
     ]

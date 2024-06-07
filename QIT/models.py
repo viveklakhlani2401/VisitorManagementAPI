@@ -73,7 +73,7 @@ class QitOtp(models.Model):
     e_mail = models.CharField(db_column='E_Mail', max_length=50)  # Field name made lowercase.
     verifyotp = models.IntegerField(db_column='VerifyOTP')  # Field name made lowercase.
     status = models.CharField(db_column='Status', max_length=2)  # Field name made lowercase.
-    entrytime = models.DateTimeField(db_column='EntryTime',auto_now=True)  # Field name made lowercase.
+    entrytime = models.DateTimeField(db_column='EntryTime')  # Field name made lowercase.
 
     class Meta:
         managed = False
@@ -110,6 +110,7 @@ class QitUsermaster(models.Model):
     updateddate = models.DateTimeField(db_column='UpdatedDate', blank=True, null=True)  # Field name made lowercase.
     usertype = models.CharField(db_column='UserType', max_length=45, blank=True, null=True)  # Field name made lowercase.
     createdby = models.TextField(db_column='CreatedBy', blank=True, null=True)  # Field name made lowercase.
+
 
     class Meta:
         managed = False
