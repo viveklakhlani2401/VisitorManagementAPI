@@ -3,12 +3,10 @@ from rest_framework.response import Response
 from rest_framework import status
 from QIT.models import QitUsermaster,QitUserlogin,QitCompany
 from QIT.serializers import QitUsermasterSerializer,UserMasterDataSerializer,UserMasterResetSerializer
-from .common import create_userlogin,create_comp_auth
+from .common import create_comp_auth
 from django.contrib.auth.hashers import make_password
 import json
 from django.core.cache import cache
-from .common import set_otp,generate_otp
-from .emails import Send_OTP
 
 # @api_view(["POST"])
 # def Company_User_GenerateOTP(request):

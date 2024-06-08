@@ -63,19 +63,20 @@ def GenerateOTP(request):
             return Response({
                 'Status':400,
                 'StatusMsg':"e_mail is required..!!"
-            },status=200)
+            },status=400)
         if not role:
             return Response({
                 'Status':400,
                 'StatusMsg':"role is required..!!"
-            },status=200)
-        
-        userEntry = QitUserlogin.objects.filter(e_mail=email).first()
-        if userEntry:
-            return Response({
-                'Status':400,
-                'StatusMsg':"User with this email already exists..!!"
             },status=400)
+        
+        if role.upper() != "VISIOR":
+            userEntry = QitUserlogin.objects.filter(e_mail=email).first()
+            if userEntry:
+                return Response({
+                    'Status':400,
+                    'StatusMsg':"User with this email already exists..!!"
+                },status=400)
         new_OTP = generate_otp()
         if role.upper() == "COMPANY":
             message = f"Company OTP : {new_OTP}"
@@ -177,22 +178,22 @@ def VerifyOTP(request):
             return Response({
                 'Status':400,
                 'StatusMsg':"Payload is required..!!"
-            })
+            },status=400)
         if not body_data.get("e_mail"):
             return Response({
                 'Status':400,
                 'StatusMsg':"Email is required..!!"
-            })
+            },status=400)
         if not body_data.get("VerifyOTP"):
             return Response({
                 'Status':400,
                 'StatusMsg':"OTP is required..!!"
-            })
+            },status=400)
         if not body_data.get("role"):
             return Response({
                 'Status':400,
                 'StatusMsg':"Role is required..!!"
-            })
+            },status=400)
         
         email = body_data.get("e_mail")
         otp = body_data.get("VerifyOTP")
@@ -212,25 +213,25 @@ def VerifyOTP(request):
                         'Status': 200,
                         'StatusMsg': "OTP verified..!!"
                     }
-                    return Response(response)
+                    return Response(response,status=200)
                 else:
                     response = {
                         'Status': 400,
                         'StatusMsg': "Invalid OTP ..!!"
                     }
-                    return Response(response)
+                    return Response(response,status=400)
             else:
                 response = {
                     'Status': 400,
                     'StatusMsg': "Email not found or OTP expired..!!"
                 }
-                return Response(response)
+                return Response(response,status=400)
         else:
             response = {
                     'Status': 400,
                     'StatusMsg': "Something wrong..!!"
                 }
-            return Response(response)
+            return Response(response,status=400)
         # OTPEntry = QitOtp.objects.get(e_mail = body_data["E_Mail"], verifyotp = body_data["VerifyOTP"])
         # if(OTPEntry.status == "Y"):
         #     return Response({
@@ -255,7 +256,7 @@ def VerifyOTP(request):
         return Response({
             'Status':400,
             'StatusMsg':"Invalid Email or OTP ..!!"
-        })
+        },status=400)
     
 # Refresh Token API
 @api_view(['POST'])
@@ -356,7 +357,7 @@ def login_view(request):
  
                 return Response({
                     'user': user_serializer.data,
-                    'userAuth':json_text,
+                    'userAuth':obj.auth_rule_detail,
                     'refresh': str(refresh),
                     'access': str(refresh.access_token),
                 })

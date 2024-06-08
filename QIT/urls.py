@@ -45,5 +45,6 @@ urlpatterns = [
     path('VMS/User/Delete/<int:cmpId>/<int:transid>', user_master.delete_user),
     # path('VMS/User/GenerateOTP', user_master.Company_User_GenerateOTP),
     path('VMS/AuthUser/Save', authorization_master.SaveAuthRule),
-    # path('VMS/Visitor/GenerateOTP', visitor_master.Visitor_GenerateOTP),
+    path('VMS/Visitor/Save', visitor_master.Save_Visitor),
+    path('VMS/Visitor/GetByEmail', visitor_master.GetVisitorByE_Mail),
 ]
