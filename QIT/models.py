@@ -111,7 +111,6 @@ class QitUsermaster(models.Model):
     usertype = models.CharField(db_column='UserType', max_length=45, blank=True, null=True)  # Field name made lowercase.
     createdby = models.TextField(db_column='CreatedBy', blank=True, null=True)  # Field name made lowercase.
 
-
     class Meta:
         managed = False
         db_table = 'QIT_UserMaster'
@@ -149,3 +148,17 @@ class QitVisitormaster(models.Model):
     class Meta:
         managed = False
         db_table = 'QIT_VisitorMaster'
+
+
+class QitNotificationmaster(models.Model):
+    transid = models.AutoField(db_column='TransId', primary_key=True)  # Field name made lowercase.
+    sender_user_id = models.IntegerField(db_column='Sender_User_Id')  # Field name made lowercase.
+    receiver_user_id = models.IntegerField(db_column='Receiver_User_Id')  # Field name made lowercase.
+    notification_text = models.TextField(db_column='Notification_Text')  # Field name made lowercase.
+    n_date_time = models.DateTimeField(db_column='N_Date_Time',auto_now=True)  # Field name made lowercase.
+    chk_status = models.CharField(db_column='Chk_Status', max_length=5)  # Field name made lowercase.
+    cmptransid = models.ForeignKey(QitCompany, models.DO_NOTHING, db_column='CmpTransId')  # Field name made lowercase.
+
+    class Meta:
+        managed = False
+        db_table = 'QIT_NotificationMaster'

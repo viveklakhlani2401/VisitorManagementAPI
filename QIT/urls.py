@@ -16,7 +16,7 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
-from QIT.Views import common,company_master,dept_master,user_master,authorization_master,visitor_master
+from QIT.Views import common,company_master,dept_master,user_master,authorization_master,visitor_master,notification_master
 from rest_framework.routers import DefaultRouter
 from django.urls import path, include
 
@@ -45,5 +45,11 @@ urlpatterns = [
     path('VMS/User/Delete/<int:cmpId>/<int:transid>', user_master.delete_user),
     # path('VMS/User/GenerateOTP', user_master.Company_User_GenerateOTP),
     path('VMS/AuthUser/Save', authorization_master.SaveAuthRule),
+    path('VMS/AuthUser/GET', authorization_master.GetAuthRule),
+    path('VMS/NotificationAuthUser/Save', notification_master.SaveNotificationRule),
+    path('VMS/NotificationAuthUser/GET', notification_master.GetNotificationRule),
+    path('VMS/Notification/Save', notification_master.SaveNotification),
+    path('VMS/Notification/GET', notification_master.GetNotification),
+    path('VMS/Notification/Read', notification_master.ReadNotification),
     # path('VMS/Visitor/GenerateOTP', visitor_master.Visitor_GenerateOTP),
 ]

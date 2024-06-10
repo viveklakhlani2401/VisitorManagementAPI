@@ -20,7 +20,7 @@ from channels.routing import ProtocolTypeRouter, URLRouter
 from django.core.asgi import get_asgi_application
 from channels.auth import AuthMiddlewareStack
 from django.urls import path
-from QIT.consumer import ChatConsumer
+from QIT.consumer import SocketConsumer
 from django.urls import re_path
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'QIT.settings')
 
@@ -28,7 +28,7 @@ os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'QIT.settings')
 #     path('ws/path/', ChatConsumer.as_asgi()),
 # ]
 websocket_urlpatterns = [
-   re_path(r'^ws/path/$',ChatConsumer.as_asgi()),
+   re_path(r'^ws/path/$',SocketConsumer.as_asgi()),
 ]
 
 application = ProtocolTypeRouter({
