@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from django.contrib.auth.hashers import make_password
 
-from .models import QitCompany,QitOtp,QitUserlogin,QitDepartment,QitUsermaster
+from .models import QitCompany,QitOtp,QitUserlogin,QitDepartment,QitUsermaster,QitVisitormaster,QitVisitorinout
 
 class CompanyMasterSerializer(serializers.ModelSerializer):
     class Meta:
@@ -87,6 +87,7 @@ class GetDataClassSerializer(serializers.Serializer):
     cmptransid = serializers.IntegerField()
     module_classes = serializers.JSONField()
 
+
 class GetRuleClassSerializer(serializers.Serializer):
     useremail = serializers.CharField(max_length=255)
     userrole = serializers.CharField(max_length=10)
@@ -107,3 +108,80 @@ class ReadNotificationClassSerializer(serializers.Serializer):
     transid = serializers.IntegerField()
     email = serializers.CharField(max_length=255)
     cmptransid = serializers.IntegerField()
+
+class QitVisitorSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = QitVisitormaster
+        fields = '__all__'
+
+
+class QitVisitorinoutSerializer(serializers.ModelSerializer):
+    vname = serializers.CharField(write_only=True, max_length=45)
+    phone1 = serializers.CharField(write_only=True, max_length=45, allow_blank=True, allow_null=True)
+    vcmpname = serializers.CharField(write_only=True, max_length=45)
+    vlocation = serializers.CharField(write_only=True, max_length=45)
+    e_mail = serializers.CharField(write_only=True, max_length=45)
+    cmptransid = serializers.IntegerField(write_only=True)
+
+    class Meta:
+        model = QitVisitorinout
+        fields = [
+            'vavatar', 'cnctperson', 'cmpdepartmentid', 'timeslot', 'anyhardware',
+            'purposeofvisit', 'cmptransid', 'reason', 'checkintime', 'checkouttime',
+            'createdby', 'vname', 'phone1', 'vcmpname', 
+            'vlocation', 'e_mail'
+        ]
+
+    def create(self, validated_data):
+
+        if validated_data.get("createdby"):
+            try:
+                userEntry = QitUserlogin.objects.get(transid=validated_data.get("createdby"))
+            except QitUserlogin.DoesNotExist:
+                raise serializers.ValidationError({"statusMsg":"Invalid created by user id..!!"})
+
+        try:
+            # print(validated_data.pop('cmptransid'))
+            company = QitCompany.objects.get(transid=validated_data.pop('cmptransid'))
+        except QitCompany.DoesNotExist:
+            raise serializers.ValidationError({"statusMsg":"company_id not found."})
+        
+        # try:
+        #     print(validated_data.get('cmpdepartmentid'))
+        #     dept = QitDepartment.objects.get(transid=validated_data.get('cmpdepartmentid'))
+        # except QitDepartment.DoesNotExist:
+        #     raise serializers.ValidationError({"statusMsg":"department_id not found."})
+
+        # visitormaster_data = {
+        #     'vname': validated_data.pop('vname'),
+        #     'phone1': validated_data.pop('phone1'),
+        #     'vcmpname': validated_data.pop('vcmpname'),
+        #     'vlocation': validated_data.pop('vlocation'),
+        #     'e_mail': validated_data.pop('e_mail'),
+        #     'cmptransid': company,
+        # }
+        # visitormaster = QitVisitormaster.objects.create(**visitormaster_data).
+
+        email = validated_data.pop('e_mail')
+        visitormaster_data = {
+            'vname': validated_data.pop('vname'),
+            'phone1': validated_data.pop('phone1', None),
+            'vcmpname': validated_data.pop('vcmpname'),
+            'vlocation': validated_data.pop('vlocation'),
+            'e_mail': email,
+            'cmptransid': company,
+        }
+
+        visitormaster, created = QitVisitormaster.objects.update_or_create(
+            e_mail=email,
+            cmptransid=company,
+            defaults=visitormaster_data
+        )
+        validated_data['visitortansid'] = visitormaster
+        validated_data['status'] = 'P'
+        validated_data['checkinstatus'] = None
+        validated_data['cmptransid'] = company
+        validated_data['cmpdepartmentid'] = validated_data.get('cmpdepartmentid')
+        visitorinout = QitVisitorinout.objects.create(**validated_data)
+        return visitorinout
+

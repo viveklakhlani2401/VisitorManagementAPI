@@ -132,6 +132,7 @@ class QitVisitorinout(models.Model):
     checkouttime = models.DateTimeField(db_column='CheckOutTime', blank=True, null=True)  # Field name made lowercase.
     entrydate = models.DateTimeField(db_column='EntryDate',auto_now=True)  # Field name made lowercase.
     createdby = models.TextField(db_column='CreatedBy', blank=True, null=True)  # Field name made lowercase.
+    visitortansid = models.ForeignKey('QitVisitormaster', models.DO_NOTHING, db_column='VisitorTansId')  # Field name made lowercase.
 
     class Meta:
         managed = False
@@ -141,9 +142,11 @@ class QitVisitorinout(models.Model):
 class QitVisitormaster(models.Model):
     transid = models.AutoField(db_column='TransId', primary_key=True)  # Field name made lowercase.
     vname = models.CharField(db_column='VName', max_length=45)  # Field name made lowercase.
-    phone1 = models.CharField(db_column='Phone1', unique=True, max_length=45)  # Field name made lowercase.
+    phone1 = models.CharField(db_column='Phone1', unique=True, max_length=45, blank=True, null=True)  # Field name made lowercase.
     vcmpname = models.CharField(db_column='VCmpName', max_length=45)  # Field name made lowercase.
     vlocation = models.CharField(db_column='VLocation', max_length=45)  # Field name made lowercase.
+    e_mail = models.CharField(db_column='E_Mail', unique=True, max_length=45)  # Field name made lowercase.
+    cmptransid = models.OneToOneField(QitCompany, models.DO_NOTHING, db_column='CmpTransId')  # Field name made lowercase.
 
     class Meta:
         managed = False

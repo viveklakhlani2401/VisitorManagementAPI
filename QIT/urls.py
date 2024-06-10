@@ -52,4 +52,6 @@ urlpatterns = [
     path('VMS/Notification/GET', notification_master.GetNotification),
     path('VMS/Notification/Read', notification_master.ReadNotification),
     # path('VMS/Visitor/GenerateOTP', visitor_master.Visitor_GenerateOTP),
+    path('VMS/Visitor/Save', visitor_master.Save_Visitor),
+    path('VMS/Visitor/GetByEmail', visitor_master.GetVisitorByE_Mail),
 ]
