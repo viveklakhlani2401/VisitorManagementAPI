@@ -47,4 +47,7 @@ urlpatterns = [
     path('VMS/AuthUser/Save', authorization_master.SaveAuthRule),
     path('VMS/Visitor/Save', visitor_master.Save_Visitor),
     path('VMS/Visitor/GetByEmail', visitor_master.GetVisitorByE_Mail),
+    path('VMS/Visitor/GetAll/<str:status>/<int:cid>', visitor_master.GetAllVisitor),
+    path('VMS/Visitor/GetVisitorDetail/<int:vid>/<int:cid>', visitor_master.GetVisitorDetail),
+    path('VMS/Visitor/VerifyVisitor', visitor_master.verifyVisitor),
 ]
