@@ -3,10 +3,11 @@ from django.views.decorators.csrf import csrf_exempt
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
-from QIT.serializers import QitVisitorinoutSerializer, QitVisitorSerializer
-from QIT.models import QitVisitormaster
+from QIT.serializers import QitVisitorinoutPOSTSerializer, QitVisitorSerializer,QitVisitorinoutGETSerializer
+from QIT.models import QitVisitormaster,QitVisitorinout
 import json
 from django.core.cache import cache
+from datetime import datetime
 
 @csrf_exempt
 @api_view(['POST'])
@@ -43,7 +44,7 @@ def Save_Visitor(request):
                 dataToSerialize["cmptransid"]=dataToSerialize["company_id"]
                 dataToSerialize.pop("company_id")
                 dataToSerialize.pop("department_id")
-                serializer = QitVisitorinoutSerializer(data=dataToSerialize)
+                serializer = QitVisitorinoutPOSTSerializer(data=dataToSerialize)
                 if serializer.is_valid():
                     serializer.save()
                     return Response( {
@@ -110,7 +111,7 @@ def Save_Visitor(request):
 #         },status=400)
 
 
-
+# for get isitor data on mobile view
 @csrf_exempt
 @api_view(['POST'])
 def GetVisitorByE_Mail(request):
@@ -136,3 +137,87 @@ def GetVisitorByE_Mail(request):
         
     except Exception as e:
         return Response({'Status': 400, 'StatusMsg': "An error occurred: {}".format(str(e))}, status=400)
+    
+# get all visior data for company
+@csrf_exempt
+@api_view(["GET"])
+def GetAllVisitor(request,status,cid):
+    try:
+        if not cid:
+            return Response({'Status': 400, 'StatusMsg': "Company Id requied..!!"}, status=400)
+        # queryset = QitVisitorinout.objects.filter(cmptransid=cid)
+        # queryset = QitVisitorinout.objects.filter(cmptransid=cid)
+        # entrydate_info = [(type(obj.entrydate), obj.entrydate) for obj in queryset]  # Collect type and value of entrydate field
+        
+        # print("Entrydate info:", entrydate_info)  # Debug statement
+
+        # queryset = queryset.annotate(
+        #     sorting_date=Case(
+        #         When(checkintime=False, then=F('checkindatetime')),
+        #         default=F('entrydate'),
+        #         output_field=models.DateTimeField()
+        #     )
+        # ).order_by('-sorting_date')
+        if status.upper() == "ALL":
+            queryset = QitVisitorinout.objects.filter(cmptransid=cid).order_by('-checkintime', '-entrydate')
+        elif status.upper() == "P":
+            queryset = QitVisitorinout.objects.filter(cmptransid=cid,status="P").order_by('-checkintime', '-entrydate')
+        else:
+            return Response({'Status': 400, 'StatusMsg': "Invalid state..!!"}, status=400)
+        print(queryset)
+        if not queryset:
+            return Response({'Status': 400, 'StatusMsg': "No data..!!"}, status=400)
+        serializer = QitVisitorinoutGETSerializer(queryset, many=True)
+        return Response(serializer.data,status=200)
+    except Exception as e:
+        return Response({'Status': 400, 'StatusMsg': str(e)}, status=400)
+
+# get a visior data for company
+@csrf_exempt
+@api_view(["GET"])
+def GetVisitorDetail(request,vid,cid):
+    try:
+        if not cid:
+            return Response({'Status': 400, 'StatusMsg': "Company Id requied..!!"}, status=400)
+        if not vid:
+            return Response({'Status': 400, 'StatusMsg': "Visitor Id requied..!!"}, status=400)
+        queryset = QitVisitorinout.objects.filter(cmptransid=cid,transid=vid).first()
+        if not queryset:
+            return Response({'Status': 400, 'StatusMsg': "No data..!!"}, status=400)
+        serializer = QitVisitorinoutGETSerializer(queryset, many=False)
+        return Response(serializer.data,status=200)
+    except Exception as e:
+        return Response({'Status': 400, 'StatusMsg': str(e)}, status=400)
+
+# verify pending visitor
+@csrf_exempt
+@api_view(["POST"])
+def verifyVisitor(request):
+    try:
+        reqData = request.data
+        if not reqData:
+            return Response({'Status': 400, 'StatusMsg': "Payload required..!!"}, status=400)  
+        if not reqData["company_id"]:
+            return Response({'Status': 400, 'StatusMsg': "company_id required..!!"}, status=400)
+        if not reqData["visitor_id"]:
+            return Response({'Status': 400, 'StatusMsg': "visitor_id required..!!"}, status=400)  
+        if not reqData["reason"]:
+            return Response({'Status': 400, 'StatusMsg': "reason required..!!"}, status=400)  
+        if not reqData["status"]:
+            return Response({'Status': 400, 'StatusMsg': "status required..!!"}, status=400) 
+        state =  reqData["status"]
+        if state.upper() != "A" and state.upper() != "R":
+            return Response({'Status': 400, 'StatusMsg': "Enter valid status..!!"}, status=400) 
+
+        inoutEntry = QitVisitorinout.objects.filter(transid=reqData["visitor_id"],cmptransid=reqData["company_id"]).first()
+        if not inoutEntry:
+            return Response({'Status': 400, 'StatusMsg': "Data not found..!!"}, status=400)
+        inoutEntry.status = reqData["status"].upper()
+        inoutEntry.reason = reqData["reason"]
+        if state.upper() == "A":
+            inoutEntry.checkintime = datetime.now()
+        inoutEntry.save()
+        return Response({'Status': 200, 'StatusMsg': "Status updated..!!"}, status=200)
+    except Exception as e:
+        return Response({'Status': 400, 'StatusMsg': str(e)}, status=400)
+         

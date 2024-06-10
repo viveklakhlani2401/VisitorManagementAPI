@@ -114,8 +114,24 @@ class QitVisitorSerializer(serializers.ModelSerializer):
         model = QitVisitormaster
         fields = '__all__'
 
+    # def to_representation(self, instance):
+    #     print("here")
+    #     representation = super().to_representation(instance)
+    #     print("here")
+    #     print(instance.visitortansid)
+    #     visitormaster = instance.visitortansid
+    #     # representation['visitor_transid'] = visitormaster.transid
+    #     representation['vName'] = visitormaster.vname
+    #     representation['visitor_phone1'] = visitormaster.phone1
+    #     representation['visitor_cmpname'] = visitormaster.vcmpname
+    #     representation['visitor_location'] = visitormaster.vlocation
+    #     representation['visitor_email'] = visitormaster.e_mail
+    #     representation['visitor_cmptransid'] = visitormaster.cmptransid_id
 
-class QitVisitorinoutSerializer(serializers.ModelSerializer):
+    #     return representation
+
+
+class QitVisitorinoutPOSTSerializer(serializers.ModelSerializer):
     vname = serializers.CharField(write_only=True, max_length=45)
     phone1 = serializers.CharField(write_only=True, max_length=45, allow_blank=True, allow_null=True)
     vcmpname = serializers.CharField(write_only=True, max_length=45)
@@ -131,6 +147,7 @@ class QitVisitorinoutSerializer(serializers.ModelSerializer):
             'createdby', 'vname', 'phone1', 'vcmpname', 
             'vlocation', 'e_mail'
         ]
+        # fields = '__all__'
 
     def create(self, validated_data):
 
@@ -185,3 +202,50 @@ class QitVisitorinoutSerializer(serializers.ModelSerializer):
         visitorinout = QitVisitorinout.objects.create(**validated_data)
         return visitorinout
 
+class QitVisitorinoutGETSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = QitVisitorinout
+        fields = ['transid','cnctperson','cmpdepartmentid','timeslot','purposeofvisit','checkinstatus','reason','status','entrydate','createdby','checkintime']
+
+      
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        departmentMaster = instance.cmpdepartmentid
+        visitormaster = instance.visitortansid
+
+        # Debug statements
+        print("Type of entry_date:", type(representation['entrydate']))
+        print("Value of entry_date:", representation['entrydate'])
+        
+        # Manually add fields from QitVisitormaster to the representation
+        # representation['vId'] = visitormaster.transid
+        representation['id'] = representation.pop("transid")
+        representation['vName'] = visitormaster.vname
+        representation['vPhone1'] = visitormaster.phone1
+        representation['vCmpname'] = visitormaster.vcmpname
+        representation['vLocation'] = visitormaster.vlocation
+        representation['vEmail'] = visitormaster.e_mail
+        representation['deptId'] = representation.pop("cmpdepartmentid")
+        representation['deptName'] = departmentMaster.deptname
+        status_mapping = {
+            'P': 'Pending',
+            'A': 'Approved',
+            'R': 'Rejected'
+        }
+        representation['state'] = status_mapping.get(representation.pop('status'), None)
+        state_mapping = {
+            'I': 'Check in',
+            'O': 'Check Out'
+        }
+        representation['status'] = state_mapping.get(representation.pop('checkinstatus'), None)
+        representation['addedBy'] = 'Company' if representation.pop("createdby") else 'External'
+        representation['cnctperson'] =  representation.pop("cnctperson") 
+        representation['timeslot'] =  representation.pop("timeslot") 
+        representation['purposeofvisit'] =  representation.pop("purposeofvisit") 
+        representation['reason'] =  representation.pop("reason") 
+        entryDate = representation.pop('entrydate')
+        checkinDate = representation.pop('checkintime')
+        representation['sortDate'] = checkinDate if checkinDate else entryDate
+        # representation['vCmptransid'] = visitormaster.cmptransid_id
+
+        return representation
