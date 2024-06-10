@@ -3,7 +3,8 @@ from rest_framework.response import Response
 from rest_framework import status
 from QIT.models import QitUsermaster,QitUserlogin,QitCompany
 from QIT.serializers import QitUsermasterSerializer,UserMasterDataSerializer,UserMasterResetSerializer
-from .common import create_comp_auth
+from .common import create_userlogin,create_comp_auth,create_comp_notification_auth
+
 from django.contrib.auth.hashers import make_password
 import json
 from django.core.cache import cache
@@ -40,7 +41,8 @@ from django.core.cache import cache
 def save_user(request):
     try:
         body_data = request.data
-        stored_data_json = cache.get(f"otp_{body_data["e_mail"]}")
+        email = body_data["e_mail"]
+        stored_data_json = cache.get(f"otp_{email}")
         if stored_data_json:
             stored_data = json.loads(stored_data_json)
             stored_status = stored_data['status']
@@ -51,6 +53,7 @@ def save_user(request):
                     serializer.save()
                     userlogin = QitUserlogin(e_mail=body_data["e_mail"], password=make_password(body_data["password"]), userrole=body_data["usertype"].upper())
                     create_comp_auth(serializer.data["transid"],QitCompany.objects.filter(transid=serializer.data["cmptransid"]).first(),body_data["usertype"].upper())
+                    create_comp_notification_auth(serializer.data["transid"],QitCompany.objects.filter(transid=serializer.data["cmptransid"]).first(),body_data["usertype"].upper())
                     userlogin.save()
                     return Response({
                         'Status':status.HTTP_201_CREATED,

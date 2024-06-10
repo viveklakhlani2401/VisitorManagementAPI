@@ -1,17 +1,35 @@
 import json
 from channels.generic.websocket import WebsocketConsumer,AsyncWebsocketConsumer
 from asgiref.sync import async_to_sync,sync_to_async
-from .models import QitUserlogin
-
-
-class ChatConsumer(AsyncWebsocketConsumer):
+from .models import QitUserlogin,QitNotificationmaster
+from datetime import datetime
+from django.utils import timezone
+from QIT.Views import common
+class SocketConsumer(AsyncWebsocketConsumer):
     connections = []
-    async def send_initial_data(self):
-        print("====")
+
+    async def send_initial_data(self,id):
         users = await sync_to_async(list)(QitUserlogin.objects.values())
+        today = timezone.now().date()
+        # norifications = await sync_to_async(list)(QitNotificationmaster.objects.filter(
+        #     receiver_user_id=id,
+        #     chk_status='P',
+        #     n_date_time__date=today 
+        # ))
+        notifications = await sync_to_async(list)(QitNotificationmaster.objects.filter(
+            receiver_user_id=id,
+            # chk_status='P',
+            n_date_time__date=today
+        ).values('transid', 'notification_text', 'n_date_time', 'chk_status'))
+        for notification in notifications:
+            if 'n_date_time' in notification:
+                notification['n_date_time'] = common.time_since(notification['n_date_time'])
+        # notifications = self.serialize_notifications(notifications)
+
         await self.send(text_data=json.dumps({
             'type': 'initial_data',
-            'users': users
+            # 'users': users,
+            'notification': notifications
         }))
 
     async def connect(self):
@@ -28,7 +46,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
         
         await self.channel_layer.group_add(self.group_name, self.channel_name)
         await self.accept()
-        await self.send_initial_data()
+        await self.send_initial_data(self.user_id)
 
     async def disconnect(self, close_code):
         if hasattr(self, 'custom_groups'):
@@ -36,16 +54,12 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 await self.channel_layer.group_discard(f"user_{group}", self.channel_name)
         await self.channel_layer.group_discard(self.group_name, self.channel_name)
     
-    async def send_info_to_custom_group(self, user_ids, event):
-        text = event['text']
-        for user_id in user_ids:
-            await self.channel_layer.group_send(
-                f"user_{user_id}",
-                {
-                    'type': 'send.message',
-                    'text': text,
-                }
-            )
+    async def new_notification(self, event):
+        notification = event['notification']
+        await self.send(text_data=json.dumps({
+            'type': 'notification',
+            'notification': notification
+        }))
 
     async def send_message(self, event):
         text = event['text']

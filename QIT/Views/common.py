@@ -3,7 +3,7 @@ from rest_framework.decorators import api_view,authentication_classes
 from .emails import Send_OTP
 import random
 import string
-from QIT.models import QitOtp, QitCompany, QitUserlogin,QitAuthenticationrule,QitUsermaster
+from QIT.models import QitOtp, QitCompany, QitUserlogin,QitAuthenticationrule,QitUsermaster,QitNotifiicationrule
 import threading
 from django.views.decorators.csrf import csrf_exempt
 from django.utils import timezone
@@ -21,6 +21,8 @@ import json
 from asgiref.sync import async_to_sync
 from channels.layers import get_channel_layer
 from QIT.utils import modules
+from django.utils import timezone
+from datetime import datetime
 # Custom Authentication class
 class CustomAuthentication(BaseAuthentication):
     def authenticate(self, request):
@@ -324,6 +326,48 @@ def role_email_wise_data(e_mail,password,role):
             return user
         else:
             return None
+        
+def role_email_get_data(e_mail,role):
+    print("email : ",e_mail," Role : ",role)
+    if role == "COMPANY":
+        user = QitCompany.objects.filter(e_mail=e_mail).first()
+        if user:
+            return user
+        else:
+            return None
+    elif role == "USER":
+        user = QitUsermaster.objects.filter(e_mail=e_mail,usertype=role.upper()).first()
+        if user:
+            return user
+        else:
+            return None
+    elif role == "ADMIN":
+        user = QitUsermaster.objects.filter(e_mail=e_mail,usertype=role.upper()).first()
+        if user:
+            return user
+        else:
+            return None
+        
+def email_wise_data_filter(id,role,company):
+    if role == "COMPANY":
+        user = QitCompany.objects.filter(transid=id).first()
+        if user:
+            return user
+        else:
+            return None
+    elif role == "USER":
+        user = QitUsermaster.objects.filter(transid=id,usertype=role.upper()).first()
+        if user and user.cmptransid.transid == company:
+            print("---------",user)
+            return user
+        else:
+            return None
+    elif role == "ADMIN":
+        user = QitUsermaster.objects.filter(transid=id,usertype=role.upper()).first()
+        if user and user.cmptransid.transid == company:
+            return user
+        else:
+            return None
  
 # Login API with refresh and access token
 @api_view(['POST'])
@@ -350,11 +394,6 @@ def login_view(request):
         
                 json_text = json.dumps(obj.auth_rule_detail)
                 
-                # Encrypt the serialized data
-                # key = b'your_secret_key_here'  # Replace with your secret key
-                # cipher_suite = Fernet(key)
-                # encrypt_bytes = cipher_suite.encrypt(json_text.encode())
- 
                 return Response({
                     'user': user_serializer.data,
                     'userAuth':obj.auth_rule_detail,
@@ -392,6 +431,19 @@ def create_comp_auth(useremail, cmptransid, userrole):
     elif userrole == "ADMIN":
         modulesdata = modules.module_classes
     compuserauth = QitAuthenticationrule(user_id=useremail,cmptransid=cmptransid, userrole=userrole,auth_rule_detail=modulesdata)
+    compuserauth.save()
+    return compuserauth
+
+def create_comp_notification_auth(useremail, cmptransid, userrole):
+    print("=============> ",useremail," ", cmptransid," ", userrole)
+    modulesdata = None
+    if userrole == "COMPANY":
+        modulesdata = modules.module_classes
+    elif userrole == "USER":
+        modulesdata = modules.user_module_classes
+    elif userrole == "ADMIN":
+        modulesdata = modules.module_classes
+    compuserauth = QitNotifiicationrule(user_id=useremail,cmptransid=cmptransid, userrole=userrole,n_rule_detail=modulesdata)
     compuserauth.save()
     return compuserauth
 
@@ -588,12 +640,53 @@ def getWebsocketTest(request):
 
     channel_layer = get_channel_layer()
     for user_id in user_ids:
+        print("new id : ==========",user_id)
+       
         async_to_sync(channel_layer.group_send)(
             f"user_{user_id}",
             {
                 'type': 'send.message',
-                'text': message,
+                'text': {
+            'type': 'initial_data',
+            # 'users': users,
+            'notification': message
+        },
             }
         )
 
     return Response({"status": True}, status=status.HTTP_200_OK)
+
+def time_since(dt):
+    now = datetime.now(timezone.utc)
+    diff = now - dt
+    if diff.days > 0:
+        return f"{diff.days} day{'s' if diff.days > 1 else ''} ago"
+    elif diff.seconds // 3600 > 0:
+        hours = diff.seconds // 3600
+        return f"{hours} hour{'s' if hours > 1 else ''} ago"
+    elif diff.seconds // 60 > 0:
+        minutes = diff.seconds // 60
+        return f"{minutes} minute{'s' if minutes > 1 else ''} ago"
+    else:
+        return "just now"
+
+def send_notification(user_ids,notifications):
+    channel_layer = get_channel_layer()
+    for notification in notifications:
+        n_date_time = time_since(notification.n_date_time)
+        print("n_date_time : ",n_date_time)
+        notification_dict = {
+            'transid': notification.transid,
+            'notification_text': notification.notification_text,
+            'n_date_time': n_date_time,
+            'chk_status': notification.chk_status,
+        }
+        print("notification_dict : ",notification_dict)
+        print("notification.receiver_user_id : ",notification.receiver_user_id)
+        async_to_sync(channel_layer.group_send)(
+            f"user_{notification.receiver_user_id}",
+            {
+                'type': 'new_notification',
+                'notification': notification_dict
+            }
+        )

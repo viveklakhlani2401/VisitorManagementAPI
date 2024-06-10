@@ -9,7 +9,7 @@ from cryptography.fernet import Fernet
 from dotenv import load_dotenv
 import os
 load_dotenv()
-from .common import create_userlogin,create_comp_auth
+from .common import create_userlogin,create_comp_auth,create_comp_notification_auth
 from QIT.serializers import CompanyMasterGetSerializer
 from django.core.cache import cache
 import json
@@ -92,6 +92,7 @@ def CreateCompany(request):
                     company_master.save()
                     create_userlogin(body_data["e_mail"],body_data["password"],"COMPANY")
                     create_comp_auth(company_master.transid,company_master,"COMPANY")
+                    create_comp_notification_auth(company_master.transid,company_master,"COMPANY")
                     frontendURL = os.getenv("FRONTEND_URL")
                     secret = os.getenv("SECRETE")
                     if QitCompany.objects.filter(transid=company_master.transid).exists():

@@ -81,13 +81,33 @@ class UserMasterResetSerializer(serializers.ModelSerializer):
         instance.save()
         return instance
 
-
 class GetDataClassSerializer(serializers.Serializer):
     useremail = serializers.CharField(max_length=255)
     userrole = serializers.CharField(max_length=10)
     cmptransid = serializers.IntegerField()
     module_classes = serializers.JSONField()
 
+
+class GetRuleClassSerializer(serializers.Serializer):
+    useremail = serializers.CharField(max_length=255)
+    userrole = serializers.CharField(max_length=10)
+    cmptransid = serializers.IntegerField()
+
+class SetNotificationClassSerializer(serializers.Serializer):
+    module = serializers.CharField(max_length=50)
+    sender_email = serializers.CharField(max_length=255)
+    sender_role = serializers.CharField(max_length=50)
+    notification_text = serializers.CharField(max_length=255)
+    cmptransid = serializers.IntegerField()
+
+class GetNotificationClassSerializer(serializers.Serializer):
+    email = serializers.CharField(max_length=255)
+    cmptransid = serializers.IntegerField()
+
+class ReadNotificationClassSerializer(serializers.Serializer):
+    transid = serializers.IntegerField()
+    email = serializers.CharField(max_length=255)
+    cmptransid = serializers.IntegerField()
 
 class QitVisitorSerializer(serializers.ModelSerializer):
     class Meta:
@@ -181,7 +201,6 @@ class QitVisitorinoutPOSTSerializer(serializers.ModelSerializer):
         validated_data['cmpdepartmentid'] = validated_data.get('cmpdepartmentid')
         visitorinout = QitVisitorinout.objects.create(**validated_data)
         return visitorinout
-  
 
 class QitVisitorinoutGETSerializer(serializers.ModelSerializer):
     class Meta:
