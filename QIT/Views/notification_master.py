@@ -187,7 +187,7 @@ def SaveNotification(request):
                 notification_entity.save()
                 print("Before : ",notification_entity)
                 new_notifications.append(notification_entity)
-        send_notification(user_ids,new_notifications)
+        send_notification(new_notifications,cmpcheck.transid)
         return Response({"StatusCode": "200", "IsSaved": "Y", "StatusMsg": "Notification Added successfully.."}, status=status.HTTP_200_OK)
     except Exception as ex:
         return Response({"StatusCode": "400", "StatusMsg": str(ex)}, status=status.HTTP_400_BAD_REQUEST)

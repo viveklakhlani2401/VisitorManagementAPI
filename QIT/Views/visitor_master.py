@@ -8,13 +8,12 @@ from QIT.models import QitVisitormaster,QitVisitorinout
 import json
 from django.core.cache import cache
 from datetime import datetime
-
+from QIT.Views import common
 @csrf_exempt
 @api_view(['POST'])
 def Save_Visitor(request):
     try:
         body_data = request.data
-        
         # print(dataToSerialize)
         if not body_data:
             return Response({
@@ -217,6 +216,8 @@ def verifyVisitor(request):
         if state.upper() == "A":
             inoutEntry.checkintime = datetime.now()
         inoutEntry.save()
+        print("inoutEntry : ",inoutEntry)
+        common.send_visitors(inoutEntry,reqData["company_id"])
         return Response({'Status': 200, 'StatusMsg': "Status updated..!!"}, status=200)
     except Exception as e:
         return Response({'Status': 400, 'StatusMsg': str(e)}, status=400)
