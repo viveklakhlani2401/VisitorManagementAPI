@@ -50,4 +50,6 @@ urlpatterns = [
     path('VMS/Visitor/GetAll/<str:status>/<int:cid>', visitor_master.GetAllVisitor),
     path('VMS/Visitor/GetVisitorDetail/<int:vid>/<int:cid>', visitor_master.GetVisitorDetail),
     path('VMS/Visitor/VerifyVisitor', visitor_master.verifyVisitor),
+    path('VMS/Visitor/CheckStatus', visitor_master.chkStatus),
+    path('VMS/Visitor/CheckOut', visitor_master.checkoutVisitor),
 ]
