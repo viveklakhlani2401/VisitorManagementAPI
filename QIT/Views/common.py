@@ -23,6 +23,7 @@ from channels.layers import get_channel_layer
 from QIT.utils import modules
 from django.utils import timezone
 from datetime import datetime
+import ast
 # Custom Authentication class
 class CustomAuthentication(BaseAuthentication):
     def authenticate(self, request):
@@ -407,8 +408,6 @@ def login_view(request):
     except QitUserlogin.DoesNotExist:
         return Response({'detail': 'User does not exist'}, status=status.HTTP_404_NOT_FOUND)
     
-
-
 # Example API of authenticating an API Means how to verify access token
 @api_view(['GET'])
 @authentication_classes([CustomAuthentication])
@@ -639,9 +638,7 @@ def getWebsocketTest(request):
     message = "Hello"  # Message to be sent
 
     channel_layer = get_channel_layer()
-    for user_id in user_ids:
-        print("new id : ==========",user_id)
-       
+    for user_id in user_ids:       
         async_to_sync(channel_layer.group_send)(
             f"user_{user_id}",
             {
@@ -670,23 +667,62 @@ def time_since(dt):
     else:
         return "just now"
 
-def send_notification(user_ids,notifications):
+def send_notification(notifications,cmptransid):
     channel_layer = get_channel_layer()
     for notification in notifications:
         n_date_time = time_since(notification.n_date_time)
-        print("n_date_time : ",n_date_time)
         notification_dict = {
             'transid': notification.transid,
             'notification_text': notification.notification_text,
             'n_date_time': n_date_time,
             'chk_status': notification.chk_status,
         }
-        print("notification_dict : ",notification_dict)
-        print("notification.receiver_user_id : ",notification.receiver_user_id)
         async_to_sync(channel_layer.group_send)(
-            f"user_{notification.receiver_user_id}",
+            f"user_{notification.receiver_user_id}_cmp{cmptransid}",
             {
                 'type': 'new_notification',
                 'notification': notification_dict
             }
         )
+
+def send_visitors(visitor,cmptransid):
+    channel_layer = get_channel_layer()
+    user_ids = getAuthenticatedUser("Visitors",cmptransid)
+    print("inside send visitors : ",user_ids)
+    visitor_dict = {
+        'transid': visitor.transid,
+        'status': visitor.status,
+        'reason': visitor.reason
+    }
+    for user_id in user_ids:
+        print("inside send visitors : ",user_id.transid,"new ",cmptransid)
+        async_to_sync(channel_layer.group_send)(
+            f"user_{user_id.transid}_cmp{cmptransid}",
+            {
+                'type': 'new_visitor',
+                'visitor': visitor_dict
+            }
+        )
+
+def chk_user_comp_id(user_email):
+    user  = QitUserlogin.objects.filter(e_mail=user_email).first()
+    if user:
+        return user
+    else:
+        return None
+    
+def getAuthenticatedUser(module,cmptransid):
+    user_ids = []
+    all_rules = QitAuthenticationrule.objects.filter(cmptransid=cmptransid)
+    for rule in all_rules:
+        rule_detail_str = rule.auth_rule_detail.decode('utf-8') if isinstance(rule.auth_rule_detail, bytes) else rule.auth_rule_detail
+        rule_detail_list = ast.literal_eval(rule_detail_str)
+        i = 0
+        for details in rule_detail_list:
+            i = i+1
+            if details.get('text') == module and details.get('hasAccess'):
+                userdata = email_wise_data_filter(rule.user_id, rule.userrole,cmptransid)
+                user_id = chk_user_comp_id(userdata.e_mail)
+                user_ids.append(user_id)
+                break
+    return user_ids
