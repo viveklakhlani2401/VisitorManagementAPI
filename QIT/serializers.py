@@ -32,7 +32,7 @@ class CompanyMasterGetSerializer(serializers.ModelSerializer):
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = QitUserlogin
-        fields = ['e_mail','userrole']
+        fields = ['transid','e_mail','userrole']
 
 
 class DepartmentSerializer(serializers.ModelSerializer):
@@ -64,11 +64,6 @@ class QitUsermasterSerializer(serializers.ModelSerializer):
             instance.password = make_password(validated_data['password'])
         instance.save()
         return instance
-    
-    def to_representation(self, instance):
-        representation =  super().to_representation(instance)
-        representation["changePWD"]= "Pending" if representation.pop("changepassstatus")=="1" else "Changed"
-        return representation
 
 class UserMasterDataSerializer(serializers.ModelSerializer):
     class Meta:
