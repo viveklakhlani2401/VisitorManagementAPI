@@ -394,9 +394,11 @@ def login_view(request):
                 # obj_list = list(obj.values())
         
                 json_text = json.dumps(obj.auth_rule_detail)
-                
+                user_data = dict(user_serializer.data)
+        
+                user_data['cmpid'] = obj.cmptransid.transid
                 return Response({
-                    'user': user_serializer.data,
+                    'user': user_data,
                     'userAuth':obj.auth_rule_detail,
                     'refresh': str(refresh),
                     'access': str(refresh.access_token),
@@ -494,96 +496,70 @@ def Forget_Password_Send_OTP(request):
             'Status':400,
             'StatusMsg':e,
         })
-
-
-# request for change user password
-@csrf_exempt
-@api_view(['POST'])
-def changeUserPWDReq(request):
-    # body_data = request.data
-    # print(body_data)
-    try:
-        body_data = request.data
-        if not body_data:
-            return Response({'Status': 400, 'StatusMsg': "Payload required..!!"}, status=400)      
-        email = body_data.get("e_mail")
-        if not email:
-            return Response({'Status': 400, 'StatusMsg': "Email is required..!!"}, status=400)      
-        resDB = QitUsermaster.objects.filter(e_mail = body_data["e_mail"]).first()
-        if not resDB:
-            return Response({'Status': 400, 'StatusMsg': "Invalid emai..!!"}, status=400)      
-        resDB.changepassstatus = 1
-        resDB.save()
-        return Response({
-            "Status":200,
-            "StatusMessage":"Request send successfully..!!"
-        },status=200)
-    except Exception as e:
-        return Response({'Status': 400, 'StatusMsg': str(e)}, status=400)   
+    
 # Verify OTP API
-# @csrf_exempt
-# @api_view(["POST"])
-# def VerifyOTP(request):
-#     body_data = request.data
-
-#     try:
-#         if not body_data :
-#             return Response({
-#                 'Status':400,
-#                 'StatusMsg':"Payload is required..!!"
-#             },status=400)
-#         if not body_data["e_mail"]:
-#             return Response({
-#                 'Status':400,
-#                 'StatusMsg':"Email is required..!!"
-#             })
-#         if not body_data["VerifyOTP"]:
-#             return Response({
-#                 'Status':400,
-#                 'StatusMsg':"OTP is required..!!"
-#             })
-#         email = body_data["e_mail"]
-#         otp = body_data["VerifyOTP"]
-#         print(email)
-#         print(otp)
-#         stored_data_json = cache.get(f"otp_{email}")
-#         print(stored_data_json)
-#         if stored_data_json:
-#             stored_data = json.loads(stored_data_json)
-#             stored_otp = stored_data['otp']
-#             if stored_otp:
-#                 print(f"Comparing OTPs: '{stored_otp}' == '{otp}'")
-#                 if str(stored_otp).strip() == str(otp).strip():
-#                     stored_data['status'] = 1
-#                     cache.set(f"otp_{email}", json.dumps(stored_data), timeout=300)
-#                     response = {
-#                         'Status': 200,
-#                         'StatusMsg': "OTP verified..!!"
-#                     }
-#                     return Response(response)
-#                 else:
-#                     response = {
-#                         'Status': 400,
-#                         'StatusMsg': "Invalid OTP ..!!"
-#                     }
-#                     return Response(response)
-#             else:
-#                 response = {
-#                     'Status': 400,
-#                     'StatusMsg': "Email not found or OTP expired..!!"
-#                 }
-#                 return Response(response)
-#         else:
-#             response = {
-#                     'Status': 400,
-#                     'StatusMsg': "Something wrong..!!"
-#                 }
-#             return Response(response)
-#     except:
-#         return Response({
-#             'Status':400,
-#             'StatusMsg':"Invalid Email or OTP ..!!"
-#         })
+@csrf_exempt
+@api_view(["POST"])
+def ForgetpwdVerifyOTP(request):
+    body_data = request.data
+    try:
+        if not body_data :
+            return Response({
+                'Status':400,
+                'StatusMsg':"Payload is required..!!"
+            },status=400)
+        if not body_data["e_mail"]:
+            return Response({
+                'Status':400,
+                'StatusMsg':"Email is required..!!"
+            })
+        if not body_data["VerifyOTP"]:
+            return Response({
+                'Status':400,
+                'StatusMsg':"OTP is required..!!"
+            })
+        email = body_data["e_mail"]
+        otp = body_data["VerifyOTP"]
+        print(email)
+        print(otp)
+        stored_data_json = cache.get(f"otp_{email}")
+        print(stored_data_json)
+        if stored_data_json:
+            stored_data = json.loads(stored_data_json)
+            stored_otp = stored_data['otp']
+            if stored_otp:
+                print(f"Comparing OTPs: '{stored_otp}' == '{otp}'")
+                if str(stored_otp).strip() == str(otp).strip():
+                    stored_data['status'] = 1
+                    cache.set(f"otp_{email}", json.dumps(stored_data), timeout=300)
+                    response = {
+                        'Status': 200,
+                        'StatusMsg': "OTP verified..!!"
+                    }
+                    return Response(response)
+                else:
+                    response = {
+                        'Status': 400,
+                        'StatusMsg': "Invalid OTP ..!!"
+                    }
+                    return Response(response)
+            else:
+                response = {
+                    'Status': 400,
+                    'StatusMsg': "Email not found or OTP expired..!!"
+                }
+                return Response(response)
+        else:
+            response = {
+                    'Status': 400,
+                    'StatusMsg': "Something wrong..!!"
+                }
+            return Response(response)
+    except:
+        return Response({
+            'Status':400,
+            'StatusMsg':"Invalid Email or OTP ..!!"
+        })
 
 def set_otp(email, otp,urole, status=0 ):
     data = json.dumps({'otp': otp, 'status': status, 'role':urole})
@@ -605,7 +581,7 @@ def generate_newPassword(request):
             stored_status = stored_data['status']
             if stored_status == 1 :
                 resDB1 = QitCompany.objects.filter(e_mail = body_data["e_mail"]).first()
-                resDB = QitUserlogin.objects.filter(useremail = body_data["e_mail"]).first()
+                resDB = QitUserlogin.objects.filter(e_mail = body_data["e_mail"]).first()
                 if not resDB:
                     return Response({
                         'Status':400,
