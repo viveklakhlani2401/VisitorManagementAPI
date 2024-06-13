@@ -64,6 +64,11 @@ class QitUsermasterSerializer(serializers.ModelSerializer):
             instance.password = make_password(validated_data['password'])
         instance.save()
         return instance
+    
+    def to_representation(self, instance):
+        representation =  super().to_representation(instance)
+        representation["changePWD"]= "Pending" if representation.pop("changepassstatus")=="1" else "Changed"
+        return representation
 
 class UserMasterDataSerializer(serializers.ModelSerializer):
     class Meta:

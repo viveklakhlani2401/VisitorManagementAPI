@@ -1,7 +1,7 @@
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
-from QIT.models import QitUsermaster,QitUserlogin,QitCompany
+from QIT.models import QitUsermaster,QitUserlogin,QitCompany,QitDepartment
 from QIT.serializers import QitUsermasterSerializer,UserMasterDataSerializer,UserMasterResetSerializer
 from .common import create_userlogin,create_comp_auth,create_comp_notification_auth
 
@@ -83,6 +83,10 @@ def get_user(request,cmpId):
     try:
         users = QitUsermaster.objects.filter(cmptransid=cmpId)
         serializer = QitUsermasterSerializer(users, many=True)
+        # print(serializer.data)
+        # # obj = serializer.data
+        # # print(obj.username)
+        # serializer.data["changepassstatus"] = "Pending" if serializer.data["changepassstatus"].pop() else "Changed"
         return Response(serializer.data)
     except Exception as e:
         return Response({
@@ -100,22 +104,69 @@ def get_user_by_id(request, cmpId, transid):
     return Response(serializer.data)
  
 @api_view(['PUT'])
-def update_user(request,cmpId, transid):
+def update_user(request):
     try:
-        user = QitUsermaster.objects.get(cmptransid=cmpId, transid=transid)
-    except QitUsermaster.DoesNotExist:
-        return Response({
-                    'Status':status.HTTP_404_NOT_FOUND,
-                    'StatusMsg':"No data found..!!"
-                },status=status.HTTP_404_NOT_FOUND)
-    serializer = QitUsermasterSerializer(user, data=request.data)
-    if serializer.is_valid():
-        serializer.save()
-        return Response({
+        body_data = request.data
+        if not body_data:
+            return Response({'Status': 400, 'StatusMsg': "Payload required..!!"}, status=400)         
+        cmpId = body_data.get("company_id") 
+        if not cmpId:
+            return Response({'Status': 400, 'StatusMsg': "company_id required..!!"}, status=400)   
+        transid = body_data.get("user_id")
+        if not transid:
+            return Response({'Status': 400, 'StatusMsg': "user_id required..!!"}, status=400) 
+        
+        try:
+            companyEntry = QitCompany.objects.get(transid=cmpId)
+        except QitCompany.DoesNotExist:
+            return Response({
                 'Status':status.HTTP_404_NOT_FOUND,
-                'StatusMsg':"User Data Updated!!"
+                'StatusMsg':"Company data not found..!!"
             },status=status.HTTP_404_NOT_FOUND)
-    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        
+        deptId = body_data.get("department_id") 
+
+        try:
+            deptEntry = QitDepartment.objects.get(transid=deptId,cmptransid=cmpId)
+        except QitDepartment.DoesNotExist:
+            return Response({
+                'Status':status.HTTP_404_NOT_FOUND,
+                'StatusMsg':"Department data not found..!!"
+            },status=status.HTTP_404_NOT_FOUND)
+        
+        try:
+            user = QitUsermaster.objects.get(cmptransid=cmpId, transid=transid)
+            if user.changepassstatus == "0":
+                request.data.pop("password")
+            
+            if user.changepassstatus == "1":
+                pwd = request.data.get("password")
+                if not pwd:
+                    return Response({
+                        'Status':400,
+                        'StatusMsg':"password field is required..!!"
+                    })
+                user.changepassstatus = 0
+                user.password = make_password(pwd)
+            user.cmpdeptid = deptEntry
+            user.gender = body_data.get("gender") 
+            user.phone = body_data.get("phone")
+            user.save()
+            return Response({
+                'Status':200,
+                'StatusMsg':"User data updated..!!"
+            },status=200)
+        except QitUsermaster.DoesNotExist:
+            return Response({
+                'Status':status.HTTP_404_NOT_FOUND,
+                'StatusMsg':"User data not found..!!"
+            },status=status.HTTP_404_NOT_FOUND)
+    except Exception as e:
+        return Response({
+            'Status':status.HTTP_404_NOT_FOUND,
+            'StatusMsg':str(e)
+        },status=status.HTTP_404_NOT_FOUND)
+
 
 # @api_view(['PUT'])
 # def reset_user_password(request,cmpId, transid):
