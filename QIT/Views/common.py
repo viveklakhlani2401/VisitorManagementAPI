@@ -1,9 +1,9 @@
-from QIT.serializers import GenerateOTPSerializer,UserSerializer
+from QIT.serializers import GenerateOTPSerializer,UserSerializer,QitAPILogSerializer
 from rest_framework.decorators import api_view,authentication_classes
 from .emails import Send_OTP
 import random
 import string
-from QIT.models import QitOtp, QitCompany, QitUserlogin,QitAuthenticationrule,QitUsermaster,QitNotifiicationrule
+from QIT.models import QitOtp, QitCompany, QitUserlogin,QitAuthenticationrule,QitUsermaster,QitNotifiicationrule,QitApiLog
 import threading
 from django.views.decorators.csrf import csrf_exempt
 from django.utils import timezone
@@ -73,7 +73,10 @@ def GenerateOTP(request):
                 'StatusMsg':"role is required..!!"
             },status=400)
         
-        if role.upper() != "VISIOR":
+        print(role.upper())
+        print(role.upper() != "VISITOR")
+        
+        if role.upper() != "VISITOR":
             userEntry = QitUserlogin.objects.filter(e_mail=email).first()
             if userEntry:
                 return Response({
@@ -706,3 +709,86 @@ def getAuthenticatedUser(module,cmptransid):
                 user_ids.append(user_id)
                 break
     return user_ids
+
+@csrf_exempt
+@api_view(["POST"])
+def save_log(request):
+    is_saved = "N"
+    try:
+        payload = json.loads(request.body)
+
+        module = payload.get('Module')
+        controller_name = payload.get('ControllerName')
+        method_name = payload.get('MethodName')
+        log_level = payload.get('LogLevel')
+        log_message = payload.get('LogMessage')
+        json_payload = payload.get('jsonPayload')
+        login_user = payload.get('LoginUser')
+        cmp_id = payload.get('Company_Id')
+
+        cmpEntry = QitCompany.objects.filter(transid=cmp_id).first()
+        if not cmpEntry:
+            return Response({"Status": "400", "IsSaved": is_saved, "StatusMsg": "Invalid Company_Id"}, status=400)
+
+        if not module or module.strip() == "" or module.lower() == "string":
+            print("here")
+            return Response({"Status": "400", "IsSaved": is_saved, "StatusMsg": "Provide Module"}, status=400)
+
+        if not controller_name or controller_name.strip() == "" or controller_name.lower() == "string":
+            return Response({"Status": "400", "IsSaved": is_saved, "StatusMsg": "Provide Controller"}, status=400)
+
+        if not method_name or method_name.strip() == "" or method_name.lower() == "string":
+            return Response({"Status": "400", "IsSaved": is_saved, "StatusMsg": "Provide Method"}, status=400)
+
+        if not log_level or log_level.upper() not in ["I", "S", "E"]:
+            return Response({"Status": "400", "IsSaved": is_saved, "StatusMsg": "LogLevel Values : I:Information/S:Success/E:Error"}, status=400)
+
+        if not log_message or log_message.strip() == "" or log_message.lower() == "string":
+            return Response({"Status": "400", "IsSaved": is_saved, "StatusMsg": "Provide Log Message"}, status=400)
+
+        if not login_user or login_user.strip() == "" or login_user.lower() == "string":
+            print(login_user)
+            return Response({"Status": "400", "IsSaved": is_saved, "StatusMsg": "Provide Login User"}, status=400)
+
+        log = QitApiLog(
+            module=module,
+            viewname=controller_name,
+            methodname=method_name,
+            loglevel=log_level,
+            logmessage=log_message,
+            jsonpayload=json_payload,
+            loginuser=login_user,
+            cmptransid=cmpEntry
+        )
+        log.save()
+
+        is_saved = "Y"
+
+        return Response({"Status": "200", "IsSaved": is_saved, "StatusMsg": "Saved Successfully!!!"}, status=200)
+
+    except Exception as ex:
+        # logger.error("Error in save_log: %s", ex)
+        return Response({"Status": "400", "IsSaved": is_saved, "StatusMsg": str(ex)}, status=400)
+    
+@csrf_exempt
+@api_view(["GET"])
+def Get_log(request, cid):
+    print(cid)
+    try:
+        cmpEntry = QitCompany.objects.filter(transid=cid).first()
+        if not cmpEntry:
+            return Response({"Status": "400", "StatusMsg": "Invalid Company_Id"}, status=400)
+        
+        logEntry = QitApiLog.objects.filter(cmptransid=cmpEntry)
+        print(logEntry)
+        
+        if not logEntry.exists():
+            return Response({"Status": "400", "StatusMsg": "No Data..!!"}, status=400)
+        
+        serialized_data = QitAPILogSerializer(logEntry, many=True)
+        
+        return Response(serialized_data.data)
+    except Exception as e :
+        return Response({"Status": "400", "StatusMsg": str(e)}, status=400)
+    
+
