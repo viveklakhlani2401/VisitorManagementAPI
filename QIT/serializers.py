@@ -199,7 +199,12 @@ class QitVisitorinoutPOSTSerializer(serializers.ModelSerializer):
         validated_data['cmptransid'] = company
         validated_data['cmpdepartmentid'] = validated_data.get('cmpdepartmentid')
         visitorinout = QitVisitorinout.objects.create(**validated_data)
-        return visitorinout
+        validated_data["id"]=visitorinout.transid
+        print("=====================================")
+        print(validated_data)
+        print("=====================================")
+        return validated_data
+    
 
 class QitVisitorinoutGETSerializer(serializers.ModelSerializer):
     class Meta:
