@@ -95,10 +95,19 @@ class SocketConsumer(AsyncWebsocketConsumer):
     # End Handle new notifications
         
     # Handle New visitor
-    async def new_visitor(self, event):
+    async def verify_visitor(self, event):
         visitor = event['visitor']
         await self.send(text_data=json.dumps({
             'type': 'update_visitor',
+            'visitor': visitor
+        }))
+    # End Handle new notifications
+        
+    # Handle verify visitor
+    async def new_visitor(self, event):
+        visitor = event['visitor']
+        await self.send(text_data=json.dumps({
+            'type': 'new_visitor',
             'visitor': visitor
         }))
     # End Handle new notifications

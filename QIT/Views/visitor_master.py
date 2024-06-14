@@ -37,7 +37,6 @@ def Save_Visitor(request):
             stored_status = stored_data['status']
             stored_role = stored_data['role']
             if stored_status == 1 and stored_role.upper() == "VISITOR" :
-
                 dataToSerialize = request.data
                 companyEntry = QitCompany.objects.filter(transid=dataToSerialize["company_id"]).first()
                 if not companyEntry:
@@ -52,7 +51,33 @@ def Save_Visitor(request):
                 dataToSerialize.pop("department_id")
                 serializer = QitVisitorinoutPOSTSerializer(data=dataToSerialize)
                 if serializer.is_valid():
-                    serializer.save()
+                    visitorinout = serializer.save()
+                    print(visitorinout['cmpdepartmentid'].deptname)
+                    state = "Pending"
+                    if visitorinout['checkinstatus'] == "P" : 
+                        state = "Pending"
+                    elif visitorinout['checkinstatus'] == "R" : 
+                        state = "Rejected"
+                    elif visitorinout['checkinstatus'] == "A" : 
+                        state = "Approved"
+                    visitor_dict = {
+                        'id': visitorinout['id'],
+                        'vName': visitorinout['visitortansid'].vname,
+                        'vPhone1':visitorinout['visitortansid'].phone1,
+                        'vCmpname': visitorinout['visitortansid'].vcmpname,
+                        'vLocation': visitorinout['visitortansid'].vlocation,
+                        'deptId': visitorinout['cmpdepartmentid'].transid,
+                        'deptName': visitorinout['cmpdepartmentid'].deptname,
+                        'vEmail': visitorinout['visitortansid'].e_mail,
+                        'state': state,
+                        'status': visitorinout['checkinstatus'],
+                        'addedBy': visitorinout['createdby'],
+                        'cnctperson': visitorinout['cnctperson'],
+                        'timeslot':  visitorinout['timeslot'].isoformat() if visitorinout['timeslot'] else None,
+                        'purposeofvisit': visitorinout['purposeofvisit'],
+                        'reason': visitorinout['reason']
+                    }
+                    common.send_visitors(visitor_dict,dataToSerialize["cmptransid"],"add")
                     return Response( {
                         'isSaved':"Y",
                         'Status': 201,
@@ -256,7 +281,7 @@ def verifyVisitor(request):
             inoutEntry.checkintime = datetime.now()
         inoutEntry.save()
         print("inoutEntry : ",inoutEntry)
-        common.send_visitors(inoutEntry,reqData["company_id"])
+        common.send_visitors(inoutEntry,reqData["company_id"],"verify")
         return Response({'Status': 200, 'StatusMsg': "Status updated..!!"}, status=200)
     except Exception as e:
         return Response({'Status': 400, 'StatusMsg': str(e)}, status=400)

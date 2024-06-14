@@ -73,7 +73,7 @@ def GenerateOTP(request):
                 'StatusMsg':"role is required..!!"
             },status=400)
         
-        if role.upper() != "VISIOR":
+        if role.upper() != "VISITOR":
             userEntry = QitUserlogin.objects.filter(e_mail=email).first()
             if userEntry:
                 return Response({
@@ -686,24 +686,67 @@ def send_notification(notifications,cmptransid):
             }
         )
 
-def send_visitors(visitor,cmptransid):
+def send_visitors(visitor,cmptransid,type):
     channel_layer = get_channel_layer()
     user_ids = getAuthenticatedUser("Visitors",cmptransid)
     print("inside send visitors : ",user_ids)
-    visitor_dict = {
-        'transid': visitor.transid,
-        'status': visitor.status,
-        'reason': visitor.reason
-    }
-    for user_id in user_ids:
-        print("inside send visitors : ",user_id.transid,"new ",cmptransid)
-        async_to_sync(channel_layer.group_send)(
-            f"user_{user_id.transid}_cmp{cmptransid}",
-            {
-                'type': 'new_visitor',
-                'visitor': visitor_dict
-            }
-        )
+    
+    if type == "verify":
+        visitor_dict = {
+            'transid': visitor.transid,
+            'status': visitor.status,
+            'reason': visitor.reason
+        }
+        for user_id in user_ids:
+            print("inside send visitors : ",user_id.transid,"new ",cmptransid)
+            async_to_sync(channel_layer.group_send)(
+                f"user_{user_id.transid}_cmp{cmptransid}",
+                {
+                    'type': 'verify_visitor',
+                    'visitor': visitor_dict
+                }
+            )
+    if type == "add":
+      
+        #  'vavatar', 'cnctperson', 'cmpdepartmentid', 'timeslot', 'anyhardware',
+        #     'purposeofvisit', 'cmptransid', 'reason', 'checkintime', 'checkouttime',
+        #     'createdby', 'vname', 'phone1', 'vcmpname', 
+        #     'vlocation', 'e_mail'
+        # state = "Pending"
+        # if visitor['checkinstatus'] == "P" : 
+        #     state = "Pending"
+        # elif visitor['checkinstatus'] == "R" : 
+        #     state = "Rejected"
+        # elif visitor['checkinstatus'] == "A" : 
+        #     state = "Approved"
+
+        # visitor_dict = {
+        #     'id': visitor['id'],
+        #     'vName': visitor['visitortansid'].vname,
+        #     'vPhone1':visitor['visitortansid'].phone1,
+        #     'vCmpname': visitor['visitortansid'].vcmpname,
+        #     'vLocation': visitor['visitortansid'].vlocation,
+        #     'deptId': visitor['cmpdepartmentid'].transid,
+        #     'deptName': visitor['cmpdepartmentid'].deptname,
+        #     'vEmail': visitor['visitortansid'].e_mail,
+        #     'state': state,
+        #     'status': visitor['checkinstatus'],
+        #     'addedBy': visitor['createdby'],
+        #     'cnctperson': visitor['cnctperson'],
+        #     'timeslot': visitor['timeslot'],
+        #     'purposeofvisit': visitor['purposeofvisit'],
+        #     'reason': visitor['reason']
+        # }
+       
+        for user_id in user_ids:
+            print("inside send visitors : ",user_id.transid,"new ",cmptransid)
+            async_to_sync(channel_layer.group_send)(
+                f"user_{user_id.transid}_cmp{cmptransid}",
+                {
+                    'type': 'new_visitor',
+                    'visitor': visitor
+                }
+            )
 
 def chk_user_comp_id(user_email):
     user  = QitUserlogin.objects.filter(e_mail=user_email).first()
