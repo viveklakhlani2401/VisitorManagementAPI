@@ -9,7 +9,6 @@ from rest_framework.exceptions import NotFound
 @csrf_exempt
 @api_view(["POST"])
 def SaveDepartment(request):
-    print(request.data)
     try:
         reqData = request.data
         cid = reqData["company_id"]
