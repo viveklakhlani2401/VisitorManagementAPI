@@ -49,7 +49,6 @@ def SaveAuthRule(request):
         if not user:
             logger.info("Calling authorization_master saved rule: SaveAuthRule(): Error User not found")
             return Response({'StatusCode': '400', 'IsSaved': 'N', 'StatusMsg': 'User Not found..!!'}, status=status.HTTP_400_BAD_REQUEST)
-        print(str(cmptransidUser.transid).strip(), "  ",str(cmptransid).strip())
         if str(cmptransidUser.transid).strip() != str(cmptransid).strip():
             logger.info("Calling authorization_master saved rule: SaveAuthRule(): Error Invalid company user")
             return Response({'StatusCode': '400', 'IsSaved': 'N', 'StatusMsg': 'Invalid company user'}, status=status.HTTP_400_BAD_REQUEST)
@@ -59,7 +58,6 @@ def SaveAuthRule(request):
         existing_rule = QitAuthenticationrule.objects.filter(user_id=user.transid).first()
 
         if existing_rule:
-            print("ardata : ",ar_data)
             existing_rule.auth_rule_detail = ar_data
             existing_rule.save()
         else:
@@ -69,7 +67,6 @@ def SaveAuthRule(request):
         logger.info("Calling authorization_master saved rule: SaveAuthRule()")
         return Response({'StatusCode': '200', 'IsSaved': 'Y', 'StatusMsg': 'Saved Successfully!!!'}, status=status.HTTP_200_OK)
     except Exception as ex:
-        print( str(ex))
         logger.error("Calling authorization_master Error: SaveAuthRule() " + str(ex))
         return Response({'StatusCode': '400', 'IsSaved': 'N', 'StatusMsg': str(ex)}, status=status.HTTP_400_BAD_REQUEST)
     
@@ -111,7 +108,6 @@ def GetAuthRule(request):
         if not user:
             logger.info("Calling authorization_master saved rule: GetAuthRule(): Error User not found")
             return Response({'StatusCode': '400', 'IsSaved': 'N', 'StatusMsg': 'User Not found..!!'}, status=status.HTTP_400_BAD_REQUEST)
-        print(str(cmptransidUser.transid).strip(), "  ",str(cmptransid).strip())
         if str(cmptransidUser.transid).strip() != str(cmptransid).strip():
             logger.info("Calling authorization_master saved rule: GetAuthRule(): Error Invalid company user")
             return Response({'StatusCode': '400', 'IsSaved': 'N', 'StatusMsg': 'Invalid company user'}, status=status.HTTP_400_BAD_REQUEST)
@@ -122,6 +118,5 @@ def GetAuthRule(request):
         else:
             return Response({'StatusCode': '400', 'IsSaved': 'N', 'StatusMsg': 'No Rule Found'}, status=status.HTTP_400_BAD_REQUEST)
     except Exception as ex:
-        print( str(ex))
         logger.error("Calling authorization_master Error: GetAuthRule() " + str(ex))
         return Response({'StatusCode': '400', 'IsSaved': 'N', 'StatusMsg': str(ex)}, status=status.HTTP_400_BAD_REQUEST)

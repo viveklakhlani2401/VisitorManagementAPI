@@ -21,7 +21,6 @@ class CompanyMasterSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         # Encrypt the password
         validated_data['password'] = make_password(validated_data['password'])
-        print(validated_data['password'])
         return super().create(validated_data)
 
 class CompanyMasterGetSerializer(serializers.ModelSerializer):
@@ -213,9 +212,6 @@ class QitVisitorinoutGETSerializer(serializers.ModelSerializer):
         departmentMaster = instance.cmpdepartmentid
         visitormaster = instance.visitortansid
 
-        # Debug statements
-        print("Type of entry_date:", type(representation['entrydate']))
-        print("Value of entry_date:", representation['entrydate'])
         
         # Manually add fields from QitVisitormaster to the representation
         # representation['vId'] = visitormaster.transid

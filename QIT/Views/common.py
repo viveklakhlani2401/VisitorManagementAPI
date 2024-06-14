@@ -207,8 +207,6 @@ def VerifyOTP(request):
             stored_otp = stored_data['otp']
             stored_role = stored_data['role']
             if stored_otp:
-                print(f"Comparing OTPs: '{stored_otp}' == '{otp}'")
-                print(f"Comparing OTPs: '{stored_role}' == '{role}'")
                 if str(stored_otp).strip() == str(otp).strip() and stored_role.upper() == role.upper():
                     stored_data['status'] = 1
                     cache.set(f"otp_{email}", json.dumps(stored_data), timeout=300)
@@ -305,8 +303,6 @@ def token_refresh(request):
 
 
 def role_email_wise_data(e_mail,password,role):
-    print("===========")
-    print(e_mail,password,role)
     if role == "COMPANY":
         user = QitCompany.objects.filter(e_mail=e_mail).first()
         if user and check_password(password, user.password):
@@ -314,9 +310,7 @@ def role_email_wise_data(e_mail,password,role):
         else:
             return None
     elif role == "USER":
-        print("__________")
         user = QitUsermaster.objects.filter(e_mail=e_mail).first()
-        print(user)
         if user and check_password(password, user.password):
             return user
         else:
@@ -329,7 +323,6 @@ def role_email_wise_data(e_mail,password,role):
             return None
         
 def role_email_get_data(e_mail,role):
-    print("email : ",e_mail," Role : ",role)
     if role == "COMPANY":
         user = QitCompany.objects.filter(e_mail=e_mail).first()
         if user:
@@ -359,7 +352,6 @@ def email_wise_data_filter(id,role,company):
     elif role == "USER":
         user = QitUsermaster.objects.filter(transid=id,usertype=role.upper()).first()
         if user and user.cmptransid.transid == company:
-            print("---------",user)
             return user
         else:
             return None
@@ -377,16 +369,11 @@ def login_view(request):
     password = request.data.get('password')
     try:
         user = QitUserlogin.objects.get(e_mail=email)
-        print(check_password(password, user.password))
         if user and check_password(password, user.password):
-            print("here")
             if user is not None:
-                print("here")
                 user_serializer = UserSerializer(user)
-                print("here",user_serializer.data)
                 refresh = RefreshToken.for_user(user)
                 chkUser  = role_email_wise_data(email,password,user.userrole)
-                print(chkUser)
                 if chkUser == None:
                     return Response({'detail': 'Something wrong'}, status=status.HTTP_404_NOT_FOUND)
                 obj = QitAuthenticationrule.objects.filter(user_id=chkUser.transid).first()
@@ -423,7 +410,6 @@ def create_userlogin(useremail, password, userrole):
     return userlogin
 
 def create_comp_auth(useremail, cmptransid, userrole):
-    print("=============> ",useremail," ", cmptransid," ", userrole)
     modulesdata = None
     if userrole == "COMPANY":
         modulesdata = modules.module_classes
@@ -436,7 +422,6 @@ def create_comp_auth(useremail, cmptransid, userrole):
     return compuserauth
 
 def create_comp_notification_auth(useremail, cmptransid, userrole):
-    print("=============> ",useremail," ", cmptransid," ", userrole)
     modulesdata = None
     if userrole == "COMPANY":
         modulesdata = modules.module_classes
@@ -454,10 +439,10 @@ def Forget_Password_Send_OTP(request):
     try:
         body_data = request.data
         resDB = QitUserlogin.objects.filter(e_mail = body_data["e_mail"]).first()
-        if resDB is not None:
-            print(resDB.userrole)
-        else:
-            print("No user found with this email.")
+        # if resDB is not None:
+        #     print(resDB.userrole)
+        # else:
+        #     print("No user found with this email.")
         if not resDB:
             return Response({
                 'Status':400,
@@ -520,15 +505,11 @@ def ForgetpwdVerifyOTP(request):
             })
         email = body_data["e_mail"]
         otp = body_data["VerifyOTP"]
-        print(email)
-        print(otp)
         stored_data_json = cache.get(f"otp_{email}")
-        print(stored_data_json)
         if stored_data_json:
             stored_data = json.loads(stored_data_json)
             stored_otp = stored_data['otp']
             if stored_otp:
-                print(f"Comparing OTPs: '{stored_otp}' == '{otp}'")
                 if str(stored_otp).strip() == str(otp).strip():
                     stored_data['status'] = 1
                     cache.set(f"otp_{email}", json.dumps(stored_data), timeout=300)
@@ -689,14 +670,12 @@ def send_notification(notifications,cmptransid):
 def send_visitors(visitor,cmptransid):
     channel_layer = get_channel_layer()
     user_ids = getAuthenticatedUser("Visitors",cmptransid)
-    print("inside send visitors : ",user_ids)
     visitor_dict = {
         'transid': visitor.transid,
         'status': visitor.status,
         'reason': visitor.reason
     }
     for user_id in user_ids:
-        print("inside send visitors : ",user_id.transid,"new ",cmptransid)
         async_to_sync(channel_layer.group_send)(
             f"user_{user_id.transid}_cmp{cmptransid}",
             {
