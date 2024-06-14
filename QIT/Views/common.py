@@ -72,10 +72,7 @@ def GenerateOTP(request):
                 'Status':400,
                 'StatusMsg':"role is required..!!"
             },status=400)
-        
-        print(role.upper())
-        print(role.upper() != "VISITOR")
-        
+
         if role.upper() != "VISITOR":
             userEntry = QitUserlogin.objects.filter(e_mail=email).first()
             if userEntry:
@@ -670,22 +667,37 @@ def send_notification(notifications,cmptransid):
             }
         )
 
-def send_visitors(visitor,cmptransid):
+def send_visitors(visitor,cmptransid,type):
     channel_layer = get_channel_layer()
     user_ids = getAuthenticatedUser("Visitors",cmptransid)
-    visitor_dict = {
-        'transid': visitor.transid,
-        'status': visitor.status,
-        'reason': visitor.reason
-    }
-    for user_id in user_ids:
-        async_to_sync(channel_layer.group_send)(
-            f"user_{user_id.transid}_cmp{cmptransid}",
-            {
-                'type': 'new_visitor',
-                'visitor': visitor_dict
-            }
-        )
+    print("inside send visitors : ",user_ids)
+    
+    if type == "verify":
+        visitor_dict = {
+            'transid': visitor.transid,
+            'status': visitor.status,
+            'reason': visitor.reason
+        }
+        for user_id in user_ids:
+            print("inside send visitors : ",user_id.transid,"new ",cmptransid)
+            async_to_sync(channel_layer.group_send)(
+                f"user_{user_id.transid}_cmp{cmptransid}",
+                {
+                    'type': 'verify_visitor',
+                    'visitor': visitor_dict
+                }
+            )
+    if type == "add":
+       
+        for user_id in user_ids:
+            print("inside send visitors : ",user_id.transid,"new ",cmptransid)
+            async_to_sync(channel_layer.group_send)(
+                f"user_{user_id.transid}_cmp{cmptransid}",
+                {
+                    'type': 'new_visitor',
+                    'visitor': visitor
+                }
+            )
 
 def chk_user_comp_id(user_email):
     user  = QitUserlogin.objects.filter(e_mail=user_email).first()
