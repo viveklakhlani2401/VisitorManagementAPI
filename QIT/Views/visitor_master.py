@@ -210,7 +210,6 @@ def GetAllVisitor(request,status,cid):
             queryset = QitVisitorinout.objects.filter(cmptransid=cid,status="P").order_by('-checkintime', '-entrydate')
         else:
             return Response({'Status': 400, 'StatusMsg': "Invalid state..!!"}, status=400)
-        print(queryset)
         if not queryset:
             return Response({'Status': 400, 'StatusMsg': "No data..!!"}, status=400)
         serializer = QitVisitorinoutGETSerializer(queryset, many=True)
@@ -280,8 +279,8 @@ def verifyVisitor(request):
         if state.upper() == "A":
             inoutEntry.checkintime = datetime.now()
         inoutEntry.save()
-        print("inoutEntry : ",inoutEntry)
         common.send_visitors(inoutEntry,reqData["company_id"],"verify")
+
         return Response({'Status': 200, 'StatusMsg': "Status updated..!!"}, status=200)
     except Exception as e:
         return Response({'Status': 400, 'StatusMsg': str(e)}, status=400)
@@ -308,7 +307,6 @@ def chkStatus(request):
         visitor_entry = QitVisitormaster.objects.filter(e_mail=email, cmptransid=cmpid).first()
         if not visitor_entry:
             return Response({'Status': 400, 'StatusMsg': "Visitor data not found..!!"}, status=400)
-        print(visitor_entry.transid)
         
 
         companyEntry = QitCompany.objects.filter(transid=cmpid).first()

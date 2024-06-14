@@ -67,7 +67,6 @@ def CreateCompany(request):
         #         'StatusMsg': "No entry found for this email."
         #     })
 
-        # print("OTPEntry Status: " + OTPEntry.status)
 
         # if OTPEntry.status != 'Y':
         #     return Response({
@@ -75,12 +74,10 @@ def CreateCompany(request):
         #         'StatusMsg': "This Company is not verified..!!"
         #     })
         stored_data_json = cache.get(f"otp_{body_data['e_mail']}")
-        print(stored_data_json)
         if stored_data_json:
             stored_data = json.loads(stored_data_json)
             stored_status = stored_data['status']
             stored_role = stored_data['role']
-            print(stored_role)
             if stored_status == 1 and stored_role.upper() == "COMPANY" :
                 serializer = CompanyMasterSerializer(data=request.data)
                 if serializer.is_valid():
@@ -132,9 +129,7 @@ def GetComapnyData(request,qrCode):
     # qrCode = request.query_params.get("qrCode")
 
     resDB = QitCompany.objects.filter(qrstring = qrCode)
-    print(resDB)
     serializer = CompanyMasterGetSerializer(resDB,many=True)
-    print(serializer.data)
     if resDB:
         return Response(serializer.data)
     else:

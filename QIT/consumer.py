@@ -35,8 +35,6 @@ class SocketConsumer(AsyncWebsocketConsumer):
         # # Serialize visitors data in a synchronous context
         # serialized_data = await sync_to_async(serialize_visitors)(visitors)
 
-        # # Print or use the serialized data
-        # print(serialized_data)
 
 
         # notification data
@@ -131,7 +129,6 @@ class SocketConsumer(AsyncWebsocketConsumer):
 
         # Serialize visitors data in a synchronous context
         serialized_data = await sync_to_async(serialize_visitors)(visitors)
-        # print("serialized_data : ",serialized_data)
         # Send back the response
         await self.send(text_data=json.dumps({
             'type': 'visitors',
