@@ -79,11 +79,28 @@ def save_user(request):
         })
 
 @api_view(['GET'])
-def get_user(request,cmpId):
+def get_user(request,status,cmpId):
     try:
-        users = QitUsermaster.objects.filter(cmptransid=cmpId)
-        serializer = QitUsermasterSerializer(users, many=True)
-        return Response(serializer.data)
+        companyEntry = QitCompany.objects.filter(transid=cmpId).first()
+        if not companyEntry:
+            return Response( {
+                'Status': 400,
+                'StatusMsg': "Company not found..!!"
+            }, status=400)
+        if status.upper() == "ALL":
+            users = QitUsermaster.objects.filter(cmptransid=cmpId)
+            serializer = QitUsermasterSerializer(users, many=True)
+            return Response(serializer.data)
+        elif status.upper() == "U":
+            users = QitUsermaster.objects.filter(cmptransid=cmpId,usertype="USER")
+            serializer = QitUsermasterSerializer(users, many=True)
+            return Response(serializer.data)
+        elif status.upper() == "A":
+            users = QitUsermaster.objects.filter(cmptransid=cmpId,usertype="ADMIN")
+            serializer = QitUsermasterSerializer(users, many=True)
+            return Response(serializer.data)
+        else:
+            return Response({'Status': 400, 'StatusMsg': "Invalid state..!!"}, status=400)
     except Exception as e:
         return Response({
                     'Status':400,

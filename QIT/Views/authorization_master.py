@@ -6,7 +6,8 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from QIT.models import QitUsermaster, QitAuthenticationrule,QitCompany
-from QIT.serializers import GetDataClassSerializer,GetRuleClassSerializer
+from QIT.serializers import GetDataClassSerializer,GetRuleClassSerializer,GetPreSetDataClassSerializer
+from .common import role_email_get_data
 import logging
 
 logger = logging.getLogger(__name__)
@@ -56,7 +57,6 @@ def SaveAuthRule(request):
         ar_data = module_classes
 
         existing_rule = QitAuthenticationrule.objects.filter(user_id=user.transid).first()
-
         if existing_rule:
             existing_rule.auth_rule_detail = ar_data
             existing_rule.save()
@@ -69,11 +69,88 @@ def SaveAuthRule(request):
     except Exception as ex:
         logger.error("Calling authorization_master Error: SaveAuthRule() " + str(ex))
         return Response({'StatusCode': '400', 'IsSaved': 'N', 'StatusMsg': str(ex)}, status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['POST'])
+def AuthenticationPreSetRule(request):
+    logger.info("Received data: %s", request.data)
+    serializer = GetPreSetDataClassSerializer(data=request.data)
     
+    if not serializer.is_valid():
+        logger.error("Invalid data: %s", serializer.errors)
+        return Response({'StatusCode': '400', 'IsSaved': 'N', 'StatusMsg': 'Invalid Data'}, status=status.HTTP_400_BAD_REQUEST)
+
+    data = serializer.validated_data
+    fromUseremail = data['fromUseremail']
+    userrole = data['userrole']
+    toUsers = data['toUsers']
+    cmptransid = data['cmptransid']
+
+    try:
+        logger.info("Calling notification_master: SaveNotificationRule()")
+        cmpcheck = user = QitCompany.objects.filter(transid=cmptransid).first()
+        if not cmpcheck:
+            return Response({'StatusCode': '400', 'IsSaved': 'N', 'StatusMsg': 'Invalid company'}, status=status.HTTP_400_BAD_REQUEST)
+        user = None
+        cmptransidUser = None
+        if 'COMPANY' in userrole.upper():
+            user = QitCompany.objects.filter(e_mail=fromUseremail).first()
+            if not user:
+                logger.info("Calling authorization_master saved rule: GetAuthRule(): Error User not found")
+                return Response({'StatusCode': '400', 'IsSaved': 'N', 'StatusMsg': 'Company Not found..!!'}, status=status.HTTP_400_BAD_REQUEST)
+            cmptransidUser = user
+        elif 'USER' in userrole.upper():
+            user = QitUsermaster.objects.filter(e_mail=fromUseremail).first()
+            if not user:
+                logger.info("Calling authorization_master saved rule: GetAuthRule(): Error User not found")
+                return Response({'StatusCode': '400', 'IsSaved': 'N', 'StatusMsg': 'User Not found..!!'}, status=status.HTTP_400_BAD_REQUEST)
+            cmptransidUser = user.cmptransid
+        if not user:
+            logger.info("Calling notification_master saved rule: SaveNotificationRule(): Error User not found")
+            return Response({'StatusCode': '400', 'IsSaved': 'N', 'StatusMsg': 'User Not found..!!'}, status=status.HTTP_400_BAD_REQUEST)
+        if str(cmptransidUser.transid).strip() != str(cmptransid).strip():
+            logger.info("Calling notification_master saved rule: SaveNotificationRule(): Error Invalid company user")
+            return Response({'StatusCode': '400', 'IsSaved': 'N', 'StatusMsg': 'Invalid company user'}, status=status.HTTP_400_BAD_REQUEST)
+
+        ar_data = []
+
+        existing_rule = QitAuthenticationrule.objects.filter(user_id=user.transid).first()
+
+        if existing_rule:
+            ar_data = existing_rule.auth_rule_detail
+            print("user : ",user)
+            for user in toUsers :
+                print("User Data : ",user)
+                print("existing_rule : ",ar_data)
+                userData = role_email_get_data(user['useremail'],user['userrole'])
+
+                existing_rule = QitAuthenticationrule.objects.filter(user_id=userData.transid).first()
+
+                if existing_rule:
+                    existing_rule.auth_rule_detail = ar_data
+                    existing_rule.save()
+                else:
+                    preset_rule = QitAuthenticationrule(user_id=userData.transid,cmptransid=userData.cmptransid, auth_rule_detail=ar_data,userrole=userData.usertype.upper())
+                    print(preset_rule)
+                    preset_rule.save()
+
+                print("userData : ",userData)
+                print("userData.transid : ",userData.transid)
+                print("userData.cmptransid : ",userData.cmptransid)
+                print("userData.usertype : ",userData.usertype)
+                # preset_rule = QitAuthenticationrule(user_id=userData.transid,cmptransid=userData.cmptransid, auth_rule_detail=ar_data,userrole=userData.usertype.upper())
+                # print(preset_rule)
+                # preset_rule.save()
+            return Response({'StatusCode': '200', 'IsSaved': 'Y', 'StatusMsg': 'Saved Successfully!!!'}, status=status.HTTP_200_OK)
+        else:
+            return Response({'StatusCode': '400', 'IsSaved': 'N', 'StatusMsg': 'No Rule Found'}, status=status.HTTP_400_BAD_REQUEST)
+    except Exception as ex:
+        logger.error("Calling notification_master Error: SaveNotificationRule() " + str(ex))
+        return Response({'StatusCode': '400', 'IsSaved': 'N', 'StatusMsg': str(ex)}, status=status.HTTP_400_BAD_REQUEST)
 
 @api_view(['POST'])
 def GetAuthRule(request):
     logger.info("Received data: %s", request.data)
+    print("Hello")
     serializer = GetRuleClassSerializer(data=request.data)
     
     if not serializer.is_valid():
@@ -114,7 +191,7 @@ def GetAuthRule(request):
 
         existing_rule = QitAuthenticationrule.objects.filter(user_id=user.transid).first()
         if existing_rule:
-            return Response({'StatusCode': '200', 'IsSaved': 'Y', 'Notification_Rule': existing_rule.auth_rule_detail}, status=status.HTTP_200_OK)
+            return Response({'StatusCode': '200', 'IsSaved': 'Y', 'Authentication_Rule': existing_rule.auth_rule_detail}, status=status.HTTP_200_OK)
         else:
             return Response({'StatusCode': '400', 'IsSaved': 'N', 'StatusMsg': 'No Rule Found'}, status=status.HTTP_400_BAD_REQUEST)
     except Exception as ex:
