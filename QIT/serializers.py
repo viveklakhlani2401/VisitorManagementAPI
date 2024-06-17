@@ -50,7 +50,6 @@ class QitUsermasterSerializer(serializers.ModelSerializer):
         validated_data['password'] = make_password(validated_data['password'])
         return super().create(validated_data)
     
-
     def update(self, instance, validated_data):
         instance.username = validated_data.get('username', instance.username)
         instance.phone = validated_data.get('phone', instance.phone)
@@ -85,6 +84,12 @@ class GetDataClassSerializer(serializers.Serializer):
     userrole = serializers.CharField(max_length=10)
     cmptransid = serializers.IntegerField()
     module_classes = serializers.JSONField()
+
+class GetPreSetDataClassSerializer(serializers.Serializer):
+    fromUseremail = serializers.CharField(max_length=255)
+    userrole = serializers.CharField(max_length=10)
+    toUsers = serializers.JSONField()
+    cmptransid = serializers.IntegerField()
 
 
 class GetRuleClassSerializer(serializers.Serializer):
