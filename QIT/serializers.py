@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from django.contrib.auth.hashers import make_password
 
-from .models import QitCompany,QitOtp,QitUserlogin,QitDepartment,QitUsermaster,QitVisitormaster,QitVisitorinout
+from .models import QitCompany,QitOtp,QitUserlogin,QitDepartment,QitUsermaster,QitVisitormaster,QitVisitorinout,QitApiLog
 
 class CompanyMasterSerializer(serializers.ModelSerializer):
     class Meta:
@@ -166,22 +166,7 @@ class QitVisitorinoutPOSTSerializer(serializers.ModelSerializer):
             company = QitCompany.objects.get(transid=validated_data.pop('cmptransid'))
         except QitCompany.DoesNotExist:
             raise serializers.ValidationError({"statusMsg":"company_id not found."})
-        
-        # try:
-        #     print(validated_data.get('cmpdepartmentid'))
-        #     dept = QitDepartment.objects.get(transid=validated_data.get('cmpdepartmentid'))
-        # except QitDepartment.DoesNotExist:
-        #     raise serializers.ValidationError({"statusMsg":"department_id not found."})
 
-        # visitormaster_data = {
-        #     'vname': validated_data.pop('vname'),
-        #     'phone1': validated_data.pop('phone1'),
-        #     'vcmpname': validated_data.pop('vcmpname'),
-        #     'vlocation': validated_data.pop('vlocation'),
-        #     'e_mail': validated_data.pop('e_mail'),
-        #     'cmptransid': company,
-        # }
-        # visitormaster = QitVisitormaster.objects.create(**visitormaster_data).
 
         email = validated_data.pop('e_mail')
         visitormaster_data = {
@@ -204,12 +189,9 @@ class QitVisitorinoutPOSTSerializer(serializers.ModelSerializer):
         validated_data['cmptransid'] = company
         validated_data['cmpdepartmentid'] = validated_data.get('cmpdepartmentid')
         visitorinout = QitVisitorinout.objects.create(**validated_data)
-        validated_data["id"]=visitorinout.transid
-        print("=====================================")
-        print(validated_data)
-        print("=====================================")
+
         return validated_data
-    
+
 
 class QitVisitorinoutGETSerializer(serializers.ModelSerializer):
     class Meta:
@@ -255,3 +237,9 @@ class QitVisitorinoutGETSerializer(serializers.ModelSerializer):
         # representation['vCmptransid'] = visitormaster.cmptransid_id
 
         return representation
+
+
+class QitAPILogSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = QitApiLog
+        fields ="__all__"

@@ -61,4 +61,6 @@ urlpatterns = [
     path('VMS/Visitor/VerifyVisitor', visitor_master.verifyVisitor),
     path('VMS/Visitor/CheckStatus', visitor_master.chkStatus),
     path('VMS/Visitor/CheckOut', visitor_master.checkoutVisitor),
+    path('VMS/SaveAPILog', common.save_log),
+    path('VMS/GetAPILog/<int:cid>', common.Get_log),
 ]
