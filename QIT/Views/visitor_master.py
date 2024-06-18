@@ -9,6 +9,10 @@ import json
 from django.core.cache import cache
 from datetime import datetime
 from QIT.Views import common
+from django.utils import timezone
+import pytz
+from dateutil import parser
+
 @csrf_exempt
 @api_view(['POST'])
 def Save_Visitor(request):
@@ -31,6 +35,24 @@ def Save_Visitor(request):
                 'Status': 400,
                 'StatusMsg': "cmptransid is required..!!"
             },status=400)  
+        timeslot = body_data.get("timeslot")
+        if timeslot:
+            try:
+                timeslot_datetime = parser.parse(timeslot)
+                ist = pytz.timezone('Asia/Kolkata')
+                timeslot_datetime_ist = ist.localize(timeslot_datetime)
+                timeslot_datetime_utc = timeslot_datetime_ist.astimezone(pytz.utc)
+                current_datetime_utc = timezone.now()
+                if timeslot_datetime_utc < current_datetime_utc:
+                    return Response({
+                        'Status': 400,
+                        'StatusMsg': "Timeslot cannot be in the past..!!"
+                    }, status=400)
+            except (ValueError, TypeError) as e:
+                return Response({
+                    'Status': 400,
+                    'StatusMsg': "Invalid timeslot format..!!"
+                }, status=400)
         stored_data_json = cache.get(f"otp_{email}")
         if stored_data_json:
             stored_data = json.loads(stored_data_json)
@@ -274,6 +296,37 @@ def verifyVisitor(request):
         inoutEntry = QitVisitorinout.objects.filter(transid=reqData["visitor_id"],cmptransid=reqData["company_id"]).first()
         if not inoutEntry:
             return Response({'Status': 400, 'StatusMsg': "Data not found..!!"}, status=400)
+        if inoutEntry.status.upper() == "A":
+            return Response({'Status': 400, 'StatusMsg': "Visitor already approved..!!"}, status=400)
+        if inoutEntry.status.upper() == "R":
+            return Response({'Status': 400, 'StatusMsg': "Visitor already rejected..!!"}, status=400)
+        
+        # Timeslot validation
+        timeslot = inoutEntry.timeslot
+        if timeslot:
+            try:
+                ist = pytz.timezone('Asia/Kolkata')
+                if isinstance(timeslot, str):
+                    # If timeslot is a string, parse it
+                    timeslot = datetime.strptime(timeslot, "%Y-%m-%d %H:%M:%S")
+
+                if timeslot.tzinfo is None:
+                    # If timeslot is naive, localize it to IST
+                    timeslot_datetime_ist = ist.localize(timeslot)
+                else:
+                    # If timeslot is already aware, just ensure it is in IST
+                    timeslot_datetime_ist = timeslot.astimezone(ist)
+
+                timeslot_datetime_utc = timeslot_datetime_ist.astimezone(pytz.utc)
+                current_datetime_utc = timezone.now()
+                
+                if current_datetime_utc > timeslot_datetime_utc:
+                    if current_datetime_utc.date() != timeslot_datetime_utc.date():
+                        return Response({'Status': 400, 'StatusMsg': "Cannot verify. Timeslot is more than one day old..!!"}, status=400)   
+                    # return Response({'Status': 400, 'StatusMsg': "Cannot verify. Timeslot is more than one day old..!!"}, status=400)
+            except Exception as e:
+                return Response({'Status': 400, 'StatusMsg': f"Error processing timeslot: {str(e)}"}, status=400)
+        
         inoutEntry.status = reqData["status"].upper()
         inoutEntry.reason = reqData["reason"]
         if state.upper() == "A":
