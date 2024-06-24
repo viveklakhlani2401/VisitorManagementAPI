@@ -184,6 +184,7 @@ class QitVisitorinoutPOSTSerializer(serializers.ModelSerializer):
         # visitormaster = QitVisitormaster.objects.create(**visitormaster_data).
 
         email = validated_data.pop('e_mail')
+        print("email : ",email)
         visitormaster_data = {
             'vname': validated_data.pop('vname'),
             'phone1': validated_data.pop('phone1', None),
@@ -198,6 +199,7 @@ class QitVisitorinoutPOSTSerializer(serializers.ModelSerializer):
             cmptransid=company,
             defaults=visitormaster_data
         )
+        print("visitor master : ",visitormaster.e_mail)
         validated_data['visitortansid'] = visitormaster
         validated_data['status'] = 'P'
         validated_data['checkinstatus'] = None
@@ -205,9 +207,9 @@ class QitVisitorinoutPOSTSerializer(serializers.ModelSerializer):
         validated_data['cmpdepartmentid'] = validated_data.get('cmpdepartmentid')
         visitorinout = QitVisitorinout.objects.create(**validated_data)
         validated_data["id"]=visitorinout.transid
-        print("=====================================")
-        print(validated_data)
-        print("=====================================")
+        # print("=====================================")
+        # print(validated_data)
+        # print("=====================================")
         return validated_data
     
 

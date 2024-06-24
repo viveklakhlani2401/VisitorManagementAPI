@@ -356,7 +356,11 @@ def email_wise_data_filter(id,role,company):
         else:
             return None
     elif role == "ADMIN":
+        print("id : ",id)
+        print("role : ",role)
+        print("cmp : ",company)
         user = QitUsermaster.objects.filter(transid=id,usertype=role.upper()).first()
+        print("user : ",user)
         if user and user.cmptransid.transid == company:
             return user
         else:
@@ -668,8 +672,11 @@ def send_notification(notifications,cmptransid):
         )
 
 def send_visitors(visitor,cmptransid,type):
+    print("here")
     channel_layer = get_channel_layer()
+    print("here : ",cmptransid)
     user_ids = getAuthenticatedUser("Visitors",cmptransid)
+    print("here user id : ",user_ids)
     print("inside send visitors : ",user_ids)
     
     if type == "verify":
@@ -707,8 +714,11 @@ def chk_user_comp_id(user_email):
         return None
     
 def getAuthenticatedUser(module,cmptransid):
+    print("mpdule : ",module)
+    print("cmp id : ",cmptransid)
     user_ids = []
     all_rules = QitAuthenticationrule.objects.filter(cmptransid=cmptransid)
+    print("all user : ",all_rules)
     for rule in all_rules:
         rule_detail_str = rule.auth_rule_detail.decode('utf-8') if isinstance(rule.auth_rule_detail, bytes) else rule.auth_rule_detail
         rule_detail_list = ast.literal_eval(rule_detail_str)
@@ -717,6 +727,7 @@ def getAuthenticatedUser(module,cmptransid):
             i = i+1
             if details.get('text') == module and details.get('hasAccess'):
                 userdata = email_wise_data_filter(rule.user_id, rule.userrole,cmptransid)
+                print("user data : ",userdata)
                 user_id = chk_user_comp_id(userdata.e_mail)
                 user_ids.append(user_id)
                 break

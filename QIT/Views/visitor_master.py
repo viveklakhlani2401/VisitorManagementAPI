@@ -16,9 +16,11 @@ from dateutil import parser
 @csrf_exempt
 @api_view(['POST'])
 def Save_Visitor(request):
+    print("hello")
     try:
+        print("here")
         body_data = request.data
-        # print(dataToSerialize)
+        print(body_data)
         if not body_data:
             return Response({
                 'Status': 400,
@@ -61,6 +63,7 @@ def Save_Visitor(request):
             if stored_status == 1 and stored_role.upper() == "VISITOR" :
                 dataToSerialize = request.data
                 companyEntry = QitCompany.objects.filter(transid=dataToSerialize["company_id"]).first()
+                print("here")
                 if not companyEntry:
                     return Response( {
                         'isSaved':"N",
@@ -74,7 +77,7 @@ def Save_Visitor(request):
                 serializer = QitVisitorinoutPOSTSerializer(data=dataToSerialize)
                 if serializer.is_valid():
                     visitorinout = serializer.save()
-                    print(visitorinout['cmpdepartmentid'].deptname)
+                    print(visitorinout["visitortansid"].e_mail)
                     state = "Pending"
                     if visitorinout['checkinstatus'] == "P" : 
                         state = "Pending"
