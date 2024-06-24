@@ -6,6 +6,40 @@ from QIT.models import QitDepartment,QitCompany
 from QIT.serializers import DepartmentSerializer
 from rest_framework.exceptions import NotFound
 
+# @csrf_exempt
+# @api_view(["POST"])
+# def SaveDepartment(request):
+#     try:
+#         reqData = request.data
+#         cid = reqData["company_id"]
+#         cmpEntry = QitCompany.objects.filter(transid=cid).first()
+#         if not cmpEntry:
+#             return Response({
+#                 'is_save':"N",
+#                 'Status':400,
+#                 'StatusMsg':"Company not found..!!"
+#             })
+#         res = QitDepartment.objects.create(deptname=reqData["dept_name"],cmptransid=cmpEntry)
+#         if res:
+#             return Response({
+#                 'is_save':"Y",
+#                 'Status':200,
+#                 'StatusMsg':"Department data saved..!!"
+#             })
+#         else:
+#             return Response({
+#                 'is_save':"N",
+#                 'Status':400,
+#                 'StatusMsg':"Error while saving data..!!"
+#             })
+#     except Exception as e:
+#         return Response({
+#             'is_save':"N",
+#             'Status':400,
+#             'StatusMsg':e
+#         })
+
+
 @csrf_exempt
 @api_view(["POST"])
 def SaveDepartment(request):
@@ -15,30 +49,40 @@ def SaveDepartment(request):
         cmpEntry = QitCompany.objects.filter(transid=cid).first()
         if not cmpEntry:
             return Response({
-                'is_save':"N",
-                'Status':400,
-                'StatusMsg':"Company not found..!!"
+                'is_save': "N",
+                'Status': 400,
+                'StatusMsg': "Company not found..!!"
             })
-        res = QitDepartment.objects.create(deptname=reqData["dept_name"],cmptransid=cmpEntry)
+        
+        dept_name = reqData["dept_name"]
+        # Check if the department with the same name already exists for the given company (case-insensitive)
+        existing_dept = QitDepartment.objects.filter(cmptransid=cmpEntry, deptname__iexact=dept_name).first()
+        if existing_dept:
+            return Response({
+                'is_save': "N",
+                'Status': 400,
+                'StatusMsg': "Department with the same name already exists..!!"
+            })
+
+        res = QitDepartment.objects.create(deptname=dept_name, cmptransid=cmpEntry)
         if res:
             return Response({
-                'is_save':"Y",
-                'Status':200,
-                'StatusMsg':"Department data saved..!!"
+                'is_save': "Y",
+                'Status': 200,
+                'StatusMsg': "Department data saved..!!"
             })
         else:
             return Response({
-                'is_save':"N",
-                'Status':400,
-                'StatusMsg':"Error while saving data..!!"
+                'is_save': "N",
+                'Status': 400,
+                'StatusMsg': "Error while saving data..!!"
             })
     except Exception as e:
         return Response({
-            'is_save':"N",
-            'Status':400,
-            'StatusMsg':e
+            'is_save': "N",
+            'Status': 400,
+            'StatusMsg': str(e)
         })
-
 
 @csrf_exempt
 @api_view(["GET"])

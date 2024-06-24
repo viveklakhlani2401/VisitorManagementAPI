@@ -367,6 +367,7 @@ def email_wise_data_filter(id,role,company):
             return None
  
 # Login API with refresh and access token
+# Login API with refresh and access token
 @api_view(['POST'])
 def login_view(request):
     email = request.data.get('email')
@@ -378,16 +379,23 @@ def login_view(request):
                 user_serializer = UserSerializer(user)
                 refresh = RefreshToken.for_user(user)
                 chkUser  = role_email_wise_data(email,password,user.userrole)
+                print("chkUser.transid : ",chkUser.transid)
+                cmpId = 0
+                if user.userrole == "COMPANY":
+                    cmpId = chkUser.transid
+                else:
+                    cmpId = chkUser.cmptransid.transid
                 if chkUser == None:
                     return Response({'detail': 'Something wrong'}, status=status.HTTP_404_NOT_FOUND)
-                obj = QitAuthenticationrule.objects.filter(user_id=chkUser.transid).first()
+                obj = QitAuthenticationrule.objects.filter(user_id=chkUser.transid,cmptransid=cmpId).first()
                 # obj = QitAuthenticationrule.objects.all()
                 # obj_list = list(obj.values())
         
                 json_text = json.dumps(obj.auth_rule_detail)
                 user_data = dict(user_serializer.data)
         
-                user_data['cmpid'] = obj.cmptransid.transid
+                user_data['cmpid'] = cmpId
+                print("obj.cmptransid.transid : ",obj.cmptransid.transid)
                 return Response({
                     'user': user_data,
                     'userAuth':obj.auth_rule_detail,
@@ -400,6 +408,39 @@ def login_view(request):
             return Response({'detail': 'Invalid credentials'}, status=status.HTTP_401_UNAUTHORIZED)
     except QitUserlogin.DoesNotExist:
         return Response({'detail': 'User does not exist'}, status=status.HTTP_404_NOT_FOUND)
+# @api_view(['POST'])
+# def login_view(request):
+#     email = request.data.get('email')
+#     password = request.data.get('password')
+#     try:
+#         user = QitUserlogin.objects.get(e_mail=email)
+#         if user and check_password(password, user.password):
+#             if user is not None:
+#                 user_serializer = UserSerializer(user)
+#                 refresh = RefreshToken.for_user(user)
+#                 chkUser  = role_email_wise_data(email,password,user.userrole)
+#                 if chkUser == None:
+#                     return Response({'detail': 'Something wrong'}, status=status.HTTP_404_NOT_FOUND)
+#                 obj = QitAuthenticationrule.objects.filter(user_id=chkUser.transid).first()
+#                 # obj = QitAuthenticationrule.objects.all()
+#                 # obj_list = list(obj.values())
+        
+#                 json_text = json.dumps(obj.auth_rule_detail)
+#                 user_data = dict(user_serializer.data)
+        
+#                 user_data['cmpid'] = obj.cmptransid.transid
+#                 return Response({
+#                     'user': user_data,
+#                     'userAuth':obj.auth_rule_detail,
+#                     'refresh': str(refresh),
+#                     'access': str(refresh.access_token),
+#                 })
+#             else:
+#                 return Response({'detail': 'Invalid credentials'}, status=status.HTTP_401_UNAUTHORIZED)
+#         else:
+#             return Response({'detail': 'Invalid credentials'}, status=status.HTTP_401_UNAUTHORIZED)
+#     except QitUserlogin.DoesNotExist:
+#         return Response({'detail': 'User does not exist'}, status=status.HTTP_404_NOT_FOUND)
     
 # Example API of authenticating an API Means how to verify access token
 @api_view(['GET'])
