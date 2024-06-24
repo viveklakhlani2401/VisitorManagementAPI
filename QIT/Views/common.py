@@ -481,7 +481,35 @@ def Forget_Password_Send_OTP(request):
             'Status':400,
             'StatusMsg':e,
         })
-    
+
+# request for change user password
+
+@csrf_exempt
+
+@api_view(['POST'])
+
+def changeUserPWDReq(request):
+    # body_data = request.data
+    # print(body_data)
+    try:
+        body_data = request.data
+        if not body_data:
+            return Response({'Status': 400, 'StatusMsg': "Payload required..!!"}, status=400)      
+        email = body_data.get("e_mail")
+        if not email:
+            return Response({'Status': 400, 'StatusMsg': "Email is required..!!"}, status=400)      
+        resDB = QitUsermaster.objects.filter(e_mail = body_data["e_mail"]).first()
+        if not resDB:
+            return Response({'Status': 400, 'StatusMsg': "Invalid emai..!!"}, status=400)      
+        resDB.changepassstatus = 1
+        resDB.save()
+        return Response({
+            "Status":200,
+            "StatusMessage":"Request send successfully..!!"
+        },status=200)
+    except Exception as e:
+        return Response({'Status': 400, 'StatusMsg': str(e)}, status=400)
+
 # Verify OTP API
 @csrf_exempt
 @api_view(["POST"])
