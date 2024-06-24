@@ -16,11 +16,8 @@ from dateutil import parser
 @csrf_exempt
 @api_view(['POST'])
 def Save_Visitor(request):
-    print("hello")
     try:
-        print("here")
         body_data = request.data
-        print(body_data)
         if not body_data:
             return Response({
                 'Status': 400,
@@ -50,6 +47,12 @@ def Save_Visitor(request):
                         'Status': 400,
                         'StatusMsg': "Timeslot cannot be in the past..!!"
                     }, status=400)
+                one_day_ahead = current_datetime_utc + timezone.timedelta(days=1)
+                if timeslot_datetime_utc >= one_day_ahead:
+                    return Response({
+                        'Status': 400,
+                        'StatusMsg': "Timeslot cannot be more than one day in the future..!!"
+                    }, status=400)
             except (ValueError, TypeError) as e:
                 return Response({
                     'Status': 400,
@@ -63,7 +66,6 @@ def Save_Visitor(request):
             if stored_status == 1 and stored_role.upper() == "VISITOR" :
                 dataToSerialize = request.data
                 companyEntry = QitCompany.objects.filter(transid=dataToSerialize["company_id"]).first()
-                print("here")
                 if not companyEntry:
                     return Response( {
                         'isSaved':"N",
@@ -77,7 +79,6 @@ def Save_Visitor(request):
                 serializer = QitVisitorinoutPOSTSerializer(data=dataToSerialize)
                 if serializer.is_valid():
                     visitorinout = serializer.save()
-                    print(visitorinout["visitortansid"].e_mail)
                     state = "Pending"
                     if visitorinout['checkinstatus'] == "P" : 
                         state = "Pending"
@@ -359,12 +360,7 @@ def chkStatus(request):
             return Response({'Status': 400, 'StatusMsg': "Email is required..!!"}, status=400)  
         if not cmpid:
             return Response({'Status': 400, 'StatusMsg': "Company ID is required..!!"}, status=400)  
-
-        visitor_entry = QitVisitormaster.objects.filter(e_mail=email, cmptransid=cmpid).first()
-        if not visitor_entry:
-            return Response({'Status': 400, 'StatusMsg': "Visitor data not found..!!"}, status=400)
         
-
         companyEntry = QitCompany.objects.filter(transid=cmpid).first()
         if not companyEntry:
             return Response( {
@@ -372,9 +368,20 @@ def chkStatus(request):
                 'Status': 400,
                 'StatusMsg': "Company not found..!!"
             }, status=400)
+
+        visitor_entry = QitVisitormaster.objects.filter(e_mail=email, cmptransid=cmpid).first()
+        if not visitor_entry:
+            return Response({'Status': 400, 'StatusMsg': "Visitor data not found..!!"}, status=400)
+        
         inOutEntry = QitVisitorinout.objects.filter(visitortansid=visitor_entry.transid).order_by("-entrydate").first()
         if not inOutEntry:
             return Response({'Status': 400, 'StatusMsg': "Visitor request entry not found..!!"}, status=400)
+        
+        if inOutEntry.checkinstatus:
+            return Response({
+                'e_mail':visitor_entry.e_mail,
+                'status':inOutEntry.checkinstatus
+            }, status=200)
 
         return Response({
             'e_mail':visitor_entry.e_mail,
@@ -421,6 +428,10 @@ def checkoutVisitor(request):
         
         if inOutEntry.status.upper() != "A":
             return Response({'Status': 400, 'StatusMsg': "Visitor status is not approve..!!"}, status=400)
+        
+        if inOutEntry.checkinstatus.upper() == "O":
+            return Response({'Status': 400, 'StatusMsg': "Visitor already checked out..!!"}, status=400)
+
 
         
         inOutEntry.checkouttime = datetime.now()

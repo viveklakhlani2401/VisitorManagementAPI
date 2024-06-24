@@ -48,6 +48,20 @@ def save_user(request):
             stored_status = stored_data['status']
             stored_role = stored_data['role']
             if stored_status == 1 and stored_role.upper() == "USER" :
+                companyEntry = QitCompany.objects.filter(transid=body_data["cmptransid"]).first()
+                if not companyEntry:
+                    return Response( {
+                        'isSaved':"N",
+                        'Status': 400,
+                        'StatusMsg': "Company not found..!!"
+                    }, status=400)
+                deptEntry = QitDepartment.objects.filter(transid=body_data["cmpdeptid"],cmptransid=companyEntry).first()
+                if not deptEntry:
+                    return Response( {
+                        'isSaved':"N",
+                        'Status': 400,
+                        'StatusMsg': "Department not found..!!"
+                    }, status=400)
                 serializer = QitUsermasterSerializer(data=request.data)
                 if serializer.is_valid():
                     serializer.save()
