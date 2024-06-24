@@ -89,15 +89,18 @@ def get_user(request,status,cmpId):
             }, status=400)
         if status.upper() == "ALL":
             users = QitUsermaster.objects.filter(cmptransid=cmpId)
-            serializer = QitUsermasterSerializer(users, many=True)
+            serializer = UserMasterDataSerializer(users, many=True)
+            # serializer = QitUsermasterSerializer(users, many=True)
             return Response(serializer.data)
         elif status.upper() == "U":
             users = QitUsermaster.objects.filter(cmptransid=cmpId,usertype="USER")
-            serializer = QitUsermasterSerializer(users, many=True)
+            serializer = UserMasterDataSerializer(users, many=True)
+            # serializer = QitUsermasterSerializer(users, many=True)
             return Response(serializer.data)
         elif status.upper() == "A":
             users = QitUsermaster.objects.filter(cmptransid=cmpId,usertype="ADMIN")
-            serializer = QitUsermasterSerializer(users, many=True)
+            serializer = UserMasterDataSerializer(users, many=True)
+            # serializer = QitUsermasterSerializer(users, many=True)
             return Response(serializer.data)
         else:
             return Response({'Status': 400, 'StatusMsg': "Invalid state..!!"}, status=400)
@@ -122,14 +125,14 @@ def update_user(request):
     try:
         body_data = request.data
         if not body_data:
-            return Response({'Status': 400, 'StatusMsg': "Payload required..!!"}, status=400)         
-        cmpId = body_data.get("company_id") 
+            return Response({'Status': 400, 'StatusMsg': "Payload required..!!"}, status=400)        
+        cmpId = body_data.get("company_id")
         if not cmpId:
-            return Response({'Status': 400, 'StatusMsg': "company_id required..!!"}, status=400)   
+            return Response({'Status': 400, 'StatusMsg': "company_id required..!!"}, status=400)  
         transid = body_data.get("user_id")
         if not transid:
-            return Response({'Status': 400, 'StatusMsg': "user_id required..!!"}, status=400) 
-        
+            return Response({'Status': 400, 'StatusMsg': "user_id required..!!"}, status=400)
+   
         try:
             companyEntry = QitCompany.objects.get(transid=cmpId)
         except QitCompany.DoesNotExist:
@@ -147,12 +150,13 @@ def update_user(request):
                 'Status':status.HTTP_404_NOT_FOUND,
                 'StatusMsg':"Department data not found..!!"
             },status=status.HTTP_404_NOT_FOUND)
-        
+       
         try:
             user = QitUsermaster.objects.get(cmptransid=cmpId, transid=transid)
             if user.changepassstatus == "0":
                 request.data.pop("password")
-            
+           
+            resDB = QitUserlogin.objects.filter(e_mail = user.e_mail).first()
             if user.changepassstatus == "1":
                 pwd = request.data.get("password")
                 if not pwd:
@@ -161,9 +165,12 @@ def update_user(request):
                         'StatusMsg':"password field is required..!!"
                     })
                 user.changepassstatus = 0
-                user.password = make_password(pwd)
+                newPassword = make_password(pwd)
+                user.password = newPassword
+                resDB.password = newPassword
+                resDB.save()
             user.cmpdeptid = deptEntry
-            user.gender = body_data.get("gender") 
+            user.gender = body_data.get("gender")
             user.phone = body_data.get("phone")
             user.save()
             return Response({
@@ -180,7 +187,6 @@ def update_user(request):
             'Status':status.HTTP_404_NOT_FOUND,
             'StatusMsg':str(e)
         },status=status.HTTP_404_NOT_FOUND)
-
 
 # @api_view(['PUT'])
 # def reset_user_password(request,cmpId, transid):
@@ -223,3 +229,4 @@ def delete_user(request, cmpId, transid):
                     'Status':200,
                     'StatusMsg':"User Data Deleted!!"
                 })
+

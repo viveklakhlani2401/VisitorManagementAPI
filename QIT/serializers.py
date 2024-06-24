@@ -66,7 +66,7 @@ class QitUsermasterSerializer(serializers.ModelSerializer):
 class UserMasterDataSerializer(serializers.ModelSerializer):
     class Meta:
         model = QitUsermaster
-        fields = ['username','useremail', 'phone','cmpdeptid','gender','useravatar','changepassstatus']
+        fields = ['username','e_mail', 'phone','cmpdeptid','gender','useravatar','changepassstatus','usertype']
 
 class UserMasterResetSerializer(serializers.ModelSerializer):
     class Meta:

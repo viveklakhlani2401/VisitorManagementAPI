@@ -32,6 +32,7 @@ urlpatterns = [
     path('VMS/refreshToken', common.token_refresh),
     path('VMS/ForgetPasswordOTP', common.Forget_Password_Send_OTP),
     path('VMS/ForgetPwdVerifyOTP', common.ForgetpwdVerifyOTP),
+    path('VMS/ForgetPasswordRequest', common.changeUserPWDReq),
     path('VMS/GenerateNewPassword', common.generate_newPassword),
     path("VMS/test", common.getWebsocketTest),
     path("VMS/Department/Save", dept_master.SaveDepartment),
