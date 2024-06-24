@@ -65,18 +65,18 @@ def save_user(request):
                     'Status': 400,
                     'StatusMsg': "OTP is not verified..!!"
                 }
-                return Response(response)
+                return Response(response,status=400)
         else:
             response = {
                 'Status': 400,
                 'StatusMsg': "Email not found or OTP expired..!!"
             }
-            return Response(response)  
+            return Response(response,status=400)  
     except Exception as e:
         return Response({
             'Status':400,
             'StatusMsg':str(e)
-        })
+        },status=400)
 
 @api_view(['GET'])
 def get_user(request,status,cmpId):
@@ -119,6 +119,7 @@ def get_user_by_id(request, cmpId, transid):
     serializer = UserMasterDataSerializer(user)
     return Response(serializer.data)
  
+
 @api_view(['PUT'])
 def update_user(request):
     try:
@@ -131,7 +132,7 @@ def update_user(request):
         transid = body_data.get("user_id")
         if not transid:
             return Response({'Status': 400, 'StatusMsg': "user_id required..!!"}, status=400)
-       
+   
         try:
             companyEntry = QitCompany.objects.get(transid=cmpId)
         except QitCompany.DoesNotExist:
@@ -139,9 +140,9 @@ def update_user(request):
                 'Status':status.HTTP_404_NOT_FOUND,
                 'StatusMsg':"Company data not found..!!"
             },status=status.HTTP_404_NOT_FOUND)
-       
-        deptId = body_data.get("department_id")
- 
+        
+        deptId = body_data.get("department_id") 
+
         try:
             deptEntry = QitDepartment.objects.get(transid=deptId,cmptransid=cmpId)
         except QitDepartment.DoesNotExist:
@@ -186,7 +187,6 @@ def update_user(request):
             'Status':status.HTTP_404_NOT_FOUND,
             'StatusMsg':str(e)
         },status=status.HTTP_404_NOT_FOUND)
-    
 
 # @api_view(['PUT'])
 # def reset_user_password(request,cmpId, transid):
@@ -216,6 +216,14 @@ def delete_user(request, cmpId, transid):
                     'Status':status.HTTP_404_NOT_FOUND,
                     'StatusMsg':"No data found..!!"
                 },status=status.HTTP_404_NOT_FOUND)
+    try:
+        userLogin = QitUserlogin.objects.get(e_mail=user.e_mail,role=user.usertype)
+    except QitUserlogin.DoesNotExist:
+        return Response({
+                    'Status':status.HTTP_404_NOT_FOUND,
+                    'StatusMsg':"No data found..!!"
+                },status=status.HTTP_404_NOT_FOUND)
+    userLogin.delete()
     user.delete()
     return Response({
                     'Status':200,
