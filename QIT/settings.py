@@ -14,7 +14,7 @@ from pathlib import Path
 import os
 from dotenv import load_dotenv
 import pymysql
-
+from celery.schedules import crontab
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -37,6 +37,8 @@ INSTALLED_APPS = [
     'daphne',
     'rest_framework',
     'rest_framework_simplejwt',
+    'django_celery_results',
+    'django_celery_beat',
     'QIT',
     'channels',
     'corsheaders',
@@ -189,4 +191,21 @@ from datetime import timedelta
 SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(minutes=1),
     "REFRESH_TOKEN_LIFETIME": timedelta(days=1),
+}
+
+# Celery settings
+# QIT/settings.py
+
+CELERY_BROKER_URL = 'redis://localhost:6379/0'
+CELERY_RESULT_BACKEND = 'redis://localhost:6379/0'
+CELERY_ACCEPT_CONTENT = ['json']
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_RESULT_SERIALIZER = 'json'
+CELERY_TIMEZONE = 'UTC'
+
+CELERY_BEAT_SCHEDULE = {
+    'update-checkin-status-every-hour': {
+        'task': 'QIT.tasks.update_checkin_status',
+        'schedule': crontab(hour=12, minute=30),
+    },
 }
