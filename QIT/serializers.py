@@ -66,7 +66,14 @@ class QitUsermasterSerializer(serializers.ModelSerializer):
 class UserMasterDataSerializer(serializers.ModelSerializer):
     class Meta:
         model = QitUsermaster
-        fields = ['username','e_mail', 'phone','cmpdeptid','gender','useravatar','changepassstatus','usertype']
+        fields = ['transid','username','e_mail', 'phone','cmpdeptid','gender','useravatar','changepassstatus','usertype']
+    
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        departmentMaster = instance.cmpdeptid
+        representation['deptName'] = departmentMaster.deptname
+        representation["changepassstatus"] = "Changed" if representation['changepassstatus']=="0" else "Pending"
+        return representation
 
 class UserMasterResetSerializer(serializers.ModelSerializer):
     class Meta:

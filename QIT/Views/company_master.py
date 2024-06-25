@@ -125,18 +125,50 @@ def CreateCompany(request):
 @csrf_exempt
 @api_view(["GET"])
 def GetComapnyData(request,qrCode):
-    # print()
-    # qrCode = request.query_params.get("qrCode")
-
-    resDB = QitCompany.objects.filter(qrstring = qrCode)
-    serializer = CompanyMasterGetSerializer(resDB,many=True)
-    if resDB:
-        return Response(serializer.data)
-    else:
+    try:
+        resDB = QitCompany.objects.filter(qrstring = qrCode)
+        serializer = CompanyMasterGetSerializer(resDB,many=True)
+        if resDB:
+            return Response(serializer.data)
+        else:
+            return Response({
+                'Status':400,
+                'StatusMsg':"Invalid QR Code..!!"
+            },status=400)
+    except Exception as e:
         return Response({
             'Status':400,
-            'StatusMsg':"Invalid QR Code..!!"
-        })
+            'StatusMsg':str(e)
+        },status=400)
+
+
+
+    
+
+@csrf_exempt
+@api_view(["GET"])
+def GetComapnyDataById(request,cid):
+    try:
+        resDB = QitCompany.objects.get(transid = cid)
+        serializer = CompanyMasterGetSerializer(resDB,many=False)
+        if resDB:
+            return Response(serializer.data)
+        else:
+            return Response({
+                'Status':400,
+                'StatusMsg':"Invalid Company id..!!"
+            })
+    except QitCompany.DoesNotExist:
+        return Response({
+            'Status':400,
+            'StatusMsg':"No data found..!!"
+        },status=400)
+    except Exception as e:
+        return Response({
+            'Status':400,
+            'StatusMsg':str(e)
+        },status=400)
+
 
 
 # All companys data
