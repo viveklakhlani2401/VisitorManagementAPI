@@ -105,6 +105,9 @@ def get_user(request,status,cmpId):
             users = QitUsermaster.objects.filter(cmptransid=cmpId)
             serializer = UserMasterDataSerializer(users, many=True)
             # serializer = QitUsermasterSerializer(users, many=True)
+            # user_data = dict(serializer.data)
+            # print(user_data)
+            # user_data['dept_name'] = 2
             return Response(serializer.data)
         elif status.upper() == "U":
             users = QitUsermaster.objects.filter(cmptransid=cmpId,usertype="USER")
