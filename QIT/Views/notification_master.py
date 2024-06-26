@@ -269,7 +269,7 @@ def GetNotification(request):
         notifications = QitNotificationmaster.objects.filter(
             receiver_user_id = _user.transid,
             cmptransid = cmptransid
-        ).values('transid', 'notification_text', 'n_date_time', 'chk_status')
+        ).values('transid', 'notification_text', 'n_date_time', 'chk_status').order_by('-n_date_time')
         for notification in notifications:
             if 'n_date_time' in notification:
                 notification['n_date_time'] = time_since(notification['n_date_time'])

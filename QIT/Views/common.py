@@ -710,15 +710,16 @@ def getWebsocketTest(request):
 
 def time_since(dt):
     now = datetime.now(timezone.utc)
+    dateString = dt.date()
     diff = now - dt
     if diff.days > 0:
-        return f"{diff.days} day{'s' if diff.days > 1 else ''} ago"
+        return f"{diff.days} day{'s' if diff.days > 1 else ''} ago {dateString}"
     elif diff.seconds // 3600 > 0:
         hours = diff.seconds // 3600
-        return f"{hours} hour{'s' if hours > 1 else ''} ago"
+        return f"{hours} hour{'s' if hours > 1 else ''} ago {dateString}"
     elif diff.seconds // 60 > 0:
         minutes = diff.seconds // 60
-        return f"{minutes} minute{'s' if minutes > 1 else ''} ago"
+        return f"{minutes} minute{'s' if minutes > 1 else ''} ago {dateString}"
     else:
         return "just now"
 
