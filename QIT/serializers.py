@@ -230,7 +230,7 @@ class QitVisitorinoutGETSerializer(serializers.ModelSerializer):
         representation = super().to_representation(instance)
         departmentMaster = instance.cmpdepartmentid
         visitormaster = instance.visitortansid
-
+ 
         
         # Manually add fields from QitVisitormaster to the representation
         # representation['vId'] = visitormaster.transid
@@ -264,8 +264,15 @@ class QitVisitorinoutGETSerializer(serializers.ModelSerializer):
         checkinDate = representation.pop('checkintime')
         representation['sortDate'] = checkinDate if checkinDate else entryDate
         # representation['vCmptransid'] = visitormaster.cmptransid_id
-
+ 
         return representation
+    
+
+class CompanyProfileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = QitCompany
+        fields = ['transid','e_mail', 'bname', 'blocation','city','state','country','zipcode','address1','address2','phone1','phone2','qrstring','status','entrydate','websitelink','cmplogo']
+
 
 class QitAPILogSerializer(serializers.ModelSerializer):
     class Meta:
