@@ -146,9 +146,9 @@ def update_user(request):
         cmpId = body_data.get("company_id")
         if not cmpId:
             return Response({'Status': 400, 'StatusMsg': "company_id required..!!"}, status=400)  
-        transid = body_data.get("user_id")
+        transid = body_data.get("transid")
         if not transid:
-            return Response({'Status': 400, 'StatusMsg': "user_id required..!!"}, status=400)
+            return Response({'Status': 400, 'StatusMsg': "transid required..!!"}, status=400)
    
         try:
             companyEntry = QitCompany.objects.get(transid=cmpId)
@@ -158,7 +158,7 @@ def update_user(request):
                 'StatusMsg':"Company data not found..!!"
             },status=status.HTTP_404_NOT_FOUND)
         
-        deptId = body_data.get("department_id") 
+        deptId = body_data.get("cmpdeptid") 
 
         try:
             deptEntry = QitDepartment.objects.get(transid=deptId,cmptransid=cmpId)
