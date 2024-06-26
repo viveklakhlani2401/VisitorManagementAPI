@@ -223,14 +223,14 @@ class QitVisitorinoutPOSTSerializer(serializers.ModelSerializer):
 class QitVisitorinoutGETSerializer(serializers.ModelSerializer):
     class Meta:
         model = QitVisitorinout
-        fields = ['transid','cnctperson','cmpdepartmentid','timeslot','purposeofvisit','checkinstatus','reason','status','entrydate','createdby','checkintime']
-
+        fields = ['transid','cnctperson','cmpdepartmentid','timeslot','purposeofvisit','anyhardware','vavatar','checkinstatus','reason','status','entrydate','createdby','checkintime']
+ 
       
     def to_representation(self, instance):
         representation = super().to_representation(instance)
         departmentMaster = instance.cmpdepartmentid
         visitormaster = instance.visitortansid
-
+ 
         
         # Manually add fields from QitVisitormaster to the representation
         # representation['vId'] = visitormaster.transid
@@ -254,13 +254,21 @@ class QitVisitorinoutGETSerializer(serializers.ModelSerializer):
         }
         representation['status'] = state_mapping.get(representation.pop('checkinstatus'), None)
         representation['addedBy'] = 'Company' if representation.pop("createdby") else 'External'
-        representation['cnctperson'] =  representation.pop("cnctperson") 
-        representation['timeslot'] =  representation.pop("timeslot") 
-        representation['purposeofvisit'] =  representation.pop("purposeofvisit") 
-        representation['reason'] =  representation.pop("reason") 
+        representation['cnctperson'] =  representation.pop("cnctperson")
+        representation['timeslot'] =  representation.pop("timeslot")
+        representation['anyhardware'] =  representation.pop("anyhardware")
+        representation['vavatar'] =  representation.pop("vavatar")
+        representation['purposeofvisit'] =  representation.pop("purposeofvisit")
+        representation['reason'] =  representation.pop("reason")
         entryDate = representation.pop('entrydate')
         checkinDate = representation.pop('checkintime')
         representation['sortDate'] = checkinDate if checkinDate else entryDate
         # representation['vCmptransid'] = visitormaster.cmptransid_id
-
+ 
         return representation
+    
+
+class CompanyProfileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = QitCompany
+        fields = ['transid','e_mail', 'bname', 'blocation','city','state','country','zipcode','address1','address2','phone1','phone2','qrstring','status','entrydate','websitelink','cmplogo']

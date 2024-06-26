@@ -2,7 +2,7 @@ from QIT.models import QitCompany,QitOtp
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
-from QIT.serializers import CompanyMasterSerializer,CompanyMasterGetSerializer
+from QIT.serializers import CompanyMasterSerializer,CompanyMasterGetSerializer, CompanyProfileSerializer
 from rest_framework import status
 import hashlib
 from cryptography.fernet import Fernet
@@ -150,7 +150,7 @@ def GetComapnyData(request,qrCode):
 def GetComapnyDataById(request,cid):
     try:
         resDB = QitCompany.objects.get(transid = cid)
-        serializer = CompanyMasterGetSerializer(resDB,many=False)
+        serializer = CompanyProfileSerializer(resDB,many=False)
         if resDB:
             return Response(serializer.data)
         else:
@@ -178,3 +178,42 @@ def getCompany(request):
     companies = QitCompany.objects.all()
     serializer = CompanyMasterGetSerializer(companies, many=True)
     return Response(serializer.data)
+
+
+@csrf_exempt
+@api_view(["PUT"])
+def EditComapnyDataById(request):
+    try:
+        reqData = request.data
+        resDB = QitCompany.objects.get(transid = reqData["transid"])
+        if resDB:
+            resDB.bname = reqData["bname"]
+            resDB.blocation = reqData["blocation"]
+            resDB.zipcode = reqData["zipcode"]
+            resDB.city = reqData["city"]
+            resDB.state = reqData["state"]
+            resDB.country = reqData["country"]
+            resDB.phone1 = reqData["phone1"]
+            resDB.phone2 = reqData["phone2"]
+            resDB.websitelink = reqData["websitelink"]
+            resDB.cmplogo = reqData["cmplogo"]
+            resDB.save()
+            return Response({
+                'Status':200,
+                'StatusMsg':"Company data updated..!!"
+            })
+        else:
+            return Response({
+                'Status':400,
+                'StatusMsg':"Invalid Company id..!!"
+            },status=400)
+    except QitCompany.DoesNotExist:
+        return Response({
+            'Status':400,
+            'StatusMsg':"No data found..!!"
+        },status=400)
+    except Exception as e:
+        return Response({
+            'Status':400,
+            'StatusMsg':str(e)
+        },status=400)

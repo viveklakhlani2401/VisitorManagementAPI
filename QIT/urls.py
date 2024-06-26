@@ -27,6 +27,7 @@ urlpatterns = [
     path('VMS/Register', company_master.CreateCompany),
     path('VMS/GetComapnyData/<str:qrCode>', company_master.GetComapnyData),
     path('VMS/GetComapnyDataById/<int:cid>', company_master.GetComapnyDataById),
+    path('VMS/Company/Edit', company_master.EditComapnyDataById),
     path('VMS/Login', common.login_view),
     path('VMS/CompanyData', company_master.getCompany),
     path('VMS/secure', common.secure_view),

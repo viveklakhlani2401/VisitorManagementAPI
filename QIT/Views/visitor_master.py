@@ -335,6 +335,7 @@ def verifyVisitor(request):
         inoutEntry.reason = reqData["reason"]
         if state.upper() == "A":
             inoutEntry.checkintime = datetime.now()
+            inoutEntry.checkinstatus = "I"
         inoutEntry.save()
         common.send_visitors(inoutEntry,reqData["company_id"],"verify")
 

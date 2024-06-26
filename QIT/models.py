@@ -26,6 +26,7 @@ class QitCompany(models.Model):
     password = models.CharField(db_column='Password', max_length=100)  # Field name made lowercase.
     bname = models.CharField(db_column='BName', max_length=200)  # Field name made lowercase.
     blocation = models.CharField(db_column='BLocation', max_length=500)  # Field name made lowercase.
+    city = models.CharField(db_column='City', max_length=50, blank=True, null=True)  # Field name made lowercase.
     state = models.CharField(db_column='State', max_length=50, blank=True, null=True)  # Field name made lowercase.
     country = models.CharField(db_column='Country', max_length=50, blank=True, null=True)  # Field name made lowercase.
     zipcode = models.CharField(db_column='ZipCode', max_length=20, blank=True, null=True)  # Field name made lowercase.
@@ -38,7 +39,7 @@ class QitCompany(models.Model):
     isactive = models.CharField(db_column='IsActive', max_length=2)  # Field name made lowercase.
     cmplogo = models.TextField(db_column='CmpLogo', blank=True, null=True)  # Field name made lowercase.
     websitelink = models.CharField(db_column='WebsiteLink', max_length=100, blank=True, null=True)  # Field name made lowercase.
-    entrydate = models.DateTimeField(db_column='EntryDate',auto_now=True)  # Field name made lowercase.
+    entrydate = models.DateTimeField(db_column='EntryDate')  # Field name made lowercase.
     updatedate = models.DateTimeField(db_column='UpdateDate', blank=True, null=True)  # Field name made lowercase.
 
     class Meta:
