@@ -16,7 +16,7 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
-from QIT.Views import common,company_master,dept_master,user_master,authorization_master,visitor_master,notification_master
+from QIT.Views import common,company_master,dept_master,user_master,authorization_master,visitor_master,notification_master,reports,log
 from rest_framework.routers import DefaultRouter
 from django.urls import path, include
 
@@ -64,4 +64,7 @@ urlpatterns = [
     path('VMS/Visitor/VerifyVisitor', visitor_master.verifyVisitor),
     path('VMS/Visitor/CheckStatus', visitor_master.chkStatus),
     path('VMS/Visitor/CheckOut', visitor_master.checkoutVisitor),
+    path('VMS/Report/VisitorReport', reports.GetVisitorReport),
+    path('VMS/SaveAPILog', log.save_log),
+    path('VMS/GetAPILog', log.Get_log),
 ]

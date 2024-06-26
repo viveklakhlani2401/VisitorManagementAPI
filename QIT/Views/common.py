@@ -530,9 +530,7 @@ def Forget_Password_Send_OTP(request):
 # request for change user password
 
 @csrf_exempt
-
 @api_view(['POST'])
-
 def changeUserPWDReq(request):
     # body_data = request.data
     # print(body_data)
