@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from django.contrib.auth.hashers import make_password
 
-from .models import QitCompany,QitOtp,QitUserlogin,QitDepartment,QitUsermaster,QitVisitormaster,QitVisitorinout
+from .models import QitCompany,QitOtp,QitUserlogin,QitDepartment,QitUsermaster,QitVisitormaster,QitVisitorinout,QitApiLog
 
 class CompanyMasterSerializer(serializers.ModelSerializer):
     class Meta:
@@ -223,7 +223,7 @@ class QitVisitorinoutPOSTSerializer(serializers.ModelSerializer):
 class QitVisitorinoutGETSerializer(serializers.ModelSerializer):
     class Meta:
         model = QitVisitorinout
-        fields = ['transid','cnctperson','cmpdepartmentid','timeslot','purposeofvisit','checkinstatus','reason','status','entrydate','createdby','checkintime']
+        fields = ['transid','cnctperson','cmpdepartmentid','timeslot','purposeofvisit','anyhardware','vavatar','checkinstatus','reason','status','entrydate','createdby','checkintime']
 
       
     def to_representation(self, instance):
@@ -256,6 +256,8 @@ class QitVisitorinoutGETSerializer(serializers.ModelSerializer):
         representation['addedBy'] = 'Company' if representation.pop("createdby") else 'External'
         representation['cnctperson'] =  representation.pop("cnctperson") 
         representation['timeslot'] =  representation.pop("timeslot") 
+        representation['anyhardware'] =  representation.pop("anyhardware") 
+        representation['vavatar'] =  representation.pop("vavatar") 
         representation['purposeofvisit'] =  representation.pop("purposeofvisit") 
         representation['reason'] =  representation.pop("reason") 
         entryDate = representation.pop('entrydate')
@@ -264,3 +266,8 @@ class QitVisitorinoutGETSerializer(serializers.ModelSerializer):
         # representation['vCmptransid'] = visitormaster.cmptransid_id
 
         return representation
+
+class QitAPILogSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = QitApiLog
+        fields ="__all__"
