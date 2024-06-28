@@ -125,7 +125,7 @@ def get_user(request,status,cmpId):
         return Response({
                     'Status':400,
                     'StatusMsg':str(e)
-                })
+                },status=400)
 
 @api_view(['GET'])
 def get_user_by_id(request, cmpId, transid):
@@ -180,7 +180,7 @@ def update_user(request):
                     return Response({
                         'Status':400,
                         'StatusMsg':"password field is required..!!"
-                    })
+                    },status=400)
                 user.changepassstatus = 0
                 newPassword = make_password(pwd)
                 user.password = newPassword

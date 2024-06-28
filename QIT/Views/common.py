@@ -492,7 +492,7 @@ def Forget_Password_Send_OTP(request):
             return Response({
                 'Status':400,
                 'StatusMsg':"Invalid User..!!"
-            })
+            },status=400)
         
         if resDB.userrole == "COMPANY":
             new_OTP = generate_otp()
@@ -525,7 +525,7 @@ def Forget_Password_Send_OTP(request):
         return Response({
             'Status':400,
             'StatusMsg':e,
-        })
+        },status=400)
 
 # request for change user password
 
@@ -568,12 +568,12 @@ def ForgetpwdVerifyOTP(request):
             return Response({
                 'Status':400,
                 'StatusMsg':"Email is required..!!"
-            })
+            },status=400)
         if not body_data["VerifyOTP"]:
             return Response({
                 'Status':400,
                 'StatusMsg':"OTP is required..!!"
-            })
+            },status=400)
         email = body_data["e_mail"]
         otp = body_data["VerifyOTP"]
         stored_data_json = cache.get(f"otp_{email}")
@@ -606,12 +606,12 @@ def ForgetpwdVerifyOTP(request):
                     'Status': 400,
                     'StatusMsg': "Something wrong..!!"
                 }
-            return Response(response)
+            return Response(response,status=400)
     except:
         return Response({
             'Status':400,
             'StatusMsg':"Invalid Email or OTP ..!!"
-        })
+        },status=400)
 
 def set_otp(email, otp,urole, status=0 ):
     data = json.dumps({'otp': otp, 'status': status, 'role':urole})
@@ -638,7 +638,7 @@ def generate_newPassword(request):
                     return Response({
                         'Status':400,
                         'StatusMsg':"Invalid User..!!"
-                    })
+                    },status=400)
                 
                 if resDB.userrole == "COMPANY":
                     newPassword = make_password(body_data["password"])
@@ -681,7 +681,7 @@ def generate_newPassword(request):
         return Response({
             'Status':400,
             'StatusMsg':e,
-        })
+        },status=400)
 
 # for testing websocket
 @csrf_exempt

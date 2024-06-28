@@ -23,22 +23,22 @@ def CreateCompany(request):
             return Response({
                 'Status':400,
                 'StatusMsg':"Email is required..!!"
-            })
+            },status=400)
         if not body_data["password"]:
             return Response({
                 'Status':400,
                 'StatusMsg':"Password is required..!!"
-            })
+            },status=400)
         if not body_data["bname"]:
             return Response({
                 'Status':400,
                 'StatusMsg':"BusinessName is required..!!"
-            })
+            },status=400)
         if not body_data["blocation"]:
             return Response({
                 'Status':400,
                 'StatusMsg':"BUsinessLocation is required..!!"
-            })
+            },status=400)
         
         # OTPEntry = QitOtp.objects.filter(e_mail=body_data["e_mail"]).first()
         # if OTPEntry is None:
@@ -58,7 +58,7 @@ def CreateCompany(request):
             return Response({
                 'Status':400,
                 'StatusMsg':"This email alredy register as comapny..!!"
-            })
+            },status=400)
         
         # OTPEntry = QitOtp.objects.filter(e_mail=body_data["e_mail"]).first()
         # if OTPEntry is None:
@@ -157,7 +157,7 @@ def GetComapnyDataById(request,cid):
             return Response({
                 'Status':400,
                 'StatusMsg':"Invalid Company id..!!"
-            })
+            },status=400)
     except QitCompany.DoesNotExist:
         return Response({
             'Status':400,

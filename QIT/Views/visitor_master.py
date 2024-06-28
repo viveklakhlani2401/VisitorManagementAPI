@@ -4,7 +4,7 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
 from QIT.serializers import QitVisitorinoutPOSTSerializer, QitVisitorSerializer,QitVisitorinoutGETSerializer
-from QIT.models import QitVisitormaster,QitVisitorinout,QitCompany
+from QIT.models import QitVisitormaster,QitVisitorinout,QitCompany,QitDepartment
 import json
 from django.core.cache import cache
 from datetime import datetime
@@ -446,3 +446,156 @@ def checkoutVisitor(request):
         return Response({'Status': 400, 'StatusMsg': "An error occurred: {}".format(str(e))}, status=400)
 
     
+
+# Edit visitor detail
+@csrf_exempt
+@api_view(["PUT"])
+def EditVerifyVisitor(request):
+    try:
+        body_data = request.data
+        if not body_data:
+            return Response({'Status': 400, 'StatusMsg': "Payload required..!!"}, status=400)
+
+        vid = body_data.get("visitor_id")
+        cmpid = body_data.get("company_id")
+        did = body_data.get("department_id")
+
+        if not vid:
+            return Response({'Status': 400, 'StatusMsg': "Visitor ID is required..!!"}, status=400)
+        if not cmpid:
+            return Response({'Status': 400, 'StatusMsg': "Company ID is required..!!"}, status=400)
+        if not did:
+            return Response({'Status': 400, 'StatusMsg': "Department ID is required..!!"}, status=400)
+        
+        
+        timeslot = body_data.get("timeslot")
+        if timeslot:
+            try:
+                timeslot_datetime = parser.parse(timeslot)
+                ist = pytz.timezone('Asia/Kolkata')
+                timeslot_datetime_ist = ist.localize(timeslot_datetime)
+                timeslot_datetime_utc = timeslot_datetime_ist.astimezone(pytz.utc)
+                current_datetime_utc = timezone.now()
+                if timeslot_datetime_utc < current_datetime_utc:
+                    return Response({
+                        'Status': 400,
+                        'StatusMsg': "Timeslot cannot be in the past..!!"
+                    }, status=400)
+                one_day_ahead = current_datetime_utc + timezone.timedelta(days=1)
+                if timeslot_datetime_utc >= one_day_ahead:
+                    return Response({
+                        'Status': 400,
+                        'StatusMsg': "Timeslot cannot be more than one day in the future..!!"
+                    }, status=400)
+            except (ValueError, TypeError) as e:
+                return Response({
+                    'Status': 400,
+                    'StatusMsg': "Invalid timeslot format..!!"
+                }, status=400)
+
+        companyEntry = QitCompany.objects.filter(transid=cmpid).first()
+        if not companyEntry:
+            return Response({'isSaved': "N", 'Status': 400, 'StatusMsg': "Company not found..!!"}, status=400)
+
+        visitorInOut_entry = QitVisitorinout.objects.filter(transid=vid, cmptransid=cmpid).first()
+        if not visitorInOut_entry:
+            return Response({'Status': 400, 'StatusMsg': "Visitor data not found..!!"}, status=400)
+
+        if not visitorInOut_entry.createdby:
+            return Response({'Status': 400, 'StatusMsg': "Visitor entry done by external..!!"}, status=400)
+        
+        if visitorInOut_entry.status.upper() == "A":
+            return Response({'Status': 400, 'StatusMsg': "Visitor status is approved..!!"}, status=400)
+
+        visitor_entry = visitorInOut_entry.visitortansid  # Access the related QitVisitormaster object directly
+        if not visitor_entry:
+            return Response({'Status': 400, 'StatusMsg': "Visitor master data not found..!!"}, status=400)
+
+        department_entry = QitDepartment.objects.filter(transid=did, cmptransid=cmpid).first()
+        if not department_entry:
+            return Response({'Status': 400, 'StatusMsg': "Department data not found..!!"}, status=400)
+
+        # Update visitor_entry fields
+        visitor_entry.vname = body_data.get("vname", visitor_entry.vname)
+        visitor_entry.phone1 = body_data.get("phone1", visitor_entry.phone1)
+        visitor_entry.vcmpname = body_data.get("vcmpname", visitor_entry.vcmpname)
+        visitor_entry.vlocation = body_data.get("vlocation", visitor_entry.vlocation)
+        visitor_entry.save()
+
+        # Update visitorInOut_entry fields
+        visitorInOut_entry.cnctperson = body_data.get("cnctperson", visitorInOut_entry.cnctperson)
+        visitorInOut_entry.cmpdepartmentid = department_entry
+        visitorInOut_entry.purposeofvisit = body_data.get("purposeofvisit", visitorInOut_entry.purposeofvisit)
+        visitorInOut_entry.timeslot = body_data.get("timeslot", visitorInOut_entry.timeslot)
+        visitorInOut_entry.anyhardware = body_data.get("anyhardware", visitorInOut_entry.anyhardware)
+        visitorInOut_entry.status = "P"
+        visitorInOut_entry.save()
+
+        return Response({'Status': 200, 'StatusMsg': "Visitor data saved successfully..!!"}, status=200)
+
+    except Exception as e:
+        return Response({'Status': 400, 'StatusMsg': "An error occurred: {}".format(str(e))}, status=400)
+    # try:
+    #     body_data = request.data
+    #     if not body_data:
+    #         return Response({'Status': 400, 'StatusMsg': "Payload required..!!"}, status=400)  
+        
+    #     vid = body_data.get("visitor_id")
+    #     cmpid = body_data.get("company_id")
+    #     did = body_data.get("department_id")
+        
+    #     if not vid:
+    #         return Response({'Status': 400, 'StatusMsg': "Visitor ID is required..!!"}, status=400)  
+    #     if not cmpid:
+    #         return Response({'Status': 400, 'StatusMsg': "Company ID is required..!!"}, status=400)  
+    #     if not did:
+    #         return Response({'Status': 400, 'StatusMsg': "Department ID is required..!!"}, status=400)  
+        
+    #     companyEntry = QitCompany.objects.filter(transid=cmpid).first()
+    #     if not companyEntry:
+    #         return Response( {
+    #             'isSaved':"N",
+    #             'Status': 400,
+    #             'StatusMsg': "Company not found..!!"
+    #         }, status=400)
+
+    #     visitorInOut_entry = QitVisitorinout.objects.filter(transid=vid, cmptransid=cmpid).first()
+    #     print("here")
+    #     if not visitorInOut_entry:
+    #         return Response({'Status': 400, 'StatusMsg': "Visitor data not found..!!"}, status=400)
+        
+    #     print("here")
+    #     if not visitorInOut_entry.createdby:
+    #         return Response({'Status': 400, 'StatusMsg': "Visitor entry done by external..!!"}, status=400)
+ 
+    #     print("here :",visitorInOut_entry.visitortansid_transid)
+    #     visitor_entry = QitVisitormaster.objects.filter(transid=visitorInOut_entry.visitortansid_transid).first()
+    #     print("here :",visitorInOut_entry.visitortansid_transid)
+
+    #     print(visitor_entry)
+
+    #     if not visitor_entry:
+    #         return Response({'Status': 400, 'StatusMsg': "Visitor data not found..!!"}, status=400)
+        
+    #     department_entry = QitDepartment.objects.filter(transid=did,cmptransid=cmpid).first()
+    #     if not department_entry:
+    #         return Response({'Status': 400, 'StatusMsg': "Department data not found..!!"}, status=400)
+        
+    #     visitor_entry.vname = body_data.get("vname")
+    #     visitor_entry.phone1 = body_data.get("phone1")
+    #     visitor_entry.vcmpname = body_data.get("vcmpname")
+    #     visitor_entry.vlocation = body_data.get("vlocation")
+
+    #     visitorInOut_entry.cnctperson = body_data.get("cnctperson")
+    #     visitorInOut_entry.cmpdepartmentid = department_entry
+    #     visitorInOut_entry.purposeofvisit = body_data.get("purposeofvisit")
+    #     visitorInOut_entry.timeslot = body_data.get("timeslot")
+    #     visitorInOut_entry.anyhardware = body_data.get("anyhardware")
+
+    #     visitor_entry.save()
+    #     visitorInOut_entry.save()
+
+    #     return Response({'Status': 200, 'StatusMsg': "Checkout successfullyy..!!"}, status=200)
+        
+    # except Exception as e:
+    #     return Response({'Status': 400, 'StatusMsg': "An error occurred: {}".format(str(e))}, status=400)
