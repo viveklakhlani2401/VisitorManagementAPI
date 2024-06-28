@@ -26,10 +26,12 @@ def save_log(request):
         json_payload = payload.get('jsonPayload')
         login_user = payload.get('LoginUser')
         cmp_id = payload.get('Company_Id')
- 
-        cmpEntry = QitCompany.objects.filter(transid=cmp_id).first()
-        if not cmpEntry:
-            return Response({"Status": "400", "IsSaved": is_saved, "StatusMsg": "Invalid Company_Id"}, status=400)
+        cmpEntry = 0
+        if module!="Login" :
+            cmpEntry = QitCompany.objects.filter(transid=cmp_id).first()
+            cmpEntry = cmpEntry.transid
+            if not cmpEntry:
+                return Response({"Status": "400", "IsSaved": is_saved, "StatusMsg": "Invalid Company_Id"}, status=400)
  
         if not module or module.strip() == "" or module.lower() == "string":
             print("here")
@@ -47,9 +49,9 @@ def save_log(request):
         if not log_message or log_message.strip() == "" or log_message.lower() == "string":
             return Response({"Status": "400", "IsSaved": is_saved, "StatusMsg": "Provide Log Message"}, status=400)
  
-        if not login_user or login_user.strip() == "" or login_user.lower() == "string":
-            print(login_user)
-            return Response({"Status": "400", "IsSaved": is_saved, "StatusMsg": "Provide Login User"}, status=400)
+        # if not login_user or login_user.strip() == "" or login_user.lower() == "string":
+        #     print(login_user)
+        #     return Response({"Status": "400", "IsSaved": is_saved, "StatusMsg": "Provide Login User"}, status=400)
  
         log = QitApiLog(
             module=module,

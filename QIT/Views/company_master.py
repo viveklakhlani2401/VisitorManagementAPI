@@ -108,18 +108,18 @@ def CreateCompany(request):
                     'Status': 400,
                     'StatusMsg': "OTP is not verified..!!"
                 }
-                return Response(response)
+                return Response(response,status=400)
         else:
             response = {
                     'Status': 400,
                     'StatusMsg': "Email not found or OTP expired..!!"
                 }
-            return Response(response)
+            return Response(response,status=400)
     except Exception as e:
         return Response({
             'Status': 400,
             'StatusMsg': "Error : " + str(e)
-        })  
+        },status=400)  
 
 
 @csrf_exempt

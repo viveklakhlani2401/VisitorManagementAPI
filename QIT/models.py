@@ -7,8 +7,6 @@
 # Feel free to rename the models, but don't rename db_table values or field names.
 from django.db import models
 
-
-
 class QitApiLog(models.Model):
     transid = models.AutoField(db_column='TransId', primary_key=True)  # Field name made lowercase.
     module = models.CharField(db_column='Module', max_length=200, blank=True, null=True)  # Field name made lowercase.
@@ -16,10 +14,10 @@ class QitApiLog(models.Model):
     methodname = models.CharField(db_column='MethodName', max_length=200, blank=True, null=True)  # Field name made lowercase.
     loglevel = models.CharField(db_column='LogLevel', max_length=2, blank=True, null=True)  # Field name made lowercase.
     logmessage = models.TextField(db_column='LogMessage', blank=True, null=True)  # Field name made lowercase.
-    jsonpayload = models.CharField(db_column='JsonPayload', max_length=45, blank=True, null=True)  # Field name made lowercase.
+    jsonpayload = models.TextField(db_column='JsonPayload', blank=True, null=True)  # Field name made lowercase.
     loginuser = models.CharField(db_column='LoginUser', max_length=50, blank=True, null=True)  # Field name made lowercase.
-    cmptransid = models.ForeignKey('QitCompany', models.DO_NOTHING, db_column='CmpTransId', blank=True, null=True)  # Field name made lowercase.
-    entrydate = models.DateTimeField(db_column='EntryDate', blank=True, null=True)  # Field name made lowercase.
+    cmptransid = models.IntegerField(db_column='CmpTransId', blank=True, null=True)  # Field name made lowercase.
+    entrydate = models.DateTimeField(db_column='EntryDate', auto_now=True)  # Field name made lowercase.
 
     class Meta:
         managed = False
@@ -57,7 +55,7 @@ class QitCompany(models.Model):
     isactive = models.CharField(db_column='IsActive', max_length=2)  # Field name made lowercase.
     cmplogo = models.TextField(db_column='CmpLogo', blank=True, null=True)  # Field name made lowercase.
     websitelink = models.CharField(db_column='WebsiteLink', max_length=100, blank=True, null=True)  # Field name made lowercase.
-    entrydate = models.DateTimeField(db_column='EntryDate')  # Field name made lowercase.
+    entrydate = models.DateTimeField(db_column='EntryDate',auto_now=True)  # Field name made lowercase.
     updatedate = models.DateTimeField(db_column='UpdateDate', blank=True, null=True)  # Field name made lowercase.
 
     class Meta:
