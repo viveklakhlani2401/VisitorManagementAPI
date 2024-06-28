@@ -23,22 +23,22 @@ def CreateCompany(request):
             return Response({
                 'Status':400,
                 'StatusMsg':"Email is required..!!"
-            })
+            },status=400)
         if not body_data["password"]:
             return Response({
                 'Status':400,
                 'StatusMsg':"Password is required..!!"
-            })
+            },status=400)
         if not body_data["bname"]:
             return Response({
                 'Status':400,
                 'StatusMsg':"BusinessName is required..!!"
-            })
+            },status=400)
         if not body_data["blocation"]:
             return Response({
                 'Status':400,
                 'StatusMsg':"BUsinessLocation is required..!!"
-            })
+            },status=400)
         
         # OTPEntry = QitOtp.objects.filter(e_mail=body_data["e_mail"]).first()
         # if OTPEntry is None:
@@ -58,7 +58,7 @@ def CreateCompany(request):
             return Response({
                 'Status':400,
                 'StatusMsg':"This email alredy register as comapny..!!"
-            })
+            },status=400)
         
         # OTPEntry = QitOtp.objects.filter(e_mail=body_data["e_mail"]).first()
         # if OTPEntry is None:
@@ -108,18 +108,18 @@ def CreateCompany(request):
                     'Status': 400,
                     'StatusMsg': "OTP is not verified..!!"
                 }
-                return Response(response)
+                return Response(response,status=400)
         else:
             response = {
                     'Status': 400,
                     'StatusMsg': "Email not found or OTP expired..!!"
                 }
-            return Response(response)
+            return Response(response,status=400)
     except Exception as e:
         return Response({
             'Status': 400,
             'StatusMsg': "Error : " + str(e)
-        })  
+        },status=400)  
 
 
 @csrf_exempt

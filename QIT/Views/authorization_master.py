@@ -55,8 +55,8 @@ def SaveAuthRule(request):
             return Response({'StatusCode': '400', 'IsSaved': 'N', 'StatusMsg': 'Invalid company user'}, status=status.HTTP_400_BAD_REQUEST)
 
         ar_data = module_classes
-
-        existing_rule = QitAuthenticationrule.objects.filter(user_id=user.transid).first()
+        existing_rule = QitAuthenticationrule.objects.filter(user_id=user.transid,cmptransid=cmptransidUser.transid).first()
+        # existing_rule = QitAuthenticationrule.objects.filter(user_id=user.transid).first()
         if existing_rule:
             existing_rule.auth_rule_detail = ar_data
             existing_rule.save()
@@ -189,7 +189,7 @@ def GetAuthRule(request):
             logger.info("Calling authorization_master saved rule: GetAuthRule(): Error Invalid company user")
             return Response({'StatusCode': '400', 'IsSaved': 'N', 'StatusMsg': 'Invalid company user'}, status=status.HTTP_400_BAD_REQUEST)
 
-        existing_rule = QitAuthenticationrule.objects.filter(user_id=user.transid).first()
+        existing_rule = QitAuthenticationrule.objects.filter(user_id=user.transid,cmptransid=cmptransidUser.transid).first()
         if existing_rule:
             return Response({'StatusCode': '200', 'IsSaved': 'Y', 'Authentication_Rule': existing_rule.auth_rule_detail}, status=status.HTTP_200_OK)
         else:

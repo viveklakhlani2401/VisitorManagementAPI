@@ -177,6 +177,7 @@ def GenerateOTP(request):
 def VerifyOTP(request):
     body_data = request.data
     try:
+        print("++++++++++",body_data)
         if not body_data:
             return Response({
                 'Status':400,
@@ -387,15 +388,15 @@ def login_view(request):
                     cmpId = chkUser.cmptransid.transid
                 if chkUser == None:
                     return Response({'detail': 'Something wrong'}, status=status.HTTP_404_NOT_FOUND)
+
                 obj = QitAuthenticationrule.objects.filter(user_id=chkUser.transid,cmptransid=cmpId).first()
+                
                 # obj = QitAuthenticationrule.objects.all()
                 # obj_list = list(obj.values())
-        
                 json_text = json.dumps(obj.auth_rule_detail)
                 user_data = dict(user_serializer.data)
         
                 user_data['cmpid'] = cmpId
-                print("obj.cmptransid.transid : ",obj.cmptransid.transid)
                 return Response({
                     'user': user_data,
                     'userAuth':obj.auth_rule_detail,
