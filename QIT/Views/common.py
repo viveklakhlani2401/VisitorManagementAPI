@@ -4,6 +4,7 @@ from .emails import Send_OTP
 import random
 import string
 from QIT.models import QitOtp, QitCompany, QitUserlogin,QitAuthenticationrule,QitUsermaster,QitNotifiicationrule
+from .template import email_template
 import threading
 from django.views.decorators.csrf import csrf_exempt
 from django.utils import timezone
@@ -98,20 +99,23 @@ def GenerateOTP(request):
                 },status=400)
         new_OTP = generate_otp()
         if role.upper() == "COMPANY":
-            message = f"Company OTP : {new_OTP}"
+            # message = f"Company OTP : {new_OTP}"
+            message = "Proceed with entering the OTP we sent you to finish up your company registration."
         elif role.upper() == "VISITOR":
-            message = f"Visitor OTP : {new_OTP}"
+            # message = f"Visitor OTP : {new_OTP}"
+            message = "Proceed with entering the OTP we sent you to finish up visitor registration."
         elif role.upper() == "USER":
-            message = f"User OTP : {new_OTP}"
+            # message = f"User OTP : {new_OTP}"
+            message = "Proceed with entering the OTP we sent you to finish up user registration."
+       
         else:
             return Response({
                 'Status':400,
                 'StatusMsg':"Invalid role..!!"
             },status=400)
-
-
         set_otp(email,new_OTP,role.upper())
-        Send_OTP(email,f"{role.upper()} OTP",message)
+        message1 =  email_template(email,message,new_OTP)
+        Send_OTP(email,f"OTP (One Time Password)",message1)
         return Response({
             'Status':200,
             'StatusMsg':f"OTP send successfully on email : {email}..!!"
@@ -515,15 +519,18 @@ def Forget_Password_Send_OTP(request):
             new_OTP = generate_otp()
             # globalOTPStorage['email'] = body_data["e_mail"]
             # globalOTPStorage['otp'] = new_OTP
+
             set_otp(body_data["e_mail"],new_OTP,"COMPANY")
-            message = f"Forget Email OTP : {new_OTP}"
-            Send_OTP(body_data["e_mail"],"Forget Email OTP",message)
+            # message = f"Forget Email OTP : {new_OTP}"
+            message = "Proceed with entering the OTP we sent you to reset password."
+            message1 =  email_template(body_data["e_mail"],message,new_OTP)
+            Send_OTP(body_data["e_mail"],"OTP (One Time Password)",message1)
             return Response({
                 'Status':200,
                 'StatusMsg':"Valid User..!!",
                 'Role':"Company"
             })
-        
+        print("resDB.userrole : ",resDB.userrole)
         if resDB.userrole == "USER":
             return Response({
                 'Status':200,
@@ -536,6 +543,13 @@ def Forget_Password_Send_OTP(request):
                 'Status':200,
                 'StatusMsg':"Valid User..!!",
                 'Role':"VISITOR"
+            })
+
+        if resDB.userrole == "ADMIN":
+            return Response({
+                'Status':200,
+                'StatusMsg':"Valid User..!!",
+                'Role':"ADMIN"
             })
         
     except Exception as e:
@@ -817,3 +831,4 @@ def getAuthenticatedUser(module,cmptransid):
                 user_ids.append(user_id)
                 break
     return user_ids
+
