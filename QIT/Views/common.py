@@ -1,6 +1,6 @@
 from QIT.serializers import GenerateOTPSerializer,UserSerializer
 from rest_framework.decorators import api_view,authentication_classes
-from .emails import Send_OTP
+# from .emails import Send_OTP
 import random
 import string
 from QIT.models import QitOtp, QitCompany, QitUserlogin,QitAuthenticationrule,QitUsermaster,QitNotifiicationrule
@@ -24,6 +24,8 @@ from QIT.utils import modules
 from django.utils import timezone
 from datetime import datetime
 import ast
+from django.core.mail import send_mail
+from QIT.settings import EMAIL_HOST_USER
 # Custom Authentication class
 class CustomAuthentication(BaseAuthentication):
     def authenticate(self, request):
@@ -49,6 +51,15 @@ def authenticate(request):
 def generate_otp():
     otp = ''.join(random.choices(string.digits, k=6))
     return otp
+
+
+def Send_OTP(email, subject, message):
+    def send_email():
+        send_mail(subject, message, EMAIL_HOST_USER, [email])
+    
+    email_thread = threading.Thread(target=send_email)
+    email_thread.start()
+    return True
 
 # Generate OTP API
 @csrf_exempt
