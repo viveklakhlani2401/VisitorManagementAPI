@@ -247,3 +247,57 @@ def delete_user(request, cmpId, transid):
                     'StatusMsg':"User Data Deleted!!"
                 })
 
+
+@api_view(['PUT'])
+def update_user_profile(request):
+    try:
+        body_data = request.data
+        if not body_data:
+            return Response({'Status': 400, 'StatusMsg': "Payload required..!!"}, status=400)        
+        cmpId = body_data.get("company_id")
+        if not cmpId:
+            return Response({'Status': 400, 'StatusMsg': "Company ID required..!!"}, status=400)  
+        transid = body_data.get("transid")
+        if not transid:
+            return Response({'Status': 400, 'StatusMsg': "User ID required..!!"}, status=400)
+   
+        try:
+            companyEntry = QitCompany.objects.get(transid=cmpId)
+        except QitCompany.DoesNotExist:
+            return Response({
+                'Status':status.HTTP_404_NOT_FOUND,
+                'StatusMsg':"Company data not found..!!"
+            },status=status.HTTP_404_NOT_FOUND)
+        
+        deptId = body_data.get("department_id") 
+
+        try:
+            deptEntry = QitDepartment.objects.get(transid=deptId,cmptransid=cmpId)
+        except QitDepartment.DoesNotExist:
+            return Response({
+                'Status':status.HTTP_404_NOT_FOUND,
+                'StatusMsg':"Department data not found..!!"
+            },status=status.HTTP_404_NOT_FOUND)
+       
+        try:
+            user = QitUsermaster.objects.get(cmptransid=cmpId, transid=transid)
+           
+            user.cmpdeptid = deptEntry
+            user.gender = body_data.get("gender")
+            user.phone = body_data.get("phone")
+            user.username = body_data.get("username")
+            user.save()
+            return Response({
+                'Status':200,
+                'StatusMsg':"User profile data updated..!!"
+            },status=200)
+        except QitUsermaster.DoesNotExist:
+            return Response({
+                'Status':status.HTTP_404_NOT_FOUND,
+                'StatusMsg':"User data not found..!!"
+            },status=status.HTTP_404_NOT_FOUND)
+    except Exception as e:
+        return Response({
+            'Status':status.HTTP_404_NOT_FOUND,
+            'StatusMsg':str(e)
+        },status=status.HTTP_404_NOT_FOUND)
