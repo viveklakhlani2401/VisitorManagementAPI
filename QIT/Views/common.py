@@ -100,13 +100,13 @@ def GenerateOTP(request):
         new_OTP = generate_otp()
         if role.upper() == "COMPANY":
             # message = f"Company OTP : {new_OTP}"
-            message = "Proceed with entering the OTP we sent you to finish up your company registration."
+            message = "Here is your OTP for company registration."
         elif role.upper() == "VISITOR":
             # message = f"Visitor OTP : {new_OTP}"
-            message = "Proceed with entering the OTP we sent you to finish up visitor registration."
+            message = "Here is your OTP for visitor registration."
         elif role.upper() == "USER":
             # message = f"User OTP : {new_OTP}"
-            message = "Proceed with entering the OTP we sent you to finish up user registration."
+            message = "Here is your OTP for user registration."
        
         else:
             return Response({
@@ -522,7 +522,7 @@ def Forget_Password_Send_OTP(request):
 
             set_otp(body_data["e_mail"],new_OTP,"COMPANY")
             # message = f"Forget Email OTP : {new_OTP}"
-            message = "Proceed with entering the OTP we sent you to reset password."
+            message = "Here is your OTP for resetting your password."
             message1 =  email_template(body_data["e_mail"],message,new_OTP)
             Send_OTP(body_data["e_mail"],"OTP (One Time Password)",message1)
             return Response({
