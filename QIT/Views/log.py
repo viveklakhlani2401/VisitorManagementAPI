@@ -29,7 +29,7 @@ def save_log(request):
         cmpEntry = 0
         if module!="Login" :
             cmpEntry = QitCompany.objects.filter(transid=cmp_id).first()
-            cmpEntry = cmpEntry.transid
+            # cmpEntry = cmpEntry.transid
             if not cmpEntry:
                 return Response({"Status": "400", "IsSaved": is_saved, "StatusMsg": "Invalid Company_Id"}, status=400)
  
@@ -61,7 +61,7 @@ def save_log(request):
             logmessage=log_message,
             jsonpayload=json_payload,
             loginuser=login_user,
-            cmptransid=cmpEntry
+            cmptransid=cmp_id
         )
         log.save()
  
