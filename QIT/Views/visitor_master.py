@@ -279,14 +279,15 @@ def verifyVisitor(request):
         if not reqData["company_id"]:
             return Response({'Status': 400, 'StatusMsg': "company_id required..!!"}, status=400)
         if not reqData["visitor_id"]:
-            return Response({'Status': 400, 'StatusMsg': "visitor_id required..!!"}, status=400)  
-        if not reqData["reason"]:
-            return Response({'Status': 400, 'StatusMsg': "reason required..!!"}, status=400)  
+            return Response({'Status': 400, 'StatusMsg': "visitor_id required..!!"}, status=400)
         if not reqData["status"]:
             return Response({'Status': 400, 'StatusMsg': "status required..!!"}, status=400) 
         state =  reqData["status"]
         if state.upper() != "A" and state.upper() != "R":
-            return Response({'Status': 400, 'StatusMsg': "Enter valid status..!!"}, status=400) 
+            return Response({'Status': 400, 'StatusMsg': "Enter valid status..!!"}, status=400)   
+        if state.upper() == "R":
+            if not reqData["reason"]:
+                return Response({'Status': 400, 'StatusMsg': "reason required..!!"}, status=400)  
         
         
 

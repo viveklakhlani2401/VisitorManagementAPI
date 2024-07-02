@@ -223,6 +223,7 @@ def VerifyOTP(request):
         otp = body_data.get("VerifyOTP")
         role = body_data.get("role")
         stored_data_json = cache.get(f"otp_{email}")
+        print(stored_data_json)
         if stored_data_json:
             stored_data = json.loads(stored_data_json)
             stored_otp = stored_data['otp']
@@ -402,8 +403,10 @@ def login_view(request):
                 chkUser  = role_email_wise_data(email,password,user.userrole)
                 print("chkUser.transid : ",chkUser.transid)
                 cmpId = 0
+                cmpLogo = ""
                 if user.userrole == "COMPANY":
                     cmpId = chkUser.transid
+                    cmpLogo = chkUser.cmplogo
                 else:
                     cmpId = chkUser.cmptransid.transid
                 if chkUser == None:
@@ -417,6 +420,7 @@ def login_view(request):
                 user_data = dict(user_serializer.data)
         
                 user_data['cmpid'] = cmpId
+                user_data['cmpLogo'] = cmpLogo
                 return Response({
                     'user': user_data,
                     'userAuth':obj.auth_rule_detail,

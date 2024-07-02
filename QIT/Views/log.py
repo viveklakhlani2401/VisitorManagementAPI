@@ -26,6 +26,7 @@ def save_log(request):
         json_payload = payload.get('jsonPayload')
         login_user = payload.get('LoginUser')
         cmp_id = payload.get('Company_Id')
+        form_id = payload.get("form_id")
         cmpEntry = 0
         if module!="Login" :
             cmpEntry = QitCompany.objects.filter(transid=cmp_id).first()
@@ -61,8 +62,10 @@ def save_log(request):
             logmessage=log_message,
             jsonpayload=json_payload,
             loginuser=login_user,
-            cmptransid=cmp_id
+            cmptransid=cmp_id,
+            error_id=form_id
         )
+        print(log.error_id)
         log.save()
  
         is_saved = "Y"
@@ -115,7 +118,7 @@ def Get_log(request):
         if not cmpEntry:
             return Response({"Status": "400", "StatusMsg": "Invalid Company_Id"}, status=400)
 
-        query = Q(cmptransid=cmpEntry)
+        query = Q(cmptransid=cid)
        
         if module:
             query &= Q(module=module)
