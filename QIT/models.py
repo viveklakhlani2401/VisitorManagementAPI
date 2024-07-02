@@ -17,13 +17,13 @@ class QitApiLog(models.Model):
     jsonpayload = models.TextField(db_column='JsonPayload', blank=True, null=True)  # Field name made lowercase.
     loginuser = models.CharField(db_column='LoginUser', max_length=50, blank=True, null=True)  # Field name made lowercase.
     cmptransid = models.IntegerField(db_column='CmpTransId', blank=True, null=True)  # Field name made lowercase.
-    entrydate = models.DateTimeField(db_column='EntryDate', auto_now=True)  # Field name made lowercase.
+    entrydate = models.DateTimeField(db_column='EntryDate', blank=True, null=True)  # Field name made lowercase.
+    error_id = models.CharField(db_column='Error_ID', max_length=6, blank=True, null=True)  # Field name made lowercase.
 
     class Meta:
         managed = False
         db_table = 'QIT_API_Log'
-
-
+        
 class QitAuthenticationrule(models.Model):
     authentication_rule_id = models.AutoField(db_column='Authentication_Rule_ID', primary_key=True)  # Field name made lowercase.
     user_id = models.IntegerField(db_column='User_ID')  # Field name made lowercase.
