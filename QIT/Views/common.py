@@ -123,7 +123,7 @@ def GenerateOTP(request):
         set_otp(email,new_OTP,role.upper())
         message1 =  email_template(email,message,new_OTP)
         # Send_OTP(email,f"OTP (One Time Password)",message1)
-        send_html_mail(f"OTP (One Time Password)",message1,email)
+        send_html_mail(f"OTP (One Time Password)",message1,[email])
         return Response({
             'Status':200,
             'StatusMsg':f"OTP send successfully on email : {email}..!!",
