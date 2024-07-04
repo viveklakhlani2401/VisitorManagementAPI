@@ -10,6 +10,8 @@ import ast
 from datetime import datetime
 from django.db import transaction
 from .common import email_wise_data_filter,role_email_get_data,send_notification,time_since
+from QIT.utils.APICode import APICodeClass
+
 logger = logging.getLogger(__name__)
 
 @api_view(['POST'])
@@ -19,7 +21,12 @@ def SaveNotificationRule(request):
     
     if not serializer.is_valid():
         logger.error("Invalid data: %s", serializer.errors)
-        return Response({'StatusCode': '400', 'IsSaved': 'N', 'StatusMsg': 'Invalid Data'}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({
+            'StatusCode': '400', 
+            'IsSaved': 'N', 
+            'StatusMsg': 'Invalid Data',
+            'APICode':APICodeClass.Notification_Rule_Save.value
+        }, status=status.HTTP_400_BAD_REQUEST)
 
     data = serializer.validated_data
     useremail = data['useremail']
@@ -31,27 +38,52 @@ def SaveNotificationRule(request):
         logger.info("Calling notification_master: SaveNotificationRule()")
         cmpcheck = user = QitCompany.objects.filter(transid=cmptransid).first()
         if not cmpcheck:
-            return Response({'StatusCode': '400', 'IsSaved': 'N', 'StatusMsg': 'Invalid company'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({
+                'StatusCode': '400', 
+                'IsSaved': 'N', 
+                'StatusMsg': 'Invalid company',
+                'APICode':APICodeClass.Notification_Rule_Save.value
+            }, status=status.HTTP_400_BAD_REQUEST)
         user = None
         cmptransidUser = None
         if 'COMPANY' in data['userrole'].upper():
             user = QitCompany.objects.filter(e_mail=useremail).first()
             if not user:
                 logger.info("Calling authorization_master saved rule: GetAuthRule(): Error User not found")
-                return Response({'StatusCode': '400', 'IsSaved': 'N', 'StatusMsg': 'Company Not found..!!'}, status=status.HTTP_400_BAD_REQUEST)
+                return Response({
+                    'StatusCode': '400', 
+                    'IsSaved': 'N', 
+                    'StatusMsg': 'Company Not found..!!',
+                    'APICode':APICodeClass.Notification_Rule_Save.value
+                }, status=status.HTTP_400_BAD_REQUEST)
             cmptransidUser = user
         elif 'USER' in data['userrole'].upper():
             user = QitUsermaster.objects.filter(e_mail=useremail).first()
             if not user:
                 logger.info("Calling authorization_master saved rule: GetAuthRule(): Error User not found")
-                return Response({'StatusCode': '400', 'IsSaved': 'N', 'StatusMsg': 'User Not found..!!'}, status=status.HTTP_400_BAD_REQUEST)
+                return Response({
+                    'StatusCode': '400', 
+                    'IsSaved': 'N', 
+                    'StatusMsg': 'User Not found..!!',
+                    'APICode':APICodeClass.Notification_Rule_Save.value
+                }, status=status.HTTP_400_BAD_REQUEST)
             cmptransidUser = user.cmptransid
         if not user:
             logger.info("Calling notification_master saved rule: SaveNotificationRule(): Error User not found")
-            return Response({'StatusCode': '400', 'IsSaved': 'N', 'StatusMsg': 'User Not found..!!'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({
+                'StatusCode': '400', 
+                'IsSaved': 'N', 
+                'StatusMsg': 'User Not found..!!',
+                'APICode':APICodeClass.Notification_Rule_Save.value
+            }, status=status.HTTP_400_BAD_REQUEST)
         if str(cmptransidUser.transid).strip() != str(cmptransid).strip():
             logger.info("Calling notification_master saved rule: SaveNotificationRule(): Error Invalid company user")
-            return Response({'StatusCode': '400', 'IsSaved': 'N', 'StatusMsg': 'Invalid company user'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({
+                'StatusCode': '400', 
+                'IsSaved': 'N', 
+                'StatusMsg': 'Invalid company user',
+                'APICode':APICodeClass.Notification_Rule_Save.value
+            }, status=status.HTTP_400_BAD_REQUEST)
 
         ar_data = module_classes
 
@@ -65,10 +97,20 @@ def SaveNotificationRule(request):
             new_rule.save()
 
         logger.info("Calling notification_master saved rule: SaveNotificationRule()")
-        return Response({'StatusCode': '200', 'IsSaved': 'Y', 'StatusMsg': 'Saved Successfully!!!'}, status=status.HTTP_200_OK)
+        return Response({
+            'StatusCode': '200', 
+            'IsSaved': 'Y', 
+            'StatusMsg': 'Saved Successfully!!!',
+            'APICode':APICodeClass.Notification_Rule_Save.value
+        }, status=status.HTTP_200_OK)
     except Exception as ex:
         logger.error("Calling notification_master Error: SaveNotificationRule() " + str(ex))
-        return Response({'StatusCode': '400', 'IsSaved': 'N', 'StatusMsg': str(ex)}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({
+            'StatusCode': '400', 
+            'IsSaved': 'N', 
+            'StatusMsg': str(ex),
+            'APICode':APICodeClass.Notification_Rule_Save.value
+        }, status=status.HTTP_400_BAD_REQUEST)
     
 @api_view(['POST'])
 def NotificationPreSetRule(request):
@@ -77,7 +119,12 @@ def NotificationPreSetRule(request):
     
     if not serializer.is_valid():
         logger.error("Invalid data: %s", serializer.errors)
-        return Response({'StatusCode': '400', 'IsSaved': 'N', 'StatusMsg': 'Invalid Data'}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({
+            'StatusCode': '400', 
+            'IsSaved': 'N', 
+            'StatusMsg': 'Invalid Data',
+            'APICode':APICodeClass.Notification_Rule_Preset.value
+        }, status=status.HTTP_400_BAD_REQUEST)
 
     data = serializer.validated_data
     fromUseremail = data['fromUseremail']
@@ -89,27 +136,52 @@ def NotificationPreSetRule(request):
         logger.info("Calling notification_master: SaveNotificationRule()")
         cmpcheck = user = QitCompany.objects.filter(transid=cmptransid).first()
         if not cmpcheck:
-            return Response({'StatusCode': '400', 'IsSaved': 'N', 'StatusMsg': 'Invalid company'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({
+                'StatusCode': '400', 
+                'IsSaved': 'N', 
+                'StatusMsg': 'Invalid company',
+                'APICode':APICodeClass.Notification_Rule_Preset.value
+            }, status=status.HTTP_400_BAD_REQUEST)
         user = None
         cmptransidUser = None
         if 'COMPANY' in userrole.upper():
             user = QitCompany.objects.filter(e_mail=fromUseremail).first()
             if not user:
                 logger.info("Calling authorization_master saved rule: GetAuthRule(): Error User not found")
-                return Response({'StatusCode': '400', 'IsSaved': 'N', 'StatusMsg': 'Company Not found..!!'}, status=status.HTTP_400_BAD_REQUEST)
+                return Response({
+                    'StatusCode': '400', 
+                    'IsSaved': 'N', 
+                    'StatusMsg': 'Company Not found..!!',
+                    'APICode':APICodeClass.Notification_Rule_Preset.value
+                }, status=status.HTTP_400_BAD_REQUEST)
             cmptransidUser = user
         elif 'USER' in userrole.upper():
             user = QitUsermaster.objects.filter(e_mail=fromUseremail).first()
             if not user:
                 logger.info("Calling authorization_master saved rule: GetAuthRule(): Error User not found")
-                return Response({'StatusCode': '400', 'IsSaved': 'N', 'StatusMsg': 'User Not found..!!'}, status=status.HTTP_400_BAD_REQUEST)
+                return Response({
+                    'StatusCode': '400', 
+                    'IsSaved': 'N', 
+                    'StatusMsg': 'User Not found..!!',
+                    'APICode':APICodeClass.Notification_Rule_Preset.value
+                }, status=status.HTTP_400_BAD_REQUEST)
             cmptransidUser = user.cmptransid
         if not user:
             logger.info("Calling notification_master saved rule: SaveNotificationRule(): Error User not found")
-            return Response({'StatusCode': '400', 'IsSaved': 'N', 'StatusMsg': 'User Not found..!!'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({
+                'StatusCode': '400', 
+                'IsSaved': 'N', 
+                'StatusMsg': 'User Not found..!!',
+                'APICode':APICodeClass.Notification_Rule_Preset.value
+            }, status=status.HTTP_400_BAD_REQUEST)
         if str(cmptransidUser.transid).strip() != str(cmptransid).strip():
             logger.info("Calling notification_master saved rule: SaveNotificationRule(): Error Invalid company user")
-            return Response({'StatusCode': '400', 'IsSaved': 'N', 'StatusMsg': 'Invalid company user'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({
+                'StatusCode': '400', 
+                'IsSaved': 'N', 
+                'StatusMsg': 'Invalid company user',
+                'APICode':APICodeClass.Notification_Rule_Preset.value
+            }, status=status.HTTP_400_BAD_REQUEST)
 
         ar_data = []
 
@@ -127,12 +199,27 @@ def NotificationPreSetRule(request):
                 else:
                     preset_rule = QitNotifiicationrule(user_id=userData.transid,cmptransid=userData.cmptransid, n_rule_detail=ar_data,userrole=userData.usertype.upper())
                     preset_rule.save()
-            return Response({'StatusCode': '200', 'IsSaved': 'Y', 'StatusMsg': 'Saved Successfully!!!'}, status=status.HTTP_200_OK)
+            return Response({
+                'StatusCode': '200', 
+                'IsSaved': 'Y', 
+                'StatusMsg': 'Saved Successfully!!!',
+                'APICode':APICodeClass.Notification_Rule_Preset.value
+            }, status=status.HTTP_200_OK)
         else:
-            return Response({'StatusCode': '400', 'IsSaved': 'N', 'StatusMsg': 'No Rule Found'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({
+                'StatusCode': '400', 
+                'IsSaved': 'N', 
+                'StatusMsg': 'No Rule Found',
+                'APICode':APICodeClass.Notification_Rule_Preset.value
+            }, status=status.HTTP_400_BAD_REQUEST)
     except Exception as ex:
         logger.error("Calling notification_master Error: SaveNotificationRule() " + str(ex))
-        return Response({'StatusCode': '400', 'IsSaved': 'N', 'StatusMsg': str(ex)}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({
+            'StatusCode': '400', 
+            'IsSaved': 'N', 
+            'StatusMsg': str(ex),
+            'APICode':APICodeClass.Notification_Rule_Preset.value
+        }, status=status.HTTP_400_BAD_REQUEST)
 
 @api_view(['POST'])
 def GetNotificationRule(request):
@@ -141,7 +228,12 @@ def GetNotificationRule(request):
     
     if not serializer.is_valid():
         logger.error("Invalid data: %s", serializer.errors)
-        return Response({'StatusCode': '400', 'IsSaved': 'N', 'StatusMsg': 'Invalid Data'}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({
+            'StatusCode': '400', 
+            'IsSaved': 'N', 
+            'StatusMsg': 'Invalid Data',
+            'APICode':APICodeClass.Notification_Rule_Get.value
+        }, status=status.HTTP_400_BAD_REQUEST)
 
     data = serializer.validated_data
     useremail = data['useremail']
@@ -152,37 +244,77 @@ def GetNotificationRule(request):
         logger.info("Calling notification_master: GetNotificationRule()")
         cmpcheck = user = QitCompany.objects.filter(transid=cmptransid).first()
         if not cmpcheck:
-            return Response({'StatusCode': '400', 'IsSaved': 'N', 'StatusMsg': 'Invalid company'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({
+                'StatusCode': '400', 
+                'IsSaved': 'N', 
+                'StatusMsg': 'Invalid company',
+                'APICode':APICodeClass.Notification_Rule_Get.value
+            }, status=status.HTTP_400_BAD_REQUEST)
         user = None
         cmptransidUser = None
         if 'COMPANY' in data['userrole'].upper():
             user = QitCompany.objects.filter(e_mail=useremail).first()
             if not user:
                 logger.info("Calling authorization_master saved rule: GetAuthRule(): Error User not found")
-                return Response({'StatusCode': '400', 'IsSaved': 'N', 'StatusMsg': 'Company Not found..!!'}, status=status.HTTP_400_BAD_REQUEST)
+                return Response({
+                    'StatusCode': '400', 
+                    'IsSaved': 'N', 
+                    'StatusMsg': 'Company Not found..!!',
+                    'APICode':APICodeClass.Notification_Rule_Get.value
+                }, status=status.HTTP_400_BAD_REQUEST)
             cmptransidUser = user
         elif 'USER' in data['userrole'].upper():
             user = QitUsermaster.objects.filter(e_mail=useremail).first()
             if not user:
                 logger.info("Calling authorization_master saved rule: GetAuthRule(): Error User not found")
-                return Response({'StatusCode': '400', 'IsSaved': 'N', 'StatusMsg': 'User Not found..!!'}, status=status.HTTP_400_BAD_REQUEST)
+                return Response({
+                    'StatusCode': '400', 
+                    'IsSaved': 'N', 
+                    'StatusMsg': 'User Not found..!!',
+                    'APICode':APICodeClass.Notification_Rule_Get.value
+                }, status=status.HTTP_400_BAD_REQUEST)
             cmptransidUser = user.cmptransid
         if not user:
             logger.info("Calling notification_master saved rule: GetNotificationRule(): Error User not found")
-            return Response({'StatusCode': '400', 'IsSaved': 'N', 'StatusMsg': 'User Not found..!!'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({
+                'StatusCode': '400', 
+                'IsSaved': 'N', 
+                'StatusMsg': 'User Not found..!!',
+                'APICode':APICodeClass.Notification_Rule_Get.value
+            }, status=status.HTTP_400_BAD_REQUEST)
         if str(cmptransidUser.transid).strip() != str(cmptransid).strip():
             logger.info("Calling notification_master saved rule: GetNotificationRule(): Error Invalid company user")
-            return Response({'StatusCode': '400', 'IsSaved': 'N', 'StatusMsg': 'Invalid company user'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({
+                'StatusCode': '400', 
+                'IsSaved': 'N', 
+                'StatusMsg': 'Invalid company user',
+                'APICode':APICodeClass.Notification_Rule_Get.value
+            }, status=status.HTTP_400_BAD_REQUEST)
        
         existing_rule = QitNotifiicationrule.objects.filter(user_id=user.transid).first()
 
         if existing_rule:
-            return Response({'StatusCode': '200', 'IsSaved': 'Y', 'Notification_Rule': existing_rule.n_rule_detail}, status=status.HTTP_200_OK)
+            return Response({
+                'StatusCode': '200', 
+                'IsSaved': 'Y', 
+                'Notification_Rule': existing_rule.n_rule_detail,
+                'APICode':APICodeClass.Notification_Rule_Get.value
+            }, status=status.HTTP_200_OK)
         else:
-            return Response({'StatusCode': '400', 'IsSaved': 'N', 'StatusMsg': 'No Rule Found'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({
+                'StatusCode': '400', 
+                'IsSaved': 'N', 
+                'StatusMsg': 'No Rule Found',
+                'APICode':APICodeClass.Notification_Rule_Get.value
+            }, status=status.HTTP_400_BAD_REQUEST)
     except Exception as ex:
         logger.error("Calling notification_master Error: GetNotificationRule() " + str(ex))
-        return Response({'StatusCode': '400', 'IsSaved': 'N', 'StatusMsg': str(ex)}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({
+            'StatusCode': '400', 
+            'IsSaved': 'N', 
+            'StatusMsg': str(ex),
+            'APICode':APICodeClass.Notification_Rule_Get.value
+        }, status=status.HTTP_400_BAD_REQUEST)
 
 def chk_user_comp_id(user_email):
     user  = QitUserlogin.objects.filter(e_mail=user_email).first()
@@ -197,17 +329,31 @@ def SaveNotification(request):
         data = request.data
         serializer = SetNotificationClassSerializer(data=data)
         if not serializer.is_valid():
-            return Response({"StatusCode": "400", "StatusMsg": "Payload is empty or invalid..!!"}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({
+                "StatusCode": "400", 
+                "StatusMsg": "Payload is empty or invalid..!!",
+                'APICode':APICodeClass.Notification_Get.value
+            }, status=status.HTTP_400_BAD_REQUEST)
         
         notification = serializer.validated_data
         module = notification.get('module')
         cmptransid = notification.get('cmptransid')
         cmpcheck = QitCompany.objects.filter(transid=cmptransid).first()
         if not cmpcheck:
-            return Response({'StatusCode': '400', 'IsSaved': 'N', 'StatusMsg': 'Invalid company'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({
+                'StatusCode': '400', 
+                'IsSaved': 'N', 
+                'StatusMsg': 'Invalid company',
+                'APICode':APICodeClass.Notification_Get.value
+            }, status=status.HTTP_400_BAD_REQUEST)
         
         if module == '':
-            return Response({"StatusCode": "403", "IsSaved": "N", "StatusMsg": "Notification Module is required..!!"}, status=status.HTTP_403_FORBIDDEN)
+            return Response({
+                "StatusCode": "403", 
+                "IsSaved": "N", 
+                "StatusMsg": "Notification Module is required..!!",
+                'APICode':APICodeClass.Notification_Get.value
+            }, status=status.HTTP_403_FORBIDDEN)
         
         user_ids = []
         all_rules = QitNotifiicationrule.objects.filter(cmptransid=notification.get('cmptransid'))
@@ -224,11 +370,19 @@ def SaveNotification(request):
                     break
        
         if not user_ids:
-            return Response({"StatusCode": "404", "StatusMsg": "No users found for the specified module."}, status=status.HTTP_404_NOT_FOUND)
+            return Response({
+                "StatusCode": "404", 
+                "StatusMsg": "No users found for the specified module.",
+                'APICode':APICodeClass.Notification_Get.value
+            }, status=status.HTTP_404_NOT_FOUND)
 
         sender_user = QitUserlogin.objects.filter(e_mail=notification['sender_email']).first()
         if not sender_user:
-            return Response({"StatusCode": "404", "StatusMsg": "Sender user not found."}, status=status.HTTP_404_NOT_FOUND)
+            return Response({
+                "StatusCode": "404", 
+                "StatusMsg": "Sender user not found.",
+                'APICode':APICodeClass.Notification_Get.value
+            }, status=status.HTTP_404_NOT_FOUND)
         # sender_user_data = role_email_get_data(sender_user.e_mail,sender_user.userrole)
         new_notifications = []
         with transaction.atomic():
@@ -244,9 +398,18 @@ def SaveNotification(request):
                 notification_entity.save()
                 new_notifications.append(notification_entity)
         send_notification(new_notifications,cmpcheck.transid)
-        return Response({"StatusCode": "200", "IsSaved": "Y", "StatusMsg": "Notification Added successfully.."}, status=status.HTTP_200_OK)
+        return Response({
+            "StatusCode": "200", 
+            "IsSaved": "Y", 
+            "StatusMsg": "Notification Added successfully..",
+            'APICode':APICodeClass.Notification_Get.value
+        }, status=status.HTTP_200_OK)
     except Exception as ex:
-        return Response({"StatusCode": "400", "StatusMsg": str(ex)}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({
+            "StatusCode": "400", 
+            "StatusMsg": str(ex),
+            'APICode':APICodeClass.Notification_Get.value
+        }, status=status.HTTP_400_BAD_REQUEST)
     
 @api_view(['POST'])
 def GetNotification(request):
@@ -283,7 +446,11 @@ def ReadNotification(request):
         data = request.data
         serializer = ReadNotificationClassSerializer(data=data)
         if not serializer.is_valid():
-            return Response({"StatusCode": "400", "StatusMsg": "Payload is empty or invalid..!!"}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({
+                "StatusCode": "400", 
+                "StatusMsg": "Payload is empty or invalid..!!",
+                'APICode':APICodeClass.Notification_Read.value
+            }, status=status.HTTP_400_BAD_REQUEST)
         
         notification = serializer.validated_data
         transid = notification.get('transid')
@@ -291,10 +458,19 @@ def ReadNotification(request):
         cmptransid = notification.get('cmptransid')
         cmpcheck = QitCompany.objects.filter(transid=cmptransid).first()
         if not cmpcheck:
-            return Response({'StatusCode': '400', 'IsSaved': 'N', 'StatusMsg': 'Invalid company'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({
+                'StatusCode': '400', 
+                'IsSaved': 'N', 
+                'StatusMsg': 'Invalid company',
+                'APICode':APICodeClass.Notification_Read.value
+            }, status=status.HTTP_400_BAD_REQUEST)
         _user = QitUserlogin.objects.filter(e_mail=email).first()
         if not _user:
-            return Response({"StatusCode": "404", "StatusMsg": "user not found."}, status=status.HTTP_404_NOT_FOUND)
+            return Response({
+                "StatusCode": "404", 
+                "StatusMsg": "user not found.",
+                'APICode':APICodeClass.Notification_Read.value
+            }, status=status.HTTP_404_NOT_FOUND)
 
         notifications = QitNotificationmaster.objects.filter(
             transid=transid,
@@ -303,11 +479,28 @@ def ReadNotification(request):
         ).first()
         if notifications is not None:
             if notifications.chk_status == 'A':
-                return Response({"StatusCode": "404", "StatusMsg": "Notification already read."}, status=status.HTTP_404_NOT_FOUND)
+                return Response({
+                    "StatusCode": "404", 
+                    "StatusMsg": "Notification already read.",
+                    'APICode':APICodeClass.Notification_Read.value
+                }, status=status.HTTP_404_NOT_FOUND)
             notifications.chk_status = 'A'
             notifications.save()
-            return Response({"StatusCode": "200", "IsSaved": "Y", "StatusMsg": "Notification Read successfully.."}, status=status.HTTP_200_OK)
+            return Response({
+                "StatusCode": "200", 
+                "IsSaved": "Y", 
+                "StatusMsg": "Notification Read successfully..",
+                'APICode':APICodeClass.Notification_Read.value
+            }, status=status.HTTP_200_OK)
         else:
-            return Response({"StatusCode": "404", "StatusMsg": "Notification not found."}, status=status.HTTP_404_NOT_FOUND)
+            return Response({
+                "StatusCode": "404", 
+                "StatusMsg": "Notification not found.",
+                'APICode':APICodeClass.Notification_Read.value
+            }, status=status.HTTP_404_NOT_FOUND)
     except Exception as ex:
-        return Response({"StatusCode": "400", "StatusMsg": str(ex)}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({
+            "StatusCode": "400", 
+            "StatusMsg": str(ex),
+            'APICode':APICodeClass.Notification_Read.value
+        }, status=status.HTTP_400_BAD_REQUEST)

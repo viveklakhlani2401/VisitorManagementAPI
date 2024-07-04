@@ -6,6 +6,8 @@ from datetime import datetime
 from django.utils import timezone
 from QIT.serializers import QitVisitorinoutGETSerializer
 from QIT.Views import common
+from operator import itemgetter
+
 class SocketConsumer(AsyncWebsocketConsumer):
     connections = []
 
@@ -126,14 +128,29 @@ class SocketConsumer(AsyncWebsocketConsumer):
         def serialize_visitors(visitors):
             serializer = QitVisitorinoutGETSerializer(visitors, many=True)
             return serializer.data
-
-        # Serialize visitors data in a synchronous context
+        
         serialized_data = await sync_to_async(serialize_visitors)(visitors)
+        
+        def sort_serialized_data(data):
+            # Sort by checkintime first, then by entrydate
+            return sorted(data, key=lambda x: (x['sortDate']), reverse=True)
+
+        # Sort serialized data
+        sorted_data = await sync_to_async(sort_serialized_data)(serialized_data)
+
         # Send back the response
         await self.send(text_data=json.dumps({
             'type': 'visitors',
-            'visitors': serialized_data
+            'visitors': sorted_data
         }))
+
+        # Serialize visitors data in a synchronous context
+        # serialized_data = await sync_to_async(serialize_visitors)(visitors)
+        # # Send back the response
+        # await self.send(text_data=json.dumps({
+        #     'type': 'visitors',
+        #     'visitors': serialized_data
+        # }))
     # End Visitor
 
     # Send Notifications

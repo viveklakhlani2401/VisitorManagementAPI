@@ -13,6 +13,8 @@ from .common import create_userlogin,create_comp_auth,create_comp_notification_a
 from QIT.serializers import CompanyMasterGetSerializer
 from django.core.cache import cache
 import json
+from QIT.utils.APICode import APICodeClass
+
 # Register Company API
 @csrf_exempt
 @api_view(["POST"])
@@ -22,22 +24,26 @@ def CreateCompany(request):
         if not body_data["e_mail"]:
             return Response({
                 'Status':400,
-                'StatusMsg':"Email is required..!!"
+                'StatusMsg':"Email is required..!!",
+                'APICode':APICodeClass.Company_Save.value
             },status=400)
         if not body_data["password"]:
             return Response({
                 'Status':400,
-                'StatusMsg':"Password is required..!!"
+                'StatusMsg':"Password is required..!!",
+                'APICode':APICodeClass.Company_Save.value
             },status=400)
         if not body_data["bname"]:
             return Response({
                 'Status':400,
-                'StatusMsg':"BusinessName is required..!!"
+                'StatusMsg':"BusinessName is required..!!",
+                'APICode':APICodeClass.Company_Save.value
             },status=400)
         if not body_data["blocation"]:
             return Response({
                 'Status':400,
-                'StatusMsg':"BUsinessLocation is required..!!"
+                'StatusMsg':"BUsinessLocation is required..!!",
+                'APICode':APICodeClass.Company_Save.value
             },status=400)
         
         # OTPEntry = QitOtp.objects.filter(e_mail=body_data["e_mail"]).first()
@@ -57,7 +63,8 @@ def CreateCompany(request):
         if(emailExistInComapny):
             return Response({
                 'Status':400,
-                'StatusMsg':"This email alredy register as comapny..!!"
+                'StatusMsg':"This email alredy register as comapny..!!",
+                'APICode':APICodeClass.Company_Save.value
             },status=400)
         
         # OTPEntry = QitOtp.objects.filter(e_mail=body_data["e_mail"]).first()
@@ -95,30 +102,37 @@ def CreateCompany(request):
                     if QitCompany.objects.filter(transid=company_master.transid).exists():
                         frontendURL = os.getenv("FRONTEND_URL")
                         if frontendURL is None:
-                            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+                            return Response({
+                                'error':serializer.errors,
+                                'APICode':APICodeClass.Company_Save.value
+                            }, status=status.HTTP_400_BAD_REQUEST)
                         return Response({
                             # 'data': serializer.data,
                             'status': status.HTTP_201_CREATED,
                             'StatusMsg':"Registered successfully..!!",
-                            'encodedString': f"{frontendURL}{unique_hash}"
+                            'encodedString': f"{frontendURL}{unique_hash}",
+                            'APICode':APICodeClass.Company_Save.value
                         })
                 return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
             else:
                 response = {
                     'Status': 400,
-                    'StatusMsg': "OTP is not verified..!!"
+                    'StatusMsg': "OTP is not verified..!!",
+                    'APICode':APICodeClass.Company_Save.value
                 }
                 return Response(response,status=400)
         else:
             response = {
                     'Status': 400,
-                    'StatusMsg': "Email not found or OTP expired..!!"
+                    'StatusMsg': "Email not found or OTP expired..!!",
+                    'APICode':APICodeClass.Company_Save.value
                 }
             return Response(response,status=400)
     except Exception as e:
         return Response({
             'Status': 400,
-            'StatusMsg': "Error : " + str(e)
+            'StatusMsg': "Error : " + str(e),
+            'APICode':APICodeClass.Company_Save.value
         },status=400)  
 
 
@@ -129,16 +143,21 @@ def GetComapnyData(request,qrCode):
         resDB = QitCompany.objects.filter(qrstring = qrCode)
         serializer = CompanyMasterGetSerializer(resDB,many=True)
         if resDB:
-            return Response(serializer.data)
+            return Response({
+                'Data':serializer.data,
+                'APICode':APICodeClass.Company_GetByQR.value
+            })
         else:
             return Response({
                 'Status':400,
-                'StatusMsg':"Invalid QR Code..!!"
+                'StatusMsg':"Invalid QR Code..!!",
+                'APICode':APICodeClass.Company_GetByQR.value
             },status=400)
     except Exception as e:
         return Response({
             'Status':400,
-            'StatusMsg':str(e)
+            'StatusMsg':str(e),
+            'APICode':APICodeClass.Company_GetByQR.value
         },status=400)
 
 
@@ -152,21 +171,27 @@ def GetComapnyDataById(request,cid):
         resDB = QitCompany.objects.get(transid = cid)
         serializer = CompanyProfileSerializer(resDB,many=False)
         if resDB:
-            return Response(serializer.data)
+            return Response({
+                'Data':serializer.data,
+                'APICode':APICodeClass.Company_GetByCId.value
+            })
         else:
             return Response({
                 'Status':400,
-                'StatusMsg':"Invalid Company id..!!"
+                'StatusMsg':"Invalid Company id..!!",
+                'APICode':APICodeClass.Company_GetByCId.value
             },status=400)
     except QitCompany.DoesNotExist:
         return Response({
             'Status':400,
-            'StatusMsg':"No data found..!!"
+            'StatusMsg':"No data found..!!",
+            'APICode':APICodeClass.Company_GetByCId.value
         },status=400)
     except Exception as e:
         return Response({
             'Status':400,
-            'StatusMsg':str(e)
+            'StatusMsg':str(e),
+            'APICode':APICodeClass.Company_GetByCId.value
         },status=400)
 
 
@@ -200,20 +225,24 @@ def EditComapnyDataById(request):
             resDB.save()
             return Response({
                 'Status':200,
-                'StatusMsg':"Company data updated..!!"
+                'StatusMsg':"Company data updated..!!",
+                'APICode':APICodeClass.Company_Edit.value
             })
         else:
             return Response({
                 'Status':400,
-                'StatusMsg':"Invalid Company id..!!"
+                'StatusMsg':"Invalid Company id..!!",
+                'APICode':APICodeClass.Company_Edit.value
             },status=400)
     except QitCompany.DoesNotExist:
         return Response({
             'Status':400,
-            'StatusMsg':"No data found..!!"
+            'StatusMsg':"No data found..!!",
+            'APICode':APICodeClass.Company_Edit.value
         },status=400)
     except Exception as e:
         return Response({
             'Status':400,
-            'StatusMsg':str(e)
+            'StatusMsg':str(e),
+            'APICode':APICodeClass.Company_Edit.value
         },status=400)
