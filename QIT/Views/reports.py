@@ -5,7 +5,7 @@ from rest_framework.response import Response
 from QIT.serializers import QitVisitorinoutGETSerializer
 from QIT.models import QitVisitorinout,QitCompany
 from django.core.cache import cache
-from datetime import datetime
+from datetime import datetime,timedelta
 from QIT.Views import common
 from django.utils import timezone
 from django.utils.timezone import make_aware
@@ -35,7 +35,7 @@ def GetVisitorReport(request):
             }, status=400)
 
         from_date = datetime.strptime(fdate, '%Y-%m-%d')
-        to_date = datetime.strptime(tdate, '%Y-%m-%d')
+        to_date = datetime.strptime(tdate, '%Y-%m-%d')+ timedelta(days=1)
 
         # Make them timezone-aware
         from_date = make_aware(from_date)
