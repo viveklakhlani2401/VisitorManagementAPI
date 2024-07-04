@@ -56,5 +56,6 @@ class EmailThread(threading.Thread):
         msg.content_subtype = "html"
         msg.send()
 
+
 def send_html_mail(subject, html_content, recipient_list):
     EmailThread(subject, html_content, recipient_list).start()
