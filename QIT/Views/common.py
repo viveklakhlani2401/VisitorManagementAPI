@@ -22,6 +22,7 @@ import json
 from asgiref.sync import async_to_sync
 from channels.layers import get_channel_layer
 from QIT.utils import modules
+from QIT.utils.APICode import APICodeClass
 from django.utils import timezone
 from datetime import datetime
 import ast
@@ -75,19 +76,22 @@ def GenerateOTP(request):
         if not request.data:
             return Response({
                 'Status':400,
-                'StatusMsg':"Payload is required..!!"
+                'StatusMsg':"Payload is required..!!",
+                "APICode":APICodeClass.Auth_Generate_OTP.value
             },status=400)
         email = request.data["e_mail"]
         role = request.data["role"]
         if not email:
             return Response({
                 'Status':400,
-                'StatusMsg':"e_mail is required..!!"
+                'StatusMsg':"e_mail is required..!!",
+                "APICode":APICodeClass.Auth_Generate_OTP.value
             },status=400)
         if not role:
             return Response({
                 'Status':400,
-                'StatusMsg':"role is required..!!"
+                'StatusMsg':"role is required..!!",
+                "APICode":APICodeClass.Auth_Generate_OTP.value
             },status=400)
         
         if role.upper() != "VISITOR":
@@ -95,7 +99,8 @@ def GenerateOTP(request):
             if userEntry:
                 return Response({
                     'Status':400,
-                    'StatusMsg':"User with this email already exists..!!"
+                    'StatusMsg':"User with this email already exists..!!",
+                    "APICode":APICodeClass.Auth_Generate_OTP.value
                 },status=400)
         new_OTP = generate_otp()
         if role.upper() == "COMPANY":
@@ -111,19 +116,22 @@ def GenerateOTP(request):
         else:
             return Response({
                 'Status':400,
-                'StatusMsg':"Invalid role..!!"
+                'StatusMsg':"Invalid role..!!",
+                "APICode":APICodeClass.Auth_Generate_OTP.value
             },status=400)
         set_otp(email,new_OTP,role.upper())
         message1 =  email_template(email,message,new_OTP)
         Send_OTP(email,f"OTP (One Time Password)",message1)
         return Response({
             'Status':200,
-            'StatusMsg':f"OTP send successfully on email : {email}..!!"
+            'StatusMsg':f"OTP send successfully on email : {email}..!!",
+            "APICode":APICodeClass.Auth_Generate_OTP.value
         },status=200)
     except Exception as e:
         return Response({
             'Status':400,
-            'StatusMsg':str(e)
+            'StatusMsg':str(e),
+            "APICode":APICodeClass.Auth_Generate_OTP.value
         },status=400)
     
 
@@ -197,26 +205,30 @@ def GenerateOTP(request):
 def VerifyOTP(request):
     body_data = request.data
     try:
-        print("++++++++++",body_data)
         if not body_data:
             return Response({
                 'Status':400,
-                'StatusMsg':"Payload is required..!!"
+                'StatusMsg':"Payload is required..!!",
+                "APICode":APICodeClass.Auth_Verify_OTP.value
+
             },status=400)
         if not body_data.get("e_mail"):
             return Response({
                 'Status':400,
-                'StatusMsg':"Email is required..!!"
+                'StatusMsg':"Email is required..!!",
+                "APICode":APICodeClass.Auth_Verify_OTP.value
             },status=400)
         if not body_data.get("VerifyOTP"):
             return Response({
                 'Status':400,
-                'StatusMsg':"OTP is required..!!"
+                'StatusMsg':"OTP is required..!!",
+                "APICode":APICodeClass.Auth_Verify_OTP.value
             },status=400)
         if not body_data.get("role"):
             return Response({
                 'Status':400,
-                'StatusMsg':"Role is required..!!"
+                'StatusMsg':"Role is required..!!",
+                "APICode":APICodeClass.Auth_Verify_OTP.value
             },status=400)
         
         email = body_data.get("e_mail")
@@ -234,25 +246,29 @@ def VerifyOTP(request):
                     cache.set(f"otp_{email}", json.dumps(stored_data), timeout=300)
                     response = {
                         'Status': 200,
-                        'StatusMsg': "OTP verified..!!"
+                        'StatusMsg': "OTP verified..!!",
+                        "APICode":APICodeClass.Auth_Verify_OTP.value
                     }
                     return Response(response,status=200)
                 else:
                     response = {
                         'Status': 400,
-                        'StatusMsg': "Invalid OTP ..!!"
+                        'StatusMsg': "Invalid OTP ..!!",
+                        "APICode":APICodeClass.Auth_Verify_OTP.value
                     }
                     return Response(response,status=400)
             else:
                 response = {
                     'Status': 400,
-                    'StatusMsg': "Email not found or OTP expired..!!"
+                    'StatusMsg': "Email not found or OTP expired..!!",
+                    "APICode":APICodeClass.Auth_Verify_OTP.value
                 }
                 return Response(response,status=400)
         else:
             response = {
                     'Status': 400,
-                    'StatusMsg': "Something wrong..!!"
+                    'StatusMsg': "Something wrong..!!",
+                    "APICode":APICodeClass.Auth_Verify_OTP.value
                 }
             return Response(response,status=400)
         # OTPEntry = QitOtp.objects.get(e_mail = body_data["E_Mail"], verifyotp = body_data["VerifyOTP"])
@@ -278,7 +294,8 @@ def VerifyOTP(request):
     except QitOtp.DoesNotExist:
         return Response({
             'Status':400,
-            'StatusMsg':"Invalid Email or OTP ..!!"
+            'StatusMsg':"Invalid Email or OTP ..!!",
+            "APICode":APICodeClass.Auth_Verify_OTP.value
         },status=400)
     
 # Refresh Token API
@@ -289,11 +306,20 @@ def token_refresh(request):
         try:
             refresh = RefreshToken(refresh_token['refresh_token'])
             access_token = str(refresh.access_token)
-            return Response({'access_token': access_token})
+            return Response({
+                'access_token': access_token,
+                "APICode":APICodeClass.Auth_RefreshToken.value
+            })
         except Exception as e:
-            return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({
+                'error': str(e),
+                "APICode":APICodeClass.Auth_RefreshToken.value
+            }, status=status.HTTP_400_BAD_REQUEST)
     else:
-        return Response({'error': 'Refresh token is required'}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({
+            'error': 'Refresh token is required',
+            "APICode":APICodeClass.Auth_RefreshToken.value
+        }, status=status.HTTP_400_BAD_REQUEST)
 
 # Login API with refresh and access token
 # @api_view(['POST'])
@@ -410,7 +436,10 @@ def login_view(request):
                 else:
                     cmpId = chkUser.cmptransid.transid
                 if chkUser == None:
-                    return Response({'detail': 'Something wrong'}, status=status.HTTP_404_NOT_FOUND)
+                    return Response({
+                        'detail': 'Something wrong',
+                        "APICode":APICodeClass.Auth_LogIn.value
+                    }, status=status.HTTP_404_NOT_FOUND)
 
                 obj = QitAuthenticationrule.objects.filter(user_id=chkUser.transid,cmptransid=cmpId).first()
                 
@@ -426,13 +455,23 @@ def login_view(request):
                     'userAuth':obj.auth_rule_detail,
                     'refresh': str(refresh),
                     'access': str(refresh.access_token),
+                    "APICode":APICodeClass.Auth_LogIn.value
                 })
             else:
-                return Response({'detail': 'Invalid credentials'}, status=status.HTTP_401_UNAUTHORIZED)
+                return Response({
+                    'detail': 'Invalid credentials',
+                    "APICode":APICodeClass.Auth_LogIn.value
+                }, status=status.HTTP_401_UNAUTHORIZED)
         else:
-            return Response({'detail': 'Invalid credentials'}, status=status.HTTP_401_UNAUTHORIZED)
+            return Response({
+                'detail': 'Invalid credentials',
+                "APICode":APICodeClass.Auth_LogIn.value
+            }, status=status.HTTP_401_UNAUTHORIZED)
     except QitUserlogin.DoesNotExist:
-        return Response({'detail': 'User does not exist'}, status=status.HTTP_404_NOT_FOUND)
+        return Response({
+            'detail': 'User does not exist',
+            "APICode":APICodeClass.Auth_LogIn.value
+        }, status=status.HTTP_404_NOT_FOUND)
 # @api_view(['POST'])
 # def login_view(request):
 #     email = request.data.get('email')
@@ -572,21 +611,38 @@ def changeUserPWDReq(request):
     try:
         body_data = request.data
         if not body_data:
-            return Response({'Status': 400, 'StatusMsg': "Payload required..!!"}, status=400)      
+            return Response({
+                'Status': 400, 
+                'StatusMsg': "Payload required..!!",
+                "APICode":APICodeClass.Auth_ForgetPWD_User.value
+            }, status=400)      
         email = body_data.get("e_mail")
         if not email:
-            return Response({'Status': 400, 'StatusMsg': "Email is required..!!"}, status=400)      
+            return Response({
+                'Status': 400, 
+                'StatusMsg': "Email is required..!!",
+                "APICode":APICodeClass.Auth_ForgetPWD_User.value
+            }, status=400)      
         resDB = QitUsermaster.objects.filter(e_mail = body_data["e_mail"]).first()
         if not resDB:
-            return Response({'Status': 400, 'StatusMsg': "Invalid emai..!!"}, status=400)      
+            return Response({
+                'Status': 400, 
+                'StatusMsg': "Invalid emai..!!",
+                "APICode":APICodeClass.Auth_ForgetPWD_User.value
+            }, status=400)      
         resDB.changepassstatus = 1
         resDB.save()
         return Response({
             "Status":200,
-            "StatusMessage":"Request send successfully..!!"
+            "StatusMessage":"Request send successfully..!!",
+            "APICode":APICodeClass.Auth_ForgetPWD_User.value
         },status=200)
     except Exception as e:
-        return Response({'Status': 400, 'StatusMsg': str(e)}, status=400)
+        return Response({
+            'Status': 400, 
+            'StatusMsg': str(e),
+            "APICode":APICodeClass.Auth_ForgetPWD_User.value
+        }, status=400)
 
 # Verify OTP API
 @csrf_exempt
@@ -597,17 +653,20 @@ def ForgetpwdVerifyOTP(request):
         if not body_data :
             return Response({
                 'Status':400,
-                'StatusMsg':"Payload is required..!!"
+                'StatusMsg':"Payload is required..!!",
+                "APICode":APICodeClass.Auth_VerifyForgetPWD_OTP.value
             },status=400)
         if not body_data["e_mail"]:
             return Response({
                 'Status':400,
-                'StatusMsg':"Email is required..!!"
+                'StatusMsg':"Email is required..!!",
+                "APICode":APICodeClass.Auth_VerifyForgetPWD_OTP.value
             },status=400)
         if not body_data["VerifyOTP"]:
             return Response({
                 'Status':400,
-                'StatusMsg':"OTP is required..!!"
+                'StatusMsg':"OTP is required..!!",
+                "APICode":APICodeClass.Auth_VerifyForgetPWD_OTP.value
             },status=400)
         email = body_data["e_mail"]
         otp = body_data["VerifyOTP"]
@@ -621,31 +680,36 @@ def ForgetpwdVerifyOTP(request):
                     cache.set(f"otp_{email}", json.dumps(stored_data), timeout=300)
                     response = {
                         'Status': 200,
-                        'StatusMsg': "OTP verified..!!"
+                        'StatusMsg': "OTP verified..!!",
+                        "APICode":APICodeClass.Auth_VerifyForgetPWD_OTP.value
                     }
                     return Response(response)
                 else:
                     response = {
                         'Status': 400,
-                        'StatusMsg': "Invalid OTP ..!!"
+                        'StatusMsg': "Invalid OTP ..!!",
+                        "APICode":APICodeClass.Auth_VerifyForgetPWD_OTP.value
                     }
                     return Response(response)
             else:
                 response = {
                     'Status': 400,
-                    'StatusMsg': "Email not found or OTP expired..!!"
+                    'StatusMsg': "Email not found or OTP expired..!!",
+                    "APICode":APICodeClass.Auth_VerifyForgetPWD_OTP.value
                 }
                 return Response(response)
         else:
             response = {
                     'Status': 400,
-                    'StatusMsg': "Something wrong..!!"
+                    'StatusMsg': "Something wrong..!!",
+                    "APICode":APICodeClass.Auth_VerifyForgetPWD_OTP.value
                 }
             return Response(response,status=400)
     except:
         return Response({
             'Status':400,
-            'StatusMsg':"Invalid Email or OTP ..!!"
+            'StatusMsg':"Invalid Email or OTP ..!!",
+            "APICode":APICodeClass.Auth_VerifyForgetPWD_OTP.value
         },status=400)
 
 def set_otp(email, otp,urole, status=0 ):
@@ -658,9 +722,17 @@ def generate_newPassword(request):
     try:
         body_data = request.data
         if not body_data["e_mail"]:
-            return Response({'error': 'Email ID is required'}, status=400)
+            return Response({
+                'Status':400,
+                'StatusMsg':"Email ID is required..!!",
+                "APICode":APICodeClass.Auth_GenerateNewPWD_Cmp.value
+            }, status=400)
         if not body_data["password"]:
-            return Response({'error': 'New Password is required'}, status=400)
+            return Response({
+                'Status':400,
+                'StatusMsg':"New Password is required..!!",
+                "APICode":APICodeClass.Auth_GenerateNewPWD_Cmp.value
+            }, status=400)
         email = body_data["e_mail"]
         stored_data_json = cache.get(f"otp_{email}")
         if stored_data_json:
@@ -672,7 +744,8 @@ def generate_newPassword(request):
                 if not resDB:
                     return Response({
                         'Status':400,
-                        'StatusMsg':"Invalid User..!!"
+                        'StatusMsg':"Invalid User..!!",
+                        "APICode":APICodeClass.Auth_GenerateNewPWD_Cmp.value
                     },status=400)
                 
                 if resDB.userrole == "COMPANY":
@@ -684,38 +757,44 @@ def generate_newPassword(request):
                     return Response({
                         'Status':200,
                         'StatusMsg':"Company Password Updated..!!",
-                        'Role':"Company"
+                        'Role':"Company",
+                        "APICode":APICodeClass.Auth_GenerateNewPWD_Cmp.value
                     })
                 
                 if resDB.userrole == "USER":
                     return Response({
                         'Status':200,
                         'StatusMsg':"Valid User..!!",
-                        'Role':"USER"
+                        'Role':"USER",
+                        "APICode":APICodeClass.Auth_GenerateNewPWD_Cmp.value
                     })
                 
                 if resDB.userrole == "VISITOR":
                     return Response({
                         'Status':200,
                         'StatusMsg':"Valid User..!!",
-                        'Role':"VISITOR"
+                        'Role':"VISITOR",
+                        "APICode":APICodeClass.Auth_GenerateNewPWD_Cmp.value
                     })
             else:
                 response = {
                     'Status': 400,
-                    'StatusMsg': "OTP is not verified..!!"
+                    'StatusMsg': "OTP is not verified..!!",
+                    "APICode":APICodeClass.Auth_GenerateNewPWD_Cmp.value
                 }
                 return Response(response)
         else:
             response = {
                     'Status': 400,
-                    'StatusMsg': "Email not found or OTP expired..!!"
+                    'StatusMsg': "Email not found or OTP expired..!!",
+                    "APICode":APICodeClass.Auth_GenerateNewPWD_Cmp.value
                 }
             return Response(response)
     except Exception as e:
         return Response({
             'Status':400,
             'StatusMsg':e,
+            "APICode":APICodeClass.Auth_GenerateNewPWD_Cmp.value
         },status=400)
 
 # for testing websocket

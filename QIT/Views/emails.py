@@ -5,13 +5,13 @@ def Send_OTP(email, subject, message):
     try:
         # send_mail(subject, message, EMAIL_HOST_USER, [email] )
         send_mail(
-    subject=subject,
-    message="",
-    from_email=EMAIL_HOST_USER,
-    recipient_list=[email],
-    html_message=message,
-    fail_silently=False,
-)
+            subject=subject,
+            message="",
+            from_email=EMAIL_HOST_USER,
+            recipient_list=[email],
+            html_message=message,
+            fail_silently=False,
+        )
         return True
     except Exception as e:
         return False
