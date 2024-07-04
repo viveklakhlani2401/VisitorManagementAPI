@@ -89,7 +89,7 @@ class SocketConsumer(AsyncWebsocketConsumer):
     async def new_notification(self, event):
         notification = event['notification']
         await self.send(text_data=json.dumps({
-            'type': 'notification',
+            'type': 'new_notification',
             'notification': notification
         }))
     # End Handle new notifications
