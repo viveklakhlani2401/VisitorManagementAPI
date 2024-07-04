@@ -1,6 +1,7 @@
 from QIT.serializers import GenerateOTPSerializer,UserSerializer
 from rest_framework.decorators import api_view,authentication_classes
 from .emails import Send_OTP
+from .send_email import send_html_mail
 import random
 import string
 from QIT.models import QitOtp, QitCompany, QitUserlogin,QitAuthenticationrule,QitUsermaster,QitNotifiicationrule
@@ -121,7 +122,8 @@ def GenerateOTP(request):
             },status=400)
         set_otp(email,new_OTP,role.upper())
         message1 =  email_template(email,message,new_OTP)
-        Send_OTP(email,f"OTP (One Time Password)",message1)
+        # Send_OTP(email,f"OTP (One Time Password)",message1)
+        send_html_mail(f"OTP (One Time Password)",message1,email)
         return Response({
             'Status':200,
             'StatusMsg':f"OTP send successfully on email : {email}..!!",
