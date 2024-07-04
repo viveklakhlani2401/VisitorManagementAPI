@@ -26,9 +26,6 @@ from QIT.utils.APICode import APICodeClass
 from django.utils import timezone
 from datetime import datetime
 import ast
-import threading
-from .send_email import send_html_mail
-
 # from django.core.mail import send_mail
 # from QIT.settings import EMAIL_HOST_USER
 # Custom Authentication class
@@ -124,15 +121,7 @@ def GenerateOTP(request):
             },status=400)
         set_otp(email,new_OTP,role.upper())
         message1 =  email_template(email,message,new_OTP)
-        # Send_OTP(email,f"OTP (One Time Password)",message1)
-        threading.Thread(
-            target=send_html_mail,
-            kwargs={
-                "subject": f"OTP (One Time Password)",
-                "html_content": message1,
-                "recipient_list": [email]
-            }
-        ).start()
+        Send_OTP(email,f"OTP (One Time Password)",message1)
         return Response({
             'Status':200,
             'StatusMsg':f"OTP send successfully on email : {email}..!!",
