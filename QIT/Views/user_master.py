@@ -140,21 +140,54 @@ def get_user(request,status,cmpId):
                     'APICode':APICodeClass.User_Get.value
                 },status=400)
 
+# @api_view(['GET'])
+# def get_user_by_id(request, cmpId, transid):
+#     try:
+#         user = QitUsermaster.objects.get(cmptransid=cmpId, transid=transid)
+#     except QitUsermaster.DoesNotExist:
+#         return Response({
+#             'Status': 404, 
+#             'StatusMsg': 'User not found',
+#             'APICode':APICodeClass.User_GetById.value
+#         }, status=status.HTTP_404_NOT_FOUND)
+#     serializer = UserMasterDataSerializer(user)
+#     return Response({
+#         'Data':serializer.data,
+#         'APICode':APICodeClass.User_GetById.value
+#         })
+ 
 @api_view(['GET'])
 def get_user_by_id(request, cmpId, transid):
     try:
-        user = QitUsermaster.objects.get(cmptransid=cmpId, transid=transid)
+        print(transid)
+        userEntry = QitUserlogin.objects.get(transid=transid)
+        print(userEntry.transid)
+        user = QitUsermaster.objects.get(cmptransid=cmpId, usertype=userEntry.userrole,e_mail=userEntry.e_mail)
+        serializer = UserMasterDataSerializer(user)
+        return Response({
+            'Data':serializer.data,
+            'APICode':APICodeClass.User_GetById.value
+            })
+    except QitUserlogin.DoesNotExist:
+        return Response({
+            'Status': 404, 
+            'StatusMsg': 'User not found',
+            'APICode':APICodeClass.User_GetById.value
+        }, status=status.HTTP_404_NOT_FOUND)
     except QitUsermaster.DoesNotExist:
         return Response({
             'Status': 404, 
             'StatusMsg': 'User not found',
             'APICode':APICodeClass.User_GetById.value
         }, status=status.HTTP_404_NOT_FOUND)
-    serializer = UserMasterDataSerializer(user)
-    return Response({
-        'Data':serializer.data,
-        'APICode':APICodeClass.User_GetById.value
-        })
+    
+    except Exception as e:
+        return Response({
+            'Status':400,
+            'StatusMsg':str(e),
+            'APICode':APICodeClass.User_GetById.value
+        },status=400)
+    
  
 
 @api_view(['PUT'])

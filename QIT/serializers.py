@@ -274,7 +274,25 @@ class CompanyProfileSerializer(serializers.ModelSerializer):
         fields = ['transid','e_mail', 'bname', 'blocation','city','state','country','zipcode','address1','address2','phone1','phone2','qrstring','status','entrydate','websitelink','cmplogo']
 
 
+# class QitAPILogSerializer(serializers.ModelSerializer):
+#     class Meta:
+#         model = QitApiLog
+#         fields ="__all__"
+
 class QitAPILogSerializer(serializers.ModelSerializer):
+    # class Meta:
+    #     model = QitApiLog
+    #     fields ="__all__"
+    loglevel = serializers.SerializerMethodField()
+ 
     class Meta:
         model = QitApiLog
-        fields ="__all__"
+        fields = "__all__"
+ 
+    def get_loglevel(self, obj):
+        loglevel_mapping = {
+            'I': 'Information',
+            'S': 'Success',
+            'E': 'Error'
+        }
+        return loglevel_mapping.get(obj.loglevel, obj.loglevel) 

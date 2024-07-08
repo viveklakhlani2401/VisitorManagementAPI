@@ -100,32 +100,34 @@ from django.utils.dateparse import parse_datetime
 def Get_log(request):
     try:
         payload = json.loads(request.body)
- 
         cid = payload.get("cid")
         module = payload.get('Module')
         viewname = payload.get('viewname')
         methodname = payload.get('methodname')
+        userlog = payload.get('userlog')
         loglevel = payload.get('loglevel')
         loginuser = payload.get('LoginUser')
         fdate = payload.get("fdate")
         tdate = payload.get("tdate")
-
+ 
         if not loginuser:
             return Response({"Status": "400", "StatusMsg": "Please provide loginuser"}, status=400)
-
-
+ 
+ 
         cmpEntry = QitCompany.objects.filter(transid=cid).first()
         if not cmpEntry:
             return Response({"Status": "400", "StatusMsg": "Invalid Company_Id"}, status=400)
-
+ 
         query = Q(cmptransid=cid)
-       
         if module:
             query &= Q(module=module)
         if viewname:
             query &= Q(viewname__icontains=viewname)
-        if methodname:
-            query &= Q(methodname__icontains=methodname)
+        if userlog:
+            if loginuser != "Admin" and loginuser != "":
+                query &= Q(loginuser=userlog)
+            else:
+                query &= Q(loginuser=userlog)
         if loginuser:
             if loginuser != "Admin":
                 query &= Q(loginuser=loginuser)
@@ -136,21 +138,21 @@ def Get_log(request):
         if fdate and tdate:
             from_date = datetime.strptime(fdate, '%Y-%m-%d')
             to_date = datetime.strptime(tdate, '%Y-%m-%d')
-
+ 
             from_date = make_aware(from_date)
             to_date = make_aware(to_date)
             if from_date and to_date:
                 query &= Q(entrydate__range=(from_date, to_date))
             else:
                 return Response({"Status": "400", "StatusMsg": "Invalid date format"}, status=400)
-
+ 
         logEntry = QitApiLog.objects.filter(query).order_by('-entrydate')
-
+ 
         if not logEntry.exists():
             return Response({"Status": "400", "StatusMsg": "No Data..!!"}, status=400)
-
+ 
         serialized_data = QitAPILogSerializer(logEntry, many=True)
         return Response(serialized_data.data)
-
+ 
     except Exception as e:
         return Response({"Status": "400", "StatusMsg": str(e)}, status=400)
