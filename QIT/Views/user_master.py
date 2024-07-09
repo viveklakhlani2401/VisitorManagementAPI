@@ -293,7 +293,7 @@ def delete_user(request, cmpId, transid):
                     'APICode':APICodeClass.User_Delete.value  
                 },status=status.HTTP_404_NOT_FOUND)
     try:
-        userLogin = QitUserlogin.objects.get(e_mail=user.e_mail,role=user.usertype)
+        userLogin = QitUserlogin.objects.get(e_mail=user.e_mail,userrole=user.usertype)
     except QitUserlogin.DoesNotExist:
         return Response({
                     'Status':status.HTTP_404_NOT_FOUND,

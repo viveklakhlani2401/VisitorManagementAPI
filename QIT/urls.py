@@ -69,6 +69,7 @@ urlpatterns = [
     path('VMS/Report/VisitorReport', reports.GetVisitorReport),
     path('VMS/SaveAPILog', log.save_log),
     path('VMS/GetAPILog', log.Get_log),
+    path('VMS/getAllErrorCode', common.getAllErrorCode),
 
 
     path('VMS/sendEmail', test_send_mail.GenerateOTP),

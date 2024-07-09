@@ -247,7 +247,8 @@ def GetAllVisitor(request,status,cid):
         if status.upper() == "ALL":
             queryset = QitVisitorinout.objects.filter(cmptransid=cid).order_by('-checkintime', '-entrydate')
         elif status.upper() == "P":
-            queryset = QitVisitorinout.objects.filter(cmptransid=cid,status="P").order_by('-checkintime', '-entrydate')
+            today = timezone.now().date()
+            queryset = QitVisitorinout.objects.filter(cmptransid=cid,status="P",checkintime=today).order_by('-checkintime', '-entrydate')
         else:
             return Response({'Status': 400, 'StatusMsg': "Invalid state..!!",'APICode':APICodeClass.Visitor_Get.value}, status=400)
         if not queryset:

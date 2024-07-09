@@ -20,13 +20,13 @@ module_classes= [
   {
       "text": "Notification",
       "path": "/notification",
-      "icon": "bell-icon",
+      "icon": "ri-notification-4-line",
       "hasAccess": True
   },
   {
       "text": "Profile",
       "path": "/profile",
-      "icon": "settings",
+      "icon": "ri-user-line",
       "hasAccess": True
   },
   {
@@ -54,7 +54,7 @@ user_module_classes= [
       "text": "Visitors",
       "path": "/Visitors",
       "icon": "ri-user-add-line",
-      "hasAccess": False
+      "hasAccess": True
   },
   {
       "text": "Verify Visitors",
@@ -71,13 +71,13 @@ user_module_classes= [
   {
       "text": "Notification",
       "path": "/notification",
-      "icon": "bell-icon",
+      "icon": "ri-notification-4-line",
       "hasAccess": True
   },
   {
       "text": "Profile",
       "path": "/profile",
-      "icon": "settings",
+      "icon": "ri-user-line",
       "hasAccess": True
   },
   {
