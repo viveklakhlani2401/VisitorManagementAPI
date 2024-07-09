@@ -557,7 +557,8 @@ def Forget_Password_Send_OTP(request):
         if not resDB:
             return Response({
                 'Status':400,
-                'StatusMsg':"Invalid User..!!"
+                'StatusMsg':"Invalid User..!!",
+                'APICode':APICodeClass.Auth_ForgetPWD_OTP_Cmp.value
             },status=400)
         
         if resDB.userrole == "COMPANY":
@@ -573,34 +574,39 @@ def Forget_Password_Send_OTP(request):
             return Response({
                 'Status':200,
                 'StatusMsg':"Valid User..!!",
-                'Role':"Company"
+                'Role':"Company",
+                'APICode':APICodeClass.Auth_ForgetPWD_OTP_Cmp.value
             })
         print("resDB.userrole : ",resDB.userrole)
         if resDB.userrole == "USER":
             return Response({
                 'Status':200,
                 'StatusMsg':"Valid User..!!",
-                'Role':"USER"
+                'Role':"USER",
+                'APICode':APICodeClass.Auth_ForgetPWD_OTP_Cmp.value
             })
         
         if resDB.userrole == "VISITOR":
             return Response({
                 'Status':200,
                 'StatusMsg':"Valid User..!!",
-                'Role':"VISITOR"
+                'Role':"VISITOR",
+                'APICode':APICodeClass.Auth_ForgetPWD_OTP_Cmp.value
             })
 
         if resDB.userrole == "ADMIN":
             return Response({
                 'Status':200,
                 'StatusMsg':"Valid User..!!",
-                'Role':"ADMIN"
+                'Role':"ADMIN",
+                'APICode':APICodeClass.Auth_ForgetPWD_OTP_Cmp.value
             })
         
     except Exception as e:
         return Response({
             'Status':400,
             'StatusMsg':e,
+            'APICode':APICodeClass.Auth_ForgetPWD_OTP_Cmp.value
         },status=400)
 
 # request for change user password
