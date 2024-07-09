@@ -437,6 +437,7 @@ def login_view(request):
                     cmpLogo = chkUser.cmplogo
                 else:
                     cmpId = chkUser.cmptransid.transid
+                    cmpLogo = chkUser.cmptransid.cmplogo
                 if chkUser == None:
                     return Response({
                         'detail': 'Something wrong',
@@ -917,3 +918,10 @@ def getAuthenticatedUser(module,cmptransid):
                 break
     return user_ids
 
+from QIT.utils import APICode
+# Log API
+@csrf_exempt
+@api_view(['GET'])
+def getAllErrorCode(request):
+        messages = [{"Code": code.value, "Message": message} for code, message in APICode.APICodeMessages.messages.items()]
+        return Response(messages, status=status.HTTP_200_OK)
