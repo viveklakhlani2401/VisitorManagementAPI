@@ -29,13 +29,14 @@ def save_log(request):
         form_id = payload.get("form_id")
         cmpEntry = 0
         if module!="Login" :
-            cmpEntry = QitCompany.objects.filter(transid=cmp_id).first()
-            # cmpEntry = cmpEntry.transid
-            if not cmpEntry:
-                return Response({"Status": "400", "IsSaved": is_saved, "StatusMsg": "Invalid Company_Id"}, status=400)
+            if cmp_id :
+                cmpEntry = QitCompany.objects.filter(transid=cmp_id).first()
+                if not cmpEntry:
+                    return Response({"Status": "400", "IsSaved": is_saved, "StatusMsg": "Invalid Company_Id"}, status=400)
+            else:
+                cmp_id = 0
  
         if not module or module.strip() == "" or module.lower() == "string":
-            print("here")
             return Response({"Status": "400", "IsSaved": is_saved, "StatusMsg": "Provide Module"}, status=400)
  
         if not controller_name or controller_name.strip() == "" or controller_name.lower() == "string":
@@ -65,7 +66,6 @@ def save_log(request):
             cmptransid=cmp_id,
             error_id=form_id
         )
-        print(log.error_id)
         log.save()
  
         is_saved = "Y"

@@ -189,7 +189,6 @@ def get_user_by_id(request, cmpId, transid):
         },status=400)
     
  
-
 @api_view(['PUT'])
 def update_user(request):
     try:

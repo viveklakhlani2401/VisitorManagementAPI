@@ -45,7 +45,7 @@ class APICodeClass(Enum):
     Auth_Generate_OTP = 8001
     Auth_Verify_OTP = 8002
     Auth_LogIn = 8003
-    Auth_ForgetPWD_Cmp = 8004
+    Auth_ForgetPWD_OTP_Cmp = 8004
     Auth_GenerateNewPWD_Cmp = 8005
     Auth_VerifyForgetPWD_OTP = 8006
     Auth_ForgetPWD_User = 8007
