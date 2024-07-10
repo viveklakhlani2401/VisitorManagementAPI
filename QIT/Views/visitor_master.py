@@ -13,6 +13,8 @@ from django.utils import timezone
 import pytz
 from dateutil import parser
 from QIT.utils.APICode import APICodeClass
+from django.db.models import DateField
+from django.db.models.functions import Cast
 
 @csrf_exempt
 @api_view(['POST'])
