@@ -227,7 +227,7 @@ def GetAllVisitor(request,status,cid):
         # entrydate_info = [(type(obj.entrydate), obj.entrydate) for obj in queryset]  # Collect type and value of entrydate field
         
         # print("Entrydate info:", entrydate_info)  # Debug statement
-
+ 
         # queryset = queryset.annotate(
         #     sorting_date=Case(
         #         When(checkintime=False, then=F('checkindatetime')),
@@ -236,7 +236,7 @@ def GetAllVisitor(request,status,cid):
         #     )
         # ).order_by('-sorting_date')
         
-
+ 
         companyEntry = QitCompany.objects.filter(transid=cid).first()
         if not companyEntry:
             return Response( {
@@ -248,7 +248,11 @@ def GetAllVisitor(request,status,cid):
             queryset = QitVisitorinout.objects.filter(cmptransid=cid).order_by('-checkintime', '-entrydate')
         elif status.upper() == "P":
             today = timezone.now().date()
-            queryset = QitVisitorinout.objects.filter(cmptransid=cid,status="P",checkintime=today).order_by('-checkintime', '-entrydate')
+            print("Today : ",today)
+            # queryset = QitVisitorinout.objects.filter(cmptransid=cid,status="P").order_by('-checkintime', '-entrydate')
+            queryset = QitVisitorinout.objects.annotate(entrydate_date=Cast('entrydate', DateField())).filter(cmptransid=cid, status="P", entrydate_date=today).order_by('-checkintime', '-entrydate')
+        
+            # queryset = QitVisitorinout.objects.filter(cmptransid=cid,status="P",checkintime=today).order_by('-checkintime', '-entrydate')
         else:
             return Response({'Status': 400, 'StatusMsg': "Invalid state..!!",'APICode':APICodeClass.Visitor_Get.value}, status=400)
         if not queryset:
@@ -257,7 +261,8 @@ def GetAllVisitor(request,status,cid):
         return Response({'Data':serializer.data,'APICode':APICodeClass.Visitor_Get.value},status=200)
     except Exception as e:
         return Response({'Status': 400, 'StatusMsg': str(e),'APICode':APICodeClass.Visitor_Get.value}, status=400)
-
+ 
+ 
 # get a visior data for company
 @csrf_exempt
 @api_view(["GET"])

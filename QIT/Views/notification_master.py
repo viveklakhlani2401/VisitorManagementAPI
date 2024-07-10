@@ -87,7 +87,7 @@ def SaveNotificationRule(request):
 
         ar_data = module_classes
 
-        existing_rule = QitNotifiicationrule.objects.filter(user_id=user.transid).first()
+        existing_rule = QitNotifiicationrule.objects.filter(user_id=user.transid,userrole=data['userrole'].upper()).first()
 
         if existing_rule:
             existing_rule.n_rule_detail = ar_data
@@ -375,20 +375,27 @@ def SaveNotification(request):
                 "StatusMsg": "No users found for the specified module.",
                 'APICode':APICodeClass.Notification_Get.value
             }, status=status.HTTP_404_NOT_FOUND)
-
-        sender_user = QitUserlogin.objects.filter(e_mail=notification['sender_email']).first()
-        if not sender_user:
-            return Response({
-                "StatusCode": "404", 
-                "StatusMsg": "Sender user not found.",
-                'APICode':APICodeClass.Notification_Get.value
-            }, status=status.HTTP_404_NOT_FOUND)
+        
+        print(notification['sender_email'])
+        if notification['sender_email'] != "0":
+            print("here")
+            sender_user = QitUserlogin.objects.filter(e_mail=notification['sender_email']).first()
+            if not sender_user:
+                return Response({
+                    "StatusCode": "404", 
+                    "StatusMsg": "Sender user not found.",
+                    'APICode':APICodeClass.Notification_Get.value
+                }, status=status.HTTP_404_NOT_FOUND)
+            else:
+                sender_user=sender_user.transid
+        else:
+            sender_user = 0
         # sender_user_data = role_email_get_data(sender_user.e_mail,sender_user.userrole)
         new_notifications = []
         with transaction.atomic():
             for user_id in user_ids:
                 notification_entity = QitNotificationmaster(
-                    sender_user_id=sender_user.transid,
+                    sender_user_id=sender_user,
                     receiver_user_id=user_id.transid,
                     notification_text=notification['notification_text'],
                     cmptransid=cmpcheck,
