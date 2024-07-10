@@ -48,7 +48,9 @@ def SaveAuthRule(request):
         user = None
         cmptransidUser = None
         if 'COMPANY' in data['userrole'].upper():
+            print("company")
             user = QitCompany.objects.filter(e_mail=useremail).first()
+            print(user)
             if not user:
                 logger.info("Calling authorization_master saved rule: GetAuthRule(): Error User not found")
                 return Response({
@@ -59,7 +61,9 @@ def SaveAuthRule(request):
                 }, status=status.HTTP_400_BAD_REQUEST)
             cmptransidUser = user
         elif 'USER' in data['userrole'].upper():
+            print("user")
             user = QitUsermaster.objects.filter(e_mail=useremail).first()
+            print(user)
             if not user:
                 logger.info("Calling authorization_master saved rule: GetAuthRule(): Error User not found")
                 return Response({
@@ -87,7 +91,7 @@ def SaveAuthRule(request):
             }, status=status.HTTP_400_BAD_REQUEST)
 
         ar_data = module_classes
-        existing_rule = QitAuthenticationrule.objects.filter(user_id=user.transid,cmptransid=cmptransidUser.transid).first()
+        existing_rule = QitAuthenticationrule.objects.filter(user_id=user.transid,cmptransid=cmptransidUser.transid,userrole=data['userrole'].upper()).first()
         # existing_rule = QitAuthenticationrule.objects.filter(user_id=user.transid).first()
         if existing_rule:
             existing_rule.auth_rule_detail = ar_data

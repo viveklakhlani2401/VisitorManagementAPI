@@ -99,7 +99,7 @@ class APICodeMessages:
         APICodeClass.Auth_Generate_OTP: "Error in generating OTP.",
         APICodeClass.Auth_Verify_OTP: "Error in verifying OTP.",
         APICodeClass.Auth_LogIn: "Error in logging in.",
-        APICodeClass.Auth_ForgetPWD_Cmp: "Error in company password recovery.",
+        APICodeClass.Auth_ForgetPWD_OTP_Cmp: "Error in company password recovery.",
         APICodeClass.Auth_GenerateNewPWD_Cmp: "Error in generating new company password.",
         APICodeClass.Auth_VerifyForgetPWD_OTP: "Error in verifying OTP for password recovery.",
         APICodeClass.Auth_ForgetPWD_User: "Error in user password recovery.",

@@ -172,7 +172,7 @@ class QitVisitormaster(models.Model):
 
 class QitNotificationmaster(models.Model):
     transid = models.AutoField(db_column='TransId', primary_key=True)  # Field name made lowercase.
-    sender_user_id = models.IntegerField(db_column='Sender_User_Id')  # Field name made lowercase.
+    sender_user_id = models.IntegerField(db_column='Sender_User_Id',blank=True,null=True)  # Field name made lowercase.
     receiver_user_id = models.IntegerField(db_column='Receiver_User_Id')  # Field name made lowercase.
     notification_text = models.TextField(db_column='Notification_Text')  # Field name made lowercase.
     n_date_time = models.DateTimeField(db_column='N_Date_Time',auto_now=True)  # Field name made lowercase.
