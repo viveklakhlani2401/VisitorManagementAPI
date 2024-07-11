@@ -291,7 +291,7 @@ def GetNotificationRule(request):
                 'APICode':APICodeClass.Notification_Rule_Get.value
             }, status=status.HTTP_400_BAD_REQUEST)
        
-        existing_rule = QitNotifiicationrule.objects.filter(user_id=user.transid).first()
+        existing_rule = QitNotifiicationrule.objects.filter(user_id=user.transid,cmptransid=cmptransid).first()
         print(existing_rule)
 
         if existing_rule:
