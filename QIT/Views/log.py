@@ -95,6 +95,7 @@ def save_log(request):
     
 from django.db.models import Q
 from django.utils.dateparse import parse_datetime
+from datetime import datetime, timedelta
 @csrf_exempt
 @api_view(["POST"])
 def Get_log(request):
@@ -137,7 +138,7 @@ def Get_log(request):
             query &= Q(loglevel=loglevel)
         if fdate and tdate:
             from_date = datetime.strptime(fdate, '%Y-%m-%d')
-            to_date = datetime.strptime(tdate, '%Y-%m-%d')
+            to_date = datetime.strptime(tdate, '%Y-%m-%d')+ timedelta(days=1)
  
             from_date = make_aware(from_date)
             to_date = make_aware(to_date)

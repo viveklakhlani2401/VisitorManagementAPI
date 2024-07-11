@@ -292,6 +292,7 @@ def GetNotificationRule(request):
             }, status=status.HTTP_400_BAD_REQUEST)
        
         existing_rule = QitNotifiicationrule.objects.filter(user_id=user.transid).first()
+        print(existing_rule)
 
         if existing_rule:
             return Response({

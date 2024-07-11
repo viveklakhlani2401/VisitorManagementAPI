@@ -32,7 +32,7 @@ module_classes= [
   {
       "text": "General Settings",
       "path": "/generalsettings",
-      "icon": "settings",
+      "icon": "ri-settings-4-line",
       "hasAccess": True
   },
   {
