@@ -35,21 +35,27 @@ class CustomAuthentication(BaseAuthentication):
         user = authenticate(request)
         if user is None:
             raise AuthenticationFailed('Authentication failed')
-        return (user, None) 
-
+        return (user, None)
+ 
 def authenticate(request):
-    token = request.headers.get('Authorization', None)
-    if not token:
+    token = request.headers.get('Authorization')
+    
+    if not token or not token.startswith('Bearer '):
         return None
+ 
     try:
         token = token.split(' ')[1]
         access_token = AccessToken(token)
-        user_id = access_token.payload['user_id']
+        user_id = access_token['user_id']
         user = QitUserlogin.objects.get(transid=user_id)
-        return user
+        print("user : ",user)
+        if user:
+            return user
+        else:
+            return None
     except Exception as e:
         return None
-
+    
 # Generate OTP function
 def generate_otp():
     otp = ''.join(random.choices(string.digits, k=6))
@@ -304,24 +310,34 @@ def VerifyOTP(request):
 @api_view(['POST'])
 def token_refresh(request):
     refresh_token = request.data
-    if refresh_token['refresh_token']:
-        try:
-            refresh = RefreshToken(refresh_token['refresh_token'])
-            access_token = str(refresh.access_token)
-            return Response({
-                'access_token': access_token,
-                "APICode":APICodeClass.Auth_RefreshToken.value
-            })
-        except Exception as e:
-            return Response({
-                'error': str(e),
-                "APICode":APICodeClass.Auth_RefreshToken.value
-            }, status=status.HTTP_400_BAD_REQUEST)
-    else:
+    token = RefreshToken(refresh_token['refresh_token'])
+    user_id = token['user_id']
+    user = QitUserlogin.objects.get(transid=user_id)
+    print("user : ",user)
+    if not user:
         return Response({
-            'error': 'Refresh token is required',
+            'error': 'Invalid User',
             "APICode":APICodeClass.Auth_RefreshToken.value
         }, status=status.HTTP_400_BAD_REQUEST)
+    else:
+        if refresh_token['refresh_token']:
+            try:
+                refresh = RefreshToken(refresh_token['refresh_token'])
+                access_token = str(refresh.access_token)
+                return Response({
+                    'access_token': access_token,
+                    "APICode":APICodeClass.Auth_RefreshToken.value
+                })
+            except Exception as e:
+                return Response({
+                    'error': str(e),
+                    "APICode":APICodeClass.Auth_RefreshToken.value
+                }, status=status.HTTP_400_BAD_REQUEST)
+        else:
+            return Response({
+                'error': 'Refresh token is required',
+                "APICode":APICodeClass.Auth_RefreshToken.value
+            }, status=status.HTTP_400_BAD_REQUEST)
 
 # Login API with refresh and access token
 # @api_view(['POST'])

@@ -110,7 +110,7 @@ def CreateCompany(request):
                             # 'data': serializer.data,
                             'status': status.HTTP_201_CREATED,
                             'StatusMsg':"Registered successfully..!!",
-                            'encodedString': f"{frontendURL}{unique_hash}",
+                            'encodedString': unique_hash,
                             'APICode':APICodeClass.Company_Save.value
                         })
                 return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

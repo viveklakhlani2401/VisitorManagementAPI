@@ -16,6 +16,131 @@ from QIT.utils.APICode import APICodeClass
 from django.db.models import DateField
 from django.db.models.functions import Cast
 
+# @csrf_exempt
+# @api_view(['POST'])
+# def Save_Visitor(request):
+#     try:
+#         body_data = request.data
+#         if not body_data:
+#             return Response({
+#                 'Status': 400,
+#                 'StatusMsg': "Payload required..!!",
+#                 'APICode':APICodeClass.Visitor_Save.value
+#             },status=400)  
+#         email = body_data["e_mail"]
+#         if not email:
+#             return Response({
+#                 'Status': 400,
+#                 'StatusMsg': "e_mail is required..!!",
+#                 'APICode':APICodeClass.Visitor_Save.value
+#             },status=400)  
+#         if not body_data["company_id"]:
+#             return Response({
+#                 'Status': 400,
+#                 'StatusMsg': "cmptransid is required..!!",
+#                 'APICode':APICodeClass.Visitor_Save.value
+#             },status=400)  
+#         timeslot = body_data.get("timeslot")
+#         if timeslot:
+#             try:
+#                 timeslot_datetime = parser.parse(timeslot)
+#                 ist = pytz.timezone('Asia/Kolkata')
+#                 timeslot_datetime_ist = ist.localize(timeslot_datetime)
+#                 timeslot_datetime_utc = timeslot_datetime_ist.astimezone(pytz.utc)
+#                 current_datetime_utc = timezone.now()
+#                 if timeslot_datetime_utc < current_datetime_utc:
+#                     return Response({
+#                         'Status': 400,
+#                         'StatusMsg': "Timeslot cannot be in the past..!!",
+#                         'APICode':APICodeClass.Visitor_Save.value
+#                     }, status=400)
+#                 one_day_ahead = current_datetime_utc + timezone.timedelta(days=1)
+#                 if timeslot_datetime_utc >= one_day_ahead:
+#                     return Response({
+#                         'Status': 400,
+#                         'StatusMsg': "Timeslot cannot be more than one day in the future..!!",
+#                         'APICode':APICodeClass.Visitor_Save.value
+#                     }, status=400)
+#             except (ValueError, TypeError) as e:
+#                 return Response({
+#                     'Status': 400,
+#                     'StatusMsg': "Invalid timeslot format..!!",
+#                     'APICode':APICodeClass.Visitor_Save.value       
+#                 }, status=400)
+#         stored_data_json = cache.get(f"otp_{email}")
+#         if stored_data_json:
+#             stored_data = json.loads(stored_data_json)
+#             stored_status = stored_data['status']
+#             stored_role = stored_data['role']
+#             if stored_status == 1 and stored_role.upper() == "VISITOR" :
+#                 dataToSerialize = request.data
+#                 companyEntry = QitCompany.objects.filter(transid=dataToSerialize["company_id"]).first()
+#                 if not companyEntry:
+#                     return Response( {
+#                         'isSaved':"N",
+#                         'Status': 400,
+#                         'StatusMsg': "Company not found..!!",
+#                         'APICode':APICodeClass.Visitor_Save.value
+#                     }, status=400)
+#                 dataToSerialize["cmpdepartmentid"]=dataToSerialize["department_id"]
+#                 dataToSerialize["cmptransid"]=dataToSerialize["company_id"]
+#                 dataToSerialize.pop("company_id")
+#                 dataToSerialize.pop("department_id")
+#                 serializer = QitVisitorinoutPOSTSerializer(data=dataToSerialize)
+#                 if serializer.is_valid():
+#                     visitorinout = serializer.save()
+#                     state = "Pending"
+#                     if visitorinout['checkinstatus'] == "P" : 
+#                         state = "Pending"
+#                     elif visitorinout['checkinstatus'] == "R" : 
+#                         state = "Rejected"
+#                     elif visitorinout['checkinstatus'] == "A" : 
+#                         state = "Approved"
+#                     visitor_dict = {
+#                         'id': visitorinout['id'],
+#                         'vName': visitorinout['visitortansid'].vname,
+#                         'vPhone1':visitorinout['visitortansid'].phone1,
+#                         'vCmpname': visitorinout['visitortansid'].vcmpname,
+#                         'vLocation': visitorinout['visitortansid'].vlocation,
+#                         'deptId': visitorinout['cmpdepartmentid'].transid,
+#                         'deptName': visitorinout['cmpdepartmentid'].deptname,
+#                         'vEmail': visitorinout['visitortansid'].e_mail,
+#                         'state': state,
+#                         'status': visitorinout['checkinstatus'],
+#                         'addedBy': visitorinout['createdby'],
+#                         'cnctperson': visitorinout['cnctperson'],
+#                         'timeslot':  visitorinout['timeslot'].isoformat() if visitorinout['timeslot'] else None,
+#                         'purposeofvisit': visitorinout['purposeofvisit'],
+#                         'reason': visitorinout['reason']
+#                     }
+#                     common.send_visitors(visitor_dict,dataToSerialize["cmptransid"],"add")
+#                     return Response( {
+#                         'isSaved':"Y",
+#                         'Status': 201,
+#                         'StatusMsg': "Visitor saved..!!",
+#                         'APICode':APICodeClass.Visitor_Save.value
+#                     }, status=status.HTTP_201_CREATED)
+#                 return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+#             else:
+#                 return Response({
+#                     'Status': 400,
+#                     'StatusMsg': "OTP is not verified..!!",
+#                     'APICode':APICodeClass.Visitor_Save.value
+#                 },status=400)
+#         else:
+#             return Response({
+#                 'Status': 400,
+#                 'StatusMsg': "Email not found or OTP expired..!!",
+#                 'APICode':APICodeClass.Visitor_Save.value
+#             },status=400)  
+#     except Exception as e:
+#         return Response({
+#             'Status':400,
+#             'StatusMsg':str(e),
+#             'APICode':APICodeClass.Visitor_Save.value
+#         },status=400)
+
+
 @csrf_exempt
 @api_view(['POST'])
 def Save_Visitor(request):
@@ -68,77 +193,79 @@ def Save_Visitor(request):
                     'APICode':APICodeClass.Visitor_Save.value       
                 }, status=400)
         stored_data_json = cache.get(f"otp_{email}")
-        if stored_data_json:
-            stored_data = json.loads(stored_data_json)
-            stored_status = stored_data['status']
-            stored_role = stored_data['role']
-            if stored_status == 1 and stored_role.upper() == "VISITOR" :
-                dataToSerialize = request.data
-                companyEntry = QitCompany.objects.filter(transid=dataToSerialize["company_id"]).first()
-                if not companyEntry:
-                    return Response( {
-                        'isSaved':"N",
+        dataToSerialize = request.data
+        if not dataToSerialize["createdby"]:
+            if stored_data_json:
+                stored_data = json.loads(stored_data_json)
+                stored_status = stored_data['status']
+                stored_role = stored_data['role']
+                if stored_status is not 1 and stored_role.upper() is not "VISITOR" :
+                    return Response({
                         'Status': 400,
-                        'StatusMsg': "Company not found..!!",
+                        'StatusMsg': "OTP is not verified..!!",
                         'APICode':APICodeClass.Visitor_Save.value
-                    }, status=400)
-                dataToSerialize["cmpdepartmentid"]=dataToSerialize["department_id"]
-                dataToSerialize["cmptransid"]=dataToSerialize["company_id"]
-                dataToSerialize.pop("company_id")
-                dataToSerialize.pop("department_id")
-                serializer = QitVisitorinoutPOSTSerializer(data=dataToSerialize)
-                if serializer.is_valid():
-                    visitorinout = serializer.save()
-                    state = "Pending"
-                    if visitorinout['checkinstatus'] == "P" : 
-                        state = "Pending"
-                    elif visitorinout['checkinstatus'] == "R" : 
-                        state = "Rejected"
-                    elif visitorinout['checkinstatus'] == "A" : 
-                        state = "Approved"
-                    visitor_dict = {
-                        'id': visitorinout['id'],
-                        'vName': visitorinout['visitortansid'].vname,
-                        'vPhone1':visitorinout['visitortansid'].phone1,
-                        'vCmpname': visitorinout['visitortansid'].vcmpname,
-                        'vLocation': visitorinout['visitortansid'].vlocation,
-                        'deptId': visitorinout['cmpdepartmentid'].transid,
-                        'deptName': visitorinout['cmpdepartmentid'].deptname,
-                        'vEmail': visitorinout['visitortansid'].e_mail,
-                        'state': state,
-                        'status': visitorinout['checkinstatus'],
-                        'addedBy': visitorinout['createdby'],
-                        'cnctperson': visitorinout['cnctperson'],
-                        'timeslot':  visitorinout['timeslot'].isoformat() if visitorinout['timeslot'] else None,
-                        'purposeofvisit': visitorinout['purposeofvisit'],
-                        'reason': visitorinout['reason']
-                    }
-                    common.send_visitors(visitor_dict,dataToSerialize["cmptransid"],"add")
-                    return Response( {
-                        'isSaved':"Y",
-                        'Status': 201,
-                        'StatusMsg': "Visitor saved..!!",
-                        'APICode':APICodeClass.Visitor_Save.value
-                    }, status=status.HTTP_201_CREATED)
-                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+                    },status=400)
             else:
                 return Response({
                     'Status': 400,
-                    'StatusMsg': "OTP is not verified..!!",
+                    'StatusMsg': "Email not found or OTP expired..!!",
                     'APICode':APICodeClass.Visitor_Save.value
-                },status=400)
-        else:
-            return Response({
+                },status=400)  
+            
+        companyEntry = QitCompany.objects.filter(transid=dataToSerialize["company_id"]).first()
+        if not companyEntry:
+            return Response( {
+                'isSaved':"N",
                 'Status': 400,
-                'StatusMsg': "Email not found or OTP expired..!!",
+                'StatusMsg': "Company not found..!!",
                 'APICode':APICodeClass.Visitor_Save.value
-            },status=400)  
+            }, status=400)
+        dataToSerialize["cmpdepartmentid"]=dataToSerialize["department_id"]
+        dataToSerialize["cmptransid"]=dataToSerialize["company_id"]
+        dataToSerialize.pop("company_id")
+        dataToSerialize.pop("department_id")
+        serializer = QitVisitorinoutPOSTSerializer(data=dataToSerialize)
+        if serializer.is_valid():
+            visitorinout = serializer.save()
+            state = "Pending"
+            if visitorinout['checkinstatus'] == "P" : 
+                state = "Pending"
+            elif visitorinout['checkinstatus'] == "R" : 
+                state = "Rejected"
+            elif visitorinout['checkinstatus'] == "A" : 
+                state = "Approved"
+            visitor_dict = {
+                'id': visitorinout['id'],
+                'vName': visitorinout['visitortansid'].vname,
+                'vPhone1':visitorinout['visitortansid'].phone1,
+                'vCmpname': visitorinout['visitortansid'].vcmpname,
+                'vLocation': visitorinout['visitortansid'].vlocation,
+                'deptId': visitorinout['cmpdepartmentid'].transid,
+                'deptName': visitorinout['cmpdepartmentid'].deptname,
+                'vEmail': visitorinout['visitortansid'].e_mail,
+                'state': state,
+                'status': visitorinout['checkinstatus'],
+                'addedBy': visitorinout['createdby'],
+                'cnctperson': visitorinout['cnctperson'],
+                'timeslot':  visitorinout['timeslot'].isoformat() if visitorinout['timeslot'] else None,
+                'purposeofvisit': visitorinout['purposeofvisit'],
+                'reason': visitorinout['reason']
+            }
+            common.send_visitors(visitor_dict,dataToSerialize["cmptransid"],"add")
+            return Response( {
+                'isSaved':"Y",
+                'Status': 201,
+                'StatusMsg': "Visitor saved..!!",
+                'APICode':APICodeClass.Visitor_Save.value
+            }, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     except Exception as e:
         return Response({
             'Status':400,
             'StatusMsg':str(e),
             'APICode':APICodeClass.Visitor_Save.value
         },status=400)
+
 
 
 # @csrf_exempt
