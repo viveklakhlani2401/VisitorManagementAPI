@@ -339,6 +339,7 @@ def SaveNotification(request):
         notification = serializer.validated_data
         module = notification.get('module')
         cmptransid = notification.get('cmptransid')
+        print(cmptransid)
         cmpcheck = QitCompany.objects.filter(transid=cmptransid).first()
         if not cmpcheck:
             return Response({

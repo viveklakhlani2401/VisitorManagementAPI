@@ -228,14 +228,14 @@ def update_user(request):
                 request.data.pop("password")
            
             resDB = QitUserlogin.objects.filter(e_mail = user.e_mail).first()
-            if user.changepassstatus == "1":
-                pwd = request.data.get("password")
-                if not pwd:
-                    return Response({
-                        'Status':400,
-                        'StatusMsg':"password field is required..!!",
-                        'APICode':APICodeClass.User_Edit.value
-                    },status=400)
+            pwd = request.data.get("password")
+            if pwd:
+                # if not pwd:
+                #     return Response({
+                #         'Status':400,
+                #         'StatusMsg':"password field is required..!!",
+                #         'APICode':APICodeClass.User_Edit.value
+                #     },status=400)
                 user.changepassstatus = 0
                 newPassword = make_password(pwd)
                 user.password = newPassword
