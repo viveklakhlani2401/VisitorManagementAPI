@@ -14,6 +14,7 @@ from QIT.serializers import CompanyMasterGetSerializer
 from django.core.cache import cache
 import json
 from QIT.utils.APICode import APICodeClass
+from QIT.models import QitDepartment
 
 # Register Company API
 @csrf_exempt
@@ -94,11 +95,11 @@ def CreateCompany(request):
                     unique_hash = hashlib.sha256(unique_string.encode('utf-8')).hexdigest()
                     company_master.qrstring = unique_hash
                     company_master.save()
+                    QitDepartment.objects.create(deptname="Default", cmptransid=company_master)
                     create_userlogin(body_data["e_mail"],body_data["password"],"COMPANY")
                     create_comp_auth(company_master.transid,company_master,"COMPANY")
                     create_comp_notification_auth(company_master.transid,company_master,"COMPANY")
                     frontendURL = os.getenv("FRONTEND_URL")
-                    secret = os.getenv("SECRETE")
                     if QitCompany.objects.filter(transid=company_master.transid).exists():
                         frontendURL = os.getenv("FRONTEND_URL")
                         if frontendURL is None:
