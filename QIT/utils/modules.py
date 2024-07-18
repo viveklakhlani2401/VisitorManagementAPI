@@ -37,13 +37,13 @@ module_classes= [
   },
   {
     "text": "Log Report",
-    "path": "/log-report",
+    "path": "/Log-report",
     "icon": "ri-line-chart-line",
     "hasAccess": True
   },
   {
     "text": "Reports",
-    "path": "/reports",
+    "path": "/Reports",
     "icon": "ri-file-chart-line",
     "hasAccess": True
   }
@@ -88,13 +88,13 @@ user_module_classes= [
   },
   {
     "text": "Log Report",
-    "path": "/log-report",
+    "path": "/Log-report",
     "icon": "ri-line-chart-line",
     "hasAccess": True
   },
   {
     "text": "Reports",
-    "path": "/reports",
+    "path": "/Reports",
     "icon": "ri-file-chart-line",
     "hasAccess": False
   }

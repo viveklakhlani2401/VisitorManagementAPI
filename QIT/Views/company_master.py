@@ -161,10 +161,6 @@ def GetComapnyData(request,qrCode):
             'APICode':APICodeClass.Company_GetByQR.value
         },status=400)
 
-
-
-    
-
 @csrf_exempt
 @api_view(["GET"])
 def GetComapnyDataById(request,cid):

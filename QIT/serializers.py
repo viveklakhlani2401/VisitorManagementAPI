@@ -125,21 +125,22 @@ class QitVisitorSerializer(serializers.ModelSerializer):
         model = QitVisitormaster
         fields = '__all__'
 
-    # def to_representation(self, instance):
-    #     print("here")
-    #     representation = super().to_representation(instance)
-    #     print("here")
-    #     print(instance.visitortansid)
-    #     visitormaster = instance.visitortansid
-    #     # representation['visitor_transid'] = visitormaster.transid
-    #     representation['vName'] = visitormaster.vname
-    #     representation['visitor_phone1'] = visitormaster.phone1
-    #     representation['visitor_cmpname'] = visitormaster.vcmpname
-    #     representation['visitor_location'] = visitormaster.vlocation
-    #     representation['visitor_email'] = visitormaster.e_mail
-    #     representation['visitor_cmptransid'] = visitormaster.cmptransid_id
+    def to_representation(self, instance):
+        print("here : ",instance)
+        representation = super().to_representation(instance)
+        queryset = QitVisitorinout.objects.filter(visitortansid=representation['transid']).order_by("-entrydate").first()
+        # print("here ",queryset.checkinstatus)
+        # visitormaster = instance.transid
+        representation['checkinstatus'] = queryset.checkinstatus
+        representation['status'] = queryset.status
+        # representation['vName'] = visitormaster.vname
+        # representation['visitor_phone1'] = visitormaster.phone1
+        # representation['visitor_cmpname'] = visitormaster.vcmpname
+        # representation['visitor_location'] = visitormaster.vlocation
+        # representation['visitor_email'] = visitormaster.e_mail
+        # representation['visitor_cmptransid'] = visitormaster.cmptransid_id
 
-    #     return representation
+        return representation
 
 
 class QitVisitorinoutPOSTSerializer(serializers.ModelSerializer):
@@ -296,3 +297,8 @@ class QitAPILogSerializer(serializers.ModelSerializer):
             'E': 'Error'
         }
         return loglevel_mapping.get(obj.loglevel, obj.loglevel) 
+
+class UserShortDataSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = QitUsermaster
+        fields = ['transid','username','cmpdeptid']
