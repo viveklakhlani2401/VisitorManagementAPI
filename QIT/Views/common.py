@@ -478,12 +478,12 @@ def login_view(request):
                 })
             else:
                 return Response({
-                    'detail': 'Invalid credentials',
+                    'detail': 'User does not exist',
                     "APICode":APICodeClass.Auth_LogIn.value
                 }, status=status.HTTP_401_UNAUTHORIZED)
         else:
             return Response({
-                'detail': 'Invalid credentials',
+                'detail': 'Invalid password',
                 "APICode":APICodeClass.Auth_LogIn.value
             }, status=status.HTTP_401_UNAUTHORIZED)
     except QitUserlogin.DoesNotExist:
@@ -491,6 +491,7 @@ def login_view(request):
             'detail': 'User does not exist',
             "APICode":APICodeClass.Auth_LogIn.value
         }, status=status.HTTP_404_NOT_FOUND)
+    
 # @api_view(['POST'])
 # def login_view(request):
 #     email = request.data.get('email')

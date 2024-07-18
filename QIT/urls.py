@@ -65,12 +65,12 @@ urlpatterns = [
     path('VMS/Visitor/VerifyVisitor', visitor_master.verifyVisitor),
     path('VMS/Visitor/CheckStatus', visitor_master.chkStatus),
     path('VMS/Visitor/CheckOut', visitor_master.checkoutVisitor),
+    path('VMS/Visitor/CheckIn', visitor_master.checkInVisitor),
     path('VMS/Visitor/Edit', visitor_master.EditVerifyVisitor),
     path('VMS/Report/VisitorReport', reports.GetVisitorReport),
     path('VMS/SaveAPILog', log.save_log),
     path('VMS/GetAPILog', log.Get_log),
     path('VMS/getAllErrorCode', common.getAllErrorCode),
-
-
     path('VMS/sendEmail', test_send_mail.GenerateOTP),
+    path('VMS/User/GET/<int:cmpId>', user_master.get_user_by_company),
 ]

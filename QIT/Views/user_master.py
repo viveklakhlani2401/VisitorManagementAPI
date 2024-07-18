@@ -2,13 +2,16 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
 from QIT.models import QitUsermaster,QitUserlogin,QitCompany,QitDepartment
-from QIT.serializers import QitUsermasterSerializer,UserMasterDataSerializer,UserMasterResetSerializer
+from QIT.serializers import QitUsermasterSerializer,UserMasterDataSerializer,UserMasterResetSerializer,UserShortDataSerializer
 from .common import create_userlogin,create_comp_auth,create_comp_notification_auth
 
 from django.contrib.auth.hashers import make_password
 import json
 from django.core.cache import cache
 from QIT.utils.APICode import APICodeClass
+    
+from .template import send_credential_email
+from .send_email import send_html_mail
 
 # @api_view(["POST"])
 # def Company_User_GenerateOTP(request):
@@ -240,6 +243,8 @@ def update_user(request):
                 newPassword = make_password(pwd)
                 user.password = newPassword
                 resDB.password = newPassword
+                message1 =  send_credential_email(user.username,user.e_mail,pwd)
+                send_html_mail(f"Updated Credentials",message1,[user.e_mail])
                 resDB.save()
             user.cmpdeptid = deptEntry
             user.gender = body_data.get("gender")
@@ -367,3 +372,39 @@ def update_user_profile(request):
             'StatusMsg':str(e),
             'APICode':APICodeClass.User_Profile_Edit.value
         },status=status.HTTP_404_NOT_FOUND)
+
+@api_view(['GET'])
+def get_user_by_company(request, cmpId):
+    try:
+        companyEntry = QitCompany.objects.filter(transid=cmpId).first()
+        if not companyEntry:
+            return Response({
+                'Status': 400,
+                'StatusMsg': "Company not found..!!",
+                'APICode': APICodeClass.User_Get.value
+            }, status=400)
+
+        print("cmpId : ", cmpId)
+        users = QitUsermaster.objects.filter(cmptransid=cmpId)
+        
+
+        serializer = UserShortDataSerializer(users, many=True)  # Set many=True
+        return Response({
+            'Data': serializer.data,
+            'APICode': APICodeClass.User_GetById.value
+        })
+
+    except QitUsermaster.DoesNotExist:
+        return Response({
+            'Status': 404,
+            'StatusMsg': 'User not found',
+            'APICode': APICodeClass.User_GetById.value
+        }, status=status.HTTP_404_NOT_FOUND)
+
+    except Exception as e:
+        return Response({
+            'Status': 400,
+            'StatusMsg': str(e),
+            'APICode': APICodeClass.User_GetById.value
+        }, status=400)
+    
