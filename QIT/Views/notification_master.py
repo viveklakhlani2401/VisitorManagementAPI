@@ -292,7 +292,6 @@ def GetNotificationRule(request):
             }, status=status.HTTP_400_BAD_REQUEST)
        
         existing_rule = QitNotifiicationrule.objects.filter(user_id=user.transid,cmptransid=cmptransid).first()
-        print(existing_rule)
 
         if existing_rule:
             return Response({
@@ -339,7 +338,6 @@ def SaveNotification(request):
         notification = serializer.validated_data
         module = notification.get('module')
         cmptransid = notification.get('cmptransid')
-        print(cmptransid)
         cmpcheck = QitCompany.objects.filter(transid=cmptransid).first()
         if not cmpcheck:
             return Response({
@@ -378,9 +376,7 @@ def SaveNotification(request):
                 'APICode':APICodeClass.Notification_Get.value
             }, status=status.HTTP_404_NOT_FOUND)
         
-        print(notification['sender_email'])
         if notification['sender_email'] != "0":
-            print("here")
             sender_user = QitUserlogin.objects.filter(e_mail=notification['sender_email']).first()
             if not sender_user:
                 return Response({

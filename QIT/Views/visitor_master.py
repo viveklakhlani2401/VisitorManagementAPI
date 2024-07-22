@@ -4,8 +4,8 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
 from QIT.serializers import QitVisitorinoutPOSTSerializer, QitVisitorSerializer,QitVisitorinoutGETSerializer
-from QIT.models import QitVisitormaster,QitVisitorinout,QitCompany,QitDepartment
-import json
+from QIT.models import QitVisitormaster,QitVisitorinout,QitCompany,QitDepartment,QitUsermaster
+import json,os
 from django.core.cache import cache
 from datetime import datetime
 from QIT.Views import common
@@ -15,8 +15,10 @@ from dateutil import parser
 from QIT.utils.APICode import APICodeClass
 from django.db.models import DateField
 from django.db.models.functions import Cast
-from django.utils.timezone import make_aware
- 
+from django.utils.timezone import make_aware,now
+from .template import send_reminder
+from .send_email import send_html_mail
+
 @csrf_exempt
 @api_view(['POST'])
 def Save_Visitor(request):
@@ -61,8 +63,7 @@ def Save_Visitor(request):
                     'StatusMsg': "Visitor request already pending..!!",
                     'APICode':APICodeClass.Visitor_Save.value
                 }, status=400)
- 
-       
+            
         timeslot = body_data.get("timeslot")
         if timeslot:
             try:
@@ -133,6 +134,7 @@ def Save_Visitor(request):
         serializer = QitVisitorinoutPOSTSerializer(data=dataToSerialize)
         if serializer.is_valid():
             visitorinout = serializer.save()
+            print("visitorinout : ",visitorinout)
             state = "Pending"
             if visitorinout['checkinstatus'] == "P" :
                 state = "Pending"
@@ -155,9 +157,11 @@ def Save_Visitor(request):
                 'cnctperson': visitorinout['cnctperson'],
                 'timeslot':  visitorinout['timeslot'].isoformat() if visitorinout['timeslot'] else None,
                 'purposeofvisit': visitorinout['purposeofvisit'],
-                'reason': visitorinout['reason']
+                'reason': visitorinout['reason'],
+                'sortDate':timezone.now().isoformat()
             }
             common.send_visitors(visitor_dict,dataToSerialize["cmptransid"],"add")
+            send_email_notification_email(visitor_dict,visitorinout['cmpdepartmentid'],companyEntry.transid)
             return Response( {
                 'isSaved':"Y",
                 'Status': 201,
@@ -278,10 +282,9 @@ def GetAllVisitor(request,status,cid):
                 'APICode':APICodeClass.Visitor_Get.value
             }, status=400)
         if status.upper() == "ALL":
-            queryset = QitVisitorinout.objects.filter(cmptransid=cid).order_by('-checkintime', '-entrydate')
+            queryset = QitVisitorinout.objects.filter(cmptransid=cid).order_by('-entrydate','-checkintime')
         elif status.upper() == "P":
             today = timezone.now().date()
-            print("Today : ",today)
             # queryset = QitVisitorinout.objects.filter(cmptransid=cid,status="P").order_by('-checkintime', '-entrydate')
             queryset = QitVisitorinout.objects.annotate(entrydate_date=Cast('entrydate', DateField())).filter(cmptransid=cid, status="P", entrydate_date=today).order_by('-checkintime', '-entrydate')
         
@@ -294,7 +297,6 @@ def GetAllVisitor(request,status,cid):
         return Response({'Data':serializer.data,'APICode':APICodeClass.Visitor_Get.value},status=200)
     except Exception as e:
         return Response({'Status': 400, 'StatusMsg': str(e),'APICode':APICodeClass.Visitor_Get.value}, status=400)
- 
  
 # get a visior data for company
 @csrf_exempt
@@ -398,8 +400,6 @@ def verifyVisitor(request):
     except Exception as e:
         return Response({'Status': 400, 'StatusMsg': str(e),'APICode':APICodeClass.Visitor_Verify.value}, status=400)
          
-
-
 # get visitor status by email
 @csrf_exempt
 @api_view(["POST"])
@@ -450,7 +450,6 @@ def chkStatus(request):
     except Exception as e:
         return Response({'Status': 400, 'StatusMsg': "An error occurred: {}".format(str(e)),'APICode':APICodeClass.Visitor_Mobile_ChkStatus.value}, status=400)
     
-
 # checkout visitor email
 @csrf_exempt
 @api_view(["POST"])
@@ -503,8 +502,6 @@ def checkoutVisitor(request):
         
     except Exception as e:
         return Response({'Status': 400, 'StatusMsg': "An error occurred: {}".format(str(e)),'APICode':APICodeClass.Visitor_Mobile_ChkOutByV.value}, status=400)
-
-    
 
 # Edit visitor detail
 @csrf_exempt
@@ -696,7 +693,7 @@ def checkInVisitor(request):
             return Response({'Status': 400, 'StatusMsg': "Email is required..!!",'APICode':APICodeClass.Visitor_Mobile_ChkOutByV.value}, status=400)  
         if not cmpid:
             return Response({'Status': 400, 'StatusMsg': "Company ID is required..!!",'APICode':APICodeClass.Visitor_Mobile_ChkOutByV.value}, status=400)  
-        
+        today = now().date()
         companyEntry = QitCompany.objects.filter(transid=cmpid).first()
         if not companyEntry:
             return Response( {
@@ -711,22 +708,22 @@ def checkInVisitor(request):
             return Response({'Status': 400, 'StatusMsg': "Visitor data not found..!!",'APICode':APICodeClass.Visitor_Mobile_ChkOutByV.value}, status=400)
         
         inOutEntry = QitVisitorinout.objects.filter(visitortansid=visitor_entry.transid).order_by("-entrydate").first()
+
+        if inOutEntry.timeslot.date() != today:
+            return Response({'Status': 400, 'StatusMsg': "Visitor checkin entry not for today..!!",'APICode':APICodeClass.Visitor_Mobile_ChkOutByV.value}, status=400)
         
         if not inOutEntry:
             return Response({'Status': 400, 'StatusMsg': "Visitor checkin entry not found..!!",'APICode':APICodeClass.Visitor_Mobile_ChkOutByV.value}, status=400)
         
         if inOutEntry.status.upper() != "A":
             return Response({'Status': 400, 'StatusMsg': "Visitor status is not approve..!!",'APICode':APICodeClass.Visitor_Mobile_ChkOutByV.value}, status=400)
-        print("inOutEntry : ",inOutEntry.checkinstatus)
         if inOutEntry.checkinstatus != None and inOutEntry.checkinstatus.upper() == "I":
             return Response({'Status': 400, 'StatusMsg': "Visitor already checked In..!!",'APICode':APICodeClass.Visitor_Mobile_ChkOutByV.value}, status=400)
         
         if inOutEntry.checkinstatus != None and inOutEntry.checkinstatus.upper() == "O":
             return Response({'Status': 400, 'StatusMsg': "Visitor already checked out!!",'APICode':APICodeClass.Visitor_Mobile_ChkOutByV.value}, status=400)
-        print("createdby : ",inOutEntry.createdby)
         if inOutEntry.createdby == None:
             return Response({'Status': 400, 'StatusMsg': "You can not been checkin by your self",'APICode':APICodeClass.Visitor_Mobile_ChkOutByV.value}, status=400)
-        
         inOutEntry.checkintime = datetime.now()
         inOutEntry.checkinstatus = "I"
         inOutEntry.save()
@@ -735,3 +732,98 @@ def checkInVisitor(request):
         
     except Exception as e:
         return Response({'Status': 400, 'StatusMsg': "An error occurred: {}".format(str(e)),'APICode':APICodeClass.Visitor_Mobile_ChkOutByV.value}, status=400)
+
+@csrf_exempt
+@api_view(["POST"])
+def send_email_notification(request):
+    try:
+        today = timezone.now().date()
+        visitors_data = QitVisitorinout.objects.filter(
+            timeslot__date=today,
+            status='A'
+        )
+        print("visitors_to_remind : => ",visitors_data)
+        if visitors_data.exists():
+            for visitors_to_remind in visitors_data:
+                cmpid = visitors_to_remind.cmptransid
+                print("cmptransid : ",cmpid)
+                statusLink = os.getenv("FRONTEND_URL") + '#/checkstatus/?cmpId=' + cmpid.qrstring
+                verifyLink = os.getenv("FRONTEND_URL") +'#/Verify-Visitors'
+                users = None
+                users = QitUsermaster.objects.filter(username=visitors_to_remind.cnctperson,cmpdeptid=visitors_to_remind.cmpdepartmentid,cmptransid=cmpid)
+                print("users : ",users)
+                emails = []
+                if users:
+                    for data in users:
+                        emails.append(data.e_mail)
+                else:
+                    users = QitUsermaster.objects.filter(cmpdeptid=visitors_to_remind.cmpdepartmentid,cmptransid=cmpid)
+                    for data in users:
+                        emails.append(data.e_mail)
+                # emails.append(visitor['vEmail'])
+                print("Emails : ",emails)
+                print("visitors_to_remind.visitortansid.e_mail : ",visitors_to_remind.visitortansid.e_mail)
+                visitor_dict = {
+                'id': visitors_to_remind.transid,
+                'vName': visitors_to_remind.visitortansid.vname,
+                'vPhone1':visitors_to_remind.visitortansid.phone1,
+                'vCmpname': visitors_to_remind.visitortansid.vcmpname,
+                'vLocation': visitors_to_remind.visitortansid.vlocation,
+                'deptId': visitors_to_remind.cmpdepartmentid,
+                'deptName': visitors_to_remind.cmpdepartmentid,
+                'vEmail': visitors_to_remind.visitortansid.e_mail,
+                'state': visitors_to_remind.checkinstatus,
+                'status': visitors_to_remind.status,
+                'addedBy': visitors_to_remind.createdby,
+                'cnctperson': visitors_to_remind.cnctperson,
+                'timeslot': visitors_to_remind.timeslot,
+                'purposeofvisit': visitors_to_remind.purposeofvisit,
+                'reason': visitors_to_remind.reason
+            }
+                message1 =  send_reminder(visitor_dict,"Visiting company reminder",statusLink,"To ensure a smooth check-in process, please click here","CheckIn")
+                message2 =  send_reminder(visitor_dict,"Visitor arrival reminder",verifyLink,"To verify a visitor, please click here","verify now")
+                # print("emails : ==> ",emails)
+                send_html_mail(f"reminder",message2,emails)
+                send_html_mail(f"reminder",message1,[visitors_to_remind.visitortansid.e_mail])
+                return Response({'Status': 200, 'StatusMsg': "Send successfullyy..!!",'APICode':APICodeClass.Visitor_Mobile_ChkOutByV.value}, status=200)
+            else:
+                print("No visitors found matching the update criteria.")
+                return Response({'Status': 400, 'StatusMsg': "An error occurred: No visitors found matching the update criteria.",'APICode':APICodeClass.Visitor_Mobile_ChkOutByV.value}, status=400)
+        return Response({'Status': 400, 'StatusMsg': "An error occurred: No visitors found matching the update criteria.",'APICode':APICodeClass.Visitor_Mobile_ChkOutByV.value}, status=400)
+    except Exception as e:
+        return Response({'Status': 400, 'StatusMsg': "An error occurred: {}".format(str(e)),'APICode':APICodeClass.Visitor_Mobile_ChkOutByV.value}, status=400)
+    
+
+def send_email_notification_email(visitor,departmentId,cmpid):
+    try:
+        # body_data = request.data
+        # if not body_data:
+        #     return Response({'Status': 400, 'StatusMsg': "Payload required..!!",'APICode':APICodeClass.Visitor_Mobile_ChkOutByV.value}, status=400)  
+        
+        # visitor = body_data.get("visitor")
+        # departmentId = body_data.get("departmentId")
+        # cmpid = body_data.get("cmpid")
+        companyEntry = QitCompany.objects.filter(transid=cmpid).first()
+        statusLink = os.getenv("FRONTEND_URL") + '#/checkstatus/?cmpId=' + companyEntry.qrstring
+        verifyLink = os.getenv("FRONTEND_URL") +'#/Verify-Visitors'
+        users = None
+        users = QitUsermaster.objects.filter(username=visitor['cnctperson'],cmpdeptid=departmentId,cmptransid=cmpid)
+        emails = []
+        if users:
+            for data in users:
+                emails.append(data.e_mail)
+        else:
+            users = QitUsermaster.objects.filter(cmpdeptid=departmentId,cmptransid=cmpid)
+            for data in users:
+                emails.append(data.e_mail)
+        # emails.append(visitor['vEmail'])
+        
+        message1 =  send_reminder(visitor,"Your registration to company",statusLink,"To ensure a smooth check-in process, please click here","CheckIn")
+        message2 =  send_reminder(visitor,"New Visitor registered",verifyLink,"To verify a visitor, please click here","verify now")
+        # print("emails : ==> ",emails)
+        send_html_mail(f"reminder",message2,emails)
+        send_html_mail(f"reminder",message1,[visitor['vEmail']])
+        # return Response({'Status': 200, 'StatusMsg': "Send successfullyy..!!",'APICode':APICodeClass.Visitor_Mobile_ChkOutByV.value}, status=200)
+    except Exception as e:
+        print("Error : ",str(e))
+        # return Response({'Status': 400, 'StatusMsg': "An error occurred: {}".format(str(e)),'APICode':APICodeClass.Visitor_Mobile_ChkOutByV.value}, status=400)

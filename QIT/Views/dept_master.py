@@ -216,7 +216,6 @@ def DeleteDepartment(request, did, cid):
                 'APICode':APICodeClass.Department_Delete.value
             }, status=200)
         except IntegrityError as e:
-            print("here")
             # Check if the error is due to foreign key constraint violation
             if 'foreign key constraint fails'.upper() in str(e).upper():
                 return Response({

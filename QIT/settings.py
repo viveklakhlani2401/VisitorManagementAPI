@@ -208,4 +208,9 @@ CELERY_BEAT_SCHEDULE = {
         'task': 'QIT.tasks.update_checkin_status',
         'schedule': crontab(hour=12, minute=30),
     },
+    'send_notification_reminder': {
+        'task': 'QIT.tasks.reminder_notification',
+        # 'schedule': crontab(minute='*'),  # Run every minute
+        'schedule': crontab(hour=8, minute=0),
+    },
 }
