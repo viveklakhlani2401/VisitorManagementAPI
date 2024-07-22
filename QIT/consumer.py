@@ -156,10 +156,16 @@ class SocketConsumer(AsyncWebsocketConsumer):
     # Send Notifications
     async def handle_send_notification_event(self, data):
         today = timezone.now().date()
-        notifications = await sync_to_async(list)(QitNotificationmaster.objects.filter(
+        notifications = await sync_to_async(list)(
+        QitNotificationmaster.objects.filter(
             receiver_user_id=data,
             n_date_time__date=today
-        ).values('transid', 'notification_text', 'n_date_time', 'chk_status'))
+        ).order_by('-n_date_time').values('transid', 'notification_text', 'n_date_time', 'chk_status')
+        )
+        # notifications = await sync_to_async(list)(QitNotificationmaster.objects.filter(
+        #     receiver_user_id=data,
+        #     n_date_time__date=today
+        # ).values('transid', 'notification_text', 'n_date_time', 'chk_status')).order_by('-n_date_time')
         for notification in notifications:
             if 'n_date_time' in notification:
                 notification['n_date_time'] = common.time_since(notification['n_date_time'])

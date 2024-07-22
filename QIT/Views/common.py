@@ -48,7 +48,6 @@ def authenticate(request):
         access_token = AccessToken(token)
         user_id = access_token['user_id']
         user = QitUserlogin.objects.get(transid=user_id)
-        print("user : ",user)
         if user:
             return user
         else:
@@ -60,20 +59,6 @@ def authenticate(request):
 def generate_otp():
     otp = ''.join(random.choices(string.digits, k=6))
     return otp
-
-
-# def Send_OTP(email, subject, message):
-#     print(email)
-#     print(subject)
-#     print(message)
-#     print(EMAIL_HOST_USER)
-
-#     def send_email():
-#         send_mail(subject, message, EMAIL_HOST_USER, [email])
-    
-#     email_thread = threading.Thread(target=send_email)
-#     email_thread.start()
-#     return True
 
 # Generate OTP API
 @csrf_exempt
@@ -243,7 +228,6 @@ def VerifyOTP(request):
         otp = body_data.get("VerifyOTP")
         role = body_data.get("role")
         stored_data_json = cache.get(f"otp_{email}")
-        print(stored_data_json)
         if stored_data_json:
             stored_data = json.loads(stored_data_json)
             stored_otp = stored_data['otp']
@@ -313,7 +297,6 @@ def token_refresh(request):
     token = RefreshToken(refresh_token['refresh_token'])
     user_id = token['user_id']
     user = QitUserlogin.objects.get(transid=user_id)
-    print("user : ",user)
     if not user:
         return Response({
             'error': 'Invalid User',
@@ -422,11 +405,7 @@ def email_wise_data_filter(id,role,company):
         else:
             return None
     elif role == "ADMIN":
-        print("id : ",id)
-        print("role : ",role)
-        print("cmp : ",company)
         user = QitUsermaster.objects.filter(transid=id,usertype=role.upper()).first()
-        print("user : ",user)
         if user and user.cmptransid.transid == company:
             return user
         else:
@@ -445,7 +424,6 @@ def login_view(request):
                 user_serializer = UserSerializer(user)
                 refresh = RefreshToken.for_user(user)
                 chkUser  = role_email_wise_data(email,password,user.userrole)
-                print("chkUser.transid : ",chkUser.transid)
                 cmpId = 0
                 cmpLogo = ""
                 if user.userrole == "COMPANY":
@@ -595,7 +573,6 @@ def Forget_Password_Send_OTP(request):
                 'Role':"Company",
                 'APICode':APICodeClass.Auth_ForgetPWD_OTP_Cmp.value
             })
-        print("resDB.userrole : ",resDB.userrole)
         if resDB.userrole == "USER":
             return Response({
                 'Status':200,
@@ -880,12 +857,8 @@ def send_notification(notifications,cmptransid):
         )
 
 def send_visitors(visitor,cmptransid,type):
-    print("here")
     channel_layer = get_channel_layer()
-    print("here : ",cmptransid)
     user_ids = getAuthenticatedUser("Visitors",cmptransid)
-    print("here user id : ",user_ids)
-    print("inside send visitors : ",user_ids)
     
     if type == "verify":
         visitor_dict = {
@@ -894,7 +867,6 @@ def send_visitors(visitor,cmptransid,type):
             'reason': visitor.reason
         }
         for user_id in user_ids:
-            print("inside send visitors : ",user_id.transid,"new ",cmptransid)
             async_to_sync(channel_layer.group_send)(
                 f"user_{user_id.transid}_cmp{cmptransid}",
                 {
@@ -903,9 +875,7 @@ def send_visitors(visitor,cmptransid,type):
                 }
             )
     if type == "add":
-       
         for user_id in user_ids:
-            print("inside send visitors : ",user_id.transid,"new ",cmptransid)
             async_to_sync(channel_layer.group_send)(
                 f"user_{user_id.transid}_cmp{cmptransid}",
                 {
@@ -922,11 +892,8 @@ def chk_user_comp_id(user_email):
         return None
     
 def getAuthenticatedUser(module,cmptransid):
-    print("mpdule : ",module)
-    print("cmp id : ",cmptransid)
     user_ids = []
     all_rules = QitAuthenticationrule.objects.filter(cmptransid=cmptransid)
-    print("all user : ",all_rules)
     for rule in all_rules:
         rule_detail_str = rule.auth_rule_detail.decode('utf-8') if isinstance(rule.auth_rule_detail, bytes) else rule.auth_rule_detail
         rule_detail_list = ast.literal_eval(rule_detail_str)
@@ -935,7 +902,6 @@ def getAuthenticatedUser(module,cmptransid):
             i = i+1
             if details.get('text') == module and details.get('hasAccess'):
                 userdata = email_wise_data_filter(rule.user_id, rule.userrole,cmptransid)
-                print("user data : ",userdata)
                 user_id = chk_user_comp_id(userdata.e_mail)
                 user_ids.append(user_id)
                 break

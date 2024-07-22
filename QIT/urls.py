@@ -73,4 +73,5 @@ urlpatterns = [
     path('VMS/getAllErrorCode', common.getAllErrorCode),
     path('VMS/sendEmail', test_send_mail.GenerateOTP),
     path('VMS/User/GET/<int:cmpId>', user_master.get_user_by_company),
+    path('test', visitor_master.send_email_notification),
 ]

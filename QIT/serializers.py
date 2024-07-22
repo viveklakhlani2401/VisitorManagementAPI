@@ -126,10 +126,8 @@ class QitVisitorSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
     def to_representation(self, instance):
-        print("here : ",instance)
         representation = super().to_representation(instance)
         queryset = QitVisitorinout.objects.filter(visitortansid=representation['transid']).order_by("-entrydate").first()
-        # print("here ",queryset.checkinstatus)
         # visitormaster = instance.transid
         representation['checkinstatus'] = queryset.checkinstatus
         representation['status'] = queryset.status
@@ -170,13 +168,11 @@ class QitVisitorinoutPOSTSerializer(serializers.ModelSerializer):
                 raise serializers.ValidationError({"statusMsg":"Invalid created by user id..!!"})
 
         try:
-            # print(validated_data.pop('cmptransid'))
             company = QitCompany.objects.get(transid=validated_data.pop('cmptransid'))
         except QitCompany.DoesNotExist:
             raise serializers.ValidationError({"statusMsg":"company_id not found."})
         
         # try:
-        #     print(validated_data.get('cmpdepartmentid'))
         #     dept = QitDepartment.objects.get(transid=validated_data.get('cmpdepartmentid'))
         # except QitDepartment.DoesNotExist:
         #     raise serializers.ValidationError({"statusMsg":"department_id not found."})
@@ -192,7 +188,6 @@ class QitVisitorinoutPOSTSerializer(serializers.ModelSerializer):
         # visitormaster = QitVisitormaster.objects.create(**visitormaster_data).
 
         email = validated_data.pop('e_mail')
-        print("email : ",email)
         visitormaster_data = {
             'vname': validated_data.pop('vname'),
             'phone1': validated_data.pop('phone1', None),
@@ -207,7 +202,6 @@ class QitVisitorinoutPOSTSerializer(serializers.ModelSerializer):
             cmptransid=company,
             defaults=visitormaster_data
         )
-        print("visitor master : ",visitormaster.e_mail)
         validated_data['visitortansid'] = visitormaster
         validated_data['status'] = 'P'
         validated_data['checkinstatus'] = None
@@ -215,9 +209,6 @@ class QitVisitorinoutPOSTSerializer(serializers.ModelSerializer):
         validated_data['cmpdepartmentid'] = validated_data.get('cmpdepartmentid')
         visitorinout = QitVisitorinout.objects.create(**validated_data)
         validated_data["id"]=visitorinout.transid
-        # print("=====================================")
-        # print(validated_data)
-        # print("=====================================")
         return validated_data
     
 

@@ -162,9 +162,7 @@ def get_user(request,status,cmpId):
 @api_view(['GET'])
 def get_user_by_id(request, cmpId, transid):
     try:
-        print(transid)
         userEntry = QitUserlogin.objects.get(transid=transid)
-        print(userEntry.transid)
         user = QitUsermaster.objects.get(cmptransid=cmpId, usertype=userEntry.userrole,e_mail=userEntry.e_mail)
         serializer = UserMasterDataSerializer(user)
         return Response({
@@ -384,7 +382,6 @@ def get_user_by_company(request, cmpId):
                 'APICode': APICodeClass.User_Get.value
             }, status=400)
 
-        print("cmpId : ", cmpId)
         users = QitUsermaster.objects.filter(cmptransid=cmpId)
         
 
