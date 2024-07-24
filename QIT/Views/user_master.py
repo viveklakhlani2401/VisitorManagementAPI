@@ -19,13 +19,13 @@ from .send_email import send_html_mail
 #         if not request.data:
 #             return Response({
 #                 'Status':400,
-#                 'StatusMsg':"e_mail is required..!!"
+#                 'StatusMsg':"e_mail is required"
 #             },status=400)
 #         body_data = request.data["e_mail"]
 #         if not body_data:
 #             return Response({
 #                 'Status':400,
-#                 'StatusMsg':"e_mail is required..!!"
+#                 'StatusMsg':"e_mail is required"
 #             },status=200)
 #         new_OTP = generate_otp()
 #         set_otp(body_data,new_OTP)
@@ -33,7 +33,7 @@ from .send_email import send_html_mail
 #         Send_OTP(body_data,"New User Email OTP",message)
 #         return Response({
 #             'Status':200,
-#             'StatusMsg':f"OTP send successfully on email : {body_data}..!!"
+#             'StatusMsg':f"OTP send successfully on email : {body_data}"
 #         },status=200)
 #     except Exception as e:
 #         return Response({
@@ -57,7 +57,7 @@ def save_user(request):
                     return Response( {
                         'isSaved':"N",
                         'Status': 400,
-                        'StatusMsg': "Company not found..!!",
+                        'StatusMsg': "Company not found",
                         'APICode':APICodeClass.User_Save.value
                     }, status=400)
                 deptEntry = QitDepartment.objects.filter(transid=body_data["cmpdeptid"],cmptransid=companyEntry).first()
@@ -65,7 +65,7 @@ def save_user(request):
                     return Response( {
                         'isSaved':"N",
                         'Status': 400,
-                        'StatusMsg': "Department not found..!!",
+                        'StatusMsg': "Department not found",
                         'APICode':APICodeClass.User_Save.value
                     }, status=400)
                 serializer = QitUsermasterSerializer(data=request.data)
@@ -77,21 +77,21 @@ def save_user(request):
                     userlogin.save()
                     return Response({
                         'Status':status.HTTP_201_CREATED,
-                        'StatusMsg':"User Save Successfully..!!",
+                        'StatusMsg':"User Save Successfully",
                         'APICode':APICodeClass.User_Save.value
                     }, status=status.HTTP_201_CREATED)
                 return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
             else:
                 response = {
                     'Status': 400,
-                    'StatusMsg': "OTP is not verified..!!",
+                    'StatusMsg': "OTP is not verified",
                     'APICode':APICodeClass.User_Save.value
                 }
                 return Response(response,status=400)
         else:
             response = {
                 'Status': 400,
-                'StatusMsg': "Email not found or OTP expired..!!",
+                'StatusMsg': "Email not found or OTP expired",
                 'APICode':APICodeClass.User_Save.value
             }
             return Response(response,status=400)  
@@ -109,7 +109,7 @@ def get_user(request,status,cmpId):
         if not companyEntry:
             return Response( {
                 'Status': 400,
-                'StatusMsg': "Company not found..!!",
+                'StatusMsg': "Company not found",
                 'APICode':APICodeClass.User_Get.value
             }, status=400)
         if status.upper() == "ALL":
@@ -133,7 +133,7 @@ def get_user(request,status,cmpId):
         else:
             return Response({
                 'Status': 400, 
-                'StatusMsg': "Invalid state..!!",
+                'StatusMsg': "Invalid state",
                 'APICode':APICodeClass.User_Get.value
             }, status=400)
     except Exception as e:
@@ -195,20 +195,20 @@ def update_user(request):
     try:
         body_data = request.data
         if not body_data:
-            return Response({'Status': 400, 'StatusMsg': "Payload required..!!",'APICode':APICodeClass.User_Edit.value}, status=400)        
+            return Response({'Status': 400, 'StatusMsg': "Payload required",'APICode':APICodeClass.User_Edit.value}, status=400)        
         cmpId = body_data.get("company_id")
         if not cmpId:
-            return Response({'Status': 400, 'StatusMsg': "company_id required..!!",'APICode':APICodeClass.User_Edit.value}, status=400)  
+            return Response({'Status': 400, 'StatusMsg': "company_id required",'APICode':APICodeClass.User_Edit.value}, status=400)  
         transid = body_data.get("transid")
         if not transid:
-            return Response({'Status': 400, 'StatusMsg': "transid required..!!",'APICode':APICodeClass.User_Edit.value}, status=400)
+            return Response({'Status': 400, 'StatusMsg': "transid required",'APICode':APICodeClass.User_Edit.value}, status=400)
    
         try:
             companyEntry = QitCompany.objects.get(transid=cmpId)
         except QitCompany.DoesNotExist:
             return Response({
                 'Status':status.HTTP_404_NOT_FOUND,
-                'StatusMsg':"Company data not found..!!",
+                'StatusMsg':"Company data not found",
                 'APICode':APICodeClass.User_Edit.value
             },status=status.HTTP_404_NOT_FOUND)
         
@@ -219,7 +219,7 @@ def update_user(request):
         except QitDepartment.DoesNotExist:
             return Response({
                 'Status':status.HTTP_404_NOT_FOUND,
-                'StatusMsg':"Department data not found..!!",
+                'StatusMsg':"Department data not found",
                 'APICode':APICodeClass.User_Edit.value
             },status=status.HTTP_404_NOT_FOUND)
        
@@ -234,7 +234,7 @@ def update_user(request):
                 # if not pwd:
                 #     return Response({
                 #         'Status':400,
-                #         'StatusMsg':"password field is required..!!",
+                #         'StatusMsg':"password field is required",
                 #         'APICode':APICodeClass.User_Edit.value
                 #     },status=400)
                 user.changepassstatus = 0
@@ -250,13 +250,13 @@ def update_user(request):
             user.save()
             return Response({
                 'Status':200,
-                'StatusMsg':"User data updated..!!",
+                'StatusMsg':"User data updated",
                 'APICode':APICodeClass.User_Edit.value
             },status=200)
         except QitUsermaster.DoesNotExist:
             return Response({
                 'Status':status.HTTP_404_NOT_FOUND,
-                'StatusMsg':"User data not found..!!",
+                'StatusMsg':"User data not found",
                 'APICode':APICodeClass.User_Edit.value
             },status=status.HTTP_404_NOT_FOUND)
     except Exception as e:
@@ -273,7 +273,7 @@ def update_user(request):
 #     except QitUsermaster.DoesNotExist:
 #         return Response({
 #                     'Status':status.HTTP_404_NOT_FOUND,
-#                     'StatusMsg':"No data found..!!"
+#                     'StatusMsg':"No data found"
 #                 },status=status.HTTP_404_NOT_FOUND)
 #     serializer = UserMasterResetSerializer(user, data=request.data)
 #     if serializer.is_valid():
@@ -292,7 +292,7 @@ def delete_user(request, cmpId, transid):
     except QitUsermaster.DoesNotExist:
         return Response({
                     'Status':status.HTTP_404_NOT_FOUND,
-                    'StatusMsg':"No data found..!!",
+                    'StatusMsg':"No data found",
                     'APICode':APICodeClass.User_Delete.value  
                 },status=status.HTTP_404_NOT_FOUND)
     try:
@@ -300,7 +300,7 @@ def delete_user(request, cmpId, transid):
     except QitUserlogin.DoesNotExist:
         return Response({
                     'Status':status.HTTP_404_NOT_FOUND,
-                    'StatusMsg':"No data found..!!",
+                    'StatusMsg':"No data found",
                     'APICode':APICodeClass.User_Delete.value 
                 },status=status.HTTP_404_NOT_FOUND)
     userLogin.delete()
@@ -317,20 +317,20 @@ def update_user_profile(request):
     try:
         body_data = request.data
         if not body_data:
-            return Response({'Status': 400, 'StatusMsg': "Payload required..!!",'APICode':APICodeClass.User_Profile_Edit.value}, status=400)        
+            return Response({'Status': 400, 'StatusMsg': "Payload required",'APICode':APICodeClass.User_Profile_Edit.value}, status=400)        
         cmpId = body_data.get("company_id")
         if not cmpId:
-            return Response({'Status': 400, 'StatusMsg': "Company ID required..!!",'APICode':APICodeClass.User_Profile_Edit.value}, status=400)  
+            return Response({'Status': 400, 'StatusMsg': "Company ID required",'APICode':APICodeClass.User_Profile_Edit.value}, status=400)  
         transid = body_data.get("transid")
         if not transid:
-            return Response({'Status': 400, 'StatusMsg': "User ID required..!!",'APICode':APICodeClass.User_Profile_Edit.value}, status=400)
+            return Response({'Status': 400, 'StatusMsg': "User ID required",'APICode':APICodeClass.User_Profile_Edit.value}, status=400)
    
         try:
             companyEntry = QitCompany.objects.get(transid=cmpId)
         except QitCompany.DoesNotExist:
             return Response({
                 'Status':status.HTTP_404_NOT_FOUND,
-                'StatusMsg':"Company data not found..!!",
+                'StatusMsg':"Company data not found",
                 'APICode':APICodeClass.User_Profile_Edit.value
             },status=status.HTTP_404_NOT_FOUND)
         
@@ -341,7 +341,7 @@ def update_user_profile(request):
         except QitDepartment.DoesNotExist:
             return Response({
                 'Status':status.HTTP_404_NOT_FOUND,
-                'StatusMsg':"Department data not found..!!",
+                'StatusMsg':"Department data not found",
                 'APICode':APICodeClass.User_Profile_Edit.value
             },status=status.HTTP_404_NOT_FOUND)
        
@@ -355,13 +355,13 @@ def update_user_profile(request):
             user.save()
             return Response({
                 'Status':200,
-                'StatusMsg':"User profile data updated..!!",
+                'StatusMsg':"User profile data updated",
                 'APICode':APICodeClass.User_Profile_Edit.value
             },status=200)
         except QitUsermaster.DoesNotExist:
             return Response({
                 'Status':status.HTTP_404_NOT_FOUND,
-                'StatusMsg':"User data not found..!!",
+                'StatusMsg':"User data not found",
                 'APICode':APICodeClass.User_Profile_Edit.value
             },status=status.HTTP_404_NOT_FOUND)
     except Exception as e:
@@ -378,7 +378,7 @@ def get_user_by_company(request, cmpId):
         if not companyEntry:
             return Response({
                 'Status': 400,
-                'StatusMsg': "Company not found..!!",
+                'StatusMsg': "Company not found",
                 'APICode': APICodeClass.User_Get.value
             }, status=400)
 

@@ -71,7 +71,7 @@ def reminder_notification():
                 # print("emails : ==> ",emails)
                 send_html_mail(f"reminder",message2,emails)
                 send_html_mail(f"reminder",message1,[visitors_to_remind.visitortansid.e_mail])
-                print("Notification send successfullyy..!!")
+                print("Notification send successfullyy")
             else:
                 print("No visitors found matching the update criteria.")
         print("No verified visitors found matching the update criteria.")

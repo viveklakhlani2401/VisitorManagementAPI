@@ -182,3 +182,14 @@ class QitNotificationmaster(models.Model):
     class Meta:
         managed = False
         db_table = 'QIT_NotificationMaster'
+
+class QitConfigmaster(models.Model):
+    transid = models.AutoField(db_column='TransId', primary_key=True)  # Field name made lowercase.
+    cmptransid = models.ForeignKey(QitCompany, models.DO_NOTHING, db_column='CmpTransId')  # Field name made lowercase.
+    approvalduration = models.CharField(db_column='ApprovalDuration', max_length=5)  # Field name made lowercase.
+    manualverification = models.CharField(db_column='ManualVerification', max_length=2)  # Field name made lowercase.
+    messagetype = models.CharField(db_column='MessageType', max_length=2)  # Field name made lowercase.
+
+    class Meta:
+        managed = False
+        db_table = 'QIT_ConfigMaster'        

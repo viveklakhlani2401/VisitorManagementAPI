@@ -51,6 +51,8 @@ class APICodeClass(Enum):
     Auth_ForgetPWD_User = 8007
     Auth_RefreshToken = 8008
 
+    Config_Get = 9001
+
 
 class APICodeMessages:
     messages = {

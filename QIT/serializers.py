@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from django.contrib.auth.hashers import make_password
 
-from .models import QitCompany,QitOtp,QitUserlogin,QitDepartment,QitUsermaster,QitVisitormaster,QitVisitorinout,QitApiLog
+from .models import QitCompany,QitOtp,QitUserlogin,QitDepartment,QitUsermaster,QitVisitormaster,QitVisitorinout,QitApiLog,QitConfigmaster
 
 class CompanyMasterSerializer(serializers.ModelSerializer):
     class Meta:
@@ -165,7 +165,7 @@ class QitVisitorinoutPOSTSerializer(serializers.ModelSerializer):
             try:
                 userEntry = QitUserlogin.objects.get(transid=validated_data.get("createdby"))
             except QitUserlogin.DoesNotExist:
-                raise serializers.ValidationError({"statusMsg":"Invalid created by user id..!!"})
+                raise serializers.ValidationError({"statusMsg":"Invalid created by user id"})
 
         try:
             company = QitCompany.objects.get(transid=validated_data.pop('cmptransid'))
@@ -293,3 +293,18 @@ class UserShortDataSerializer(serializers.ModelSerializer):
     class Meta:
         model = QitUsermaster
         fields = ['transid','username','cmpdeptid']
+
+class GetConfigDataSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = QitConfigmaster
+        fields = ['transid','approvalduration','manualverification','messagetype']
+
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+
+        representation['id'] = representation.pop("transid")
+        representation['ApprovalTime'] = representation.pop("approvalduration")
+        representation['OtpVerification'] = True if representation.pop("manualverification") == "Y" else False
+        representation['SMSType'] = representation.pop("messagetype")
+        return representation
+ 

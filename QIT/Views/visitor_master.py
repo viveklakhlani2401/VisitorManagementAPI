@@ -4,7 +4,7 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
 from QIT.serializers import QitVisitorinoutPOSTSerializer, QitVisitorSerializer,QitVisitorinoutGETSerializer
-from QIT.models import QitVisitormaster,QitVisitorinout,QitCompany,QitDepartment,QitUsermaster
+from QIT.models import QitVisitormaster,QitVisitorinout,QitCompany,QitDepartment,QitUsermaster,QitConfigmaster
 import json,os
 from django.core.cache import cache
 from datetime import datetime
@@ -27,25 +27,25 @@ def Save_Visitor(request):
         if not body_data:
             return Response({
                 'Status': 400,
-                'StatusMsg': "Payload required..!!",
+                'StatusMsg': "Payload required",
                 'APICode':APICodeClass.Visitor_Save.value
             },status=400)  
         email = body_data["e_mail"]
         if not email:
             return Response({
                 'Status': 400,
-                'StatusMsg': "e_mail is required..!!",
+                'StatusMsg': "e_mail is required",
                 'APICode':APICodeClass.Visitor_Save.value
             },status=400)  
         if not body_data["company_id"]:
             return Response({
                 'Status': 400,
-                'StatusMsg': "cmptransid is required..!!",
+                'StatusMsg': "cmptransid is required",
                 'APICode':APICodeClass.Visitor_Save.value
             },status=400)  
        
         alredyEmailChk = QitVisitormaster.objects.filter(e_mail=body_data["e_mail"]).first()
- 
+
         if alredyEmailChk:
        
             # Get today's date
@@ -60,7 +60,7 @@ def Save_Visitor(request):
             if alreadyEntry:
                 return Response({
                     'Status': 400,
-                    'StatusMsg': "Visitor request already pending..!!",
+                    'StatusMsg': "Visitor request already pending",
                     'APICode':APICodeClass.Visitor_Save.value
                 }, status=400)
             
@@ -75,25 +75,27 @@ def Save_Visitor(request):
                 if timeslot_datetime_utc < current_datetime_utc:
                     return Response({
                         'Status': 400,
-                        'StatusMsg': "Timeslot cannot be in the past..!!",
+                        'StatusMsg': "Timeslot cannot be in the past",
                         'APICode':APICodeClass.Visitor_Save.value
                     }, status=400)
                 one_day_ahead = current_datetime_utc + timezone.timedelta(days=1)
                 if timeslot_datetime_utc >= one_day_ahead:
                     return Response({
                         'Status': 400,
-                        'StatusMsg': "Timeslot cannot be more than one day in the future..!!",
+                        'StatusMsg': "Timeslot cannot be more than one day in the future",
                         'APICode':APICodeClass.Visitor_Save.value
                     }, status=400)
             except (ValueError, TypeError) as e:
                 return Response({
                     'Status': 400,
-                    'StatusMsg': "Invalid timeslot format..!!",
+                    'StatusMsg': "Invalid timeslot format",
                     'APICode':APICodeClass.Visitor_Save.value      
                 }, status=400)
         stored_data_json = cache.get(f"otp_{email}")
         dataToSerialize = request.data
-        if not dataToSerialize["createdby"]:
+        ConfiEntry = QitConfigmaster.objects.get(cmptransid=dataToSerialize['company_id'])
+        print(ConfiEntry.manualverification)
+        if not dataToSerialize["createdby"] or ConfiEntry.manualverification == "Y":
             if stored_data_json:
                 stored_data = json.loads(stored_data_json)
                 stored_status = stored_data['status']
@@ -101,13 +103,13 @@ def Save_Visitor(request):
                 if stored_status is not 1 and stored_role.upper() is not "VISITOR" :
                     return Response({
                         'Status': 400,
-                        'StatusMsg': "OTP is not verified..!!",
+                        'StatusMsg': "OTP is not verified",
                         'APICode':APICodeClass.Visitor_Save.value
                     },status=400)
             else:
                 return Response({
                     'Status': 400,
-                    'StatusMsg': "Email not found or OTP expired..!!",
+                    'StatusMsg': "Email not found or OTP expired",
                     'APICode':APICodeClass.Visitor_Save.value
                 },status=400)  
            
@@ -116,7 +118,7 @@ def Save_Visitor(request):
             return Response( {
                 'isSaved':"N",
                 'Status': 400,
-                'StatusMsg': "Company not found..!!",
+                'StatusMsg': "Company not found",
                 'APICode':APICodeClass.Visitor_Save.value
             }, status=400)
         deptEntry = QitDepartment.objects.filter(transid=dataToSerialize["department_id"]).first()
@@ -124,7 +126,7 @@ def Save_Visitor(request):
             return Response( {
                 'isSaved':"N",
                 'Status': 400,
-                'StatusMsg': "Department not found..!!",
+                'StatusMsg': "Department not found",
                 'APICode':APICodeClass.Visitor_Save.value
             }, status=400)
         dataToSerialize["cmpdepartmentid"]=dataToSerialize["department_id"]
@@ -165,10 +167,17 @@ def Save_Visitor(request):
             return Response( {
                 'isSaved':"Y",
                 'Status': 201,
-                'StatusMsg': "Visitor saved..!!",
+                'StatusMsg': "Visitor saved",
                 'APICode':APICodeClass.Visitor_Save.value
             }, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    except QitConfigmaster.DoesNotExist:
+        return Response( {
+            'isSaved':"N",
+            'Status': 400,
+            'StatusMsg': "Company configuration data not found",
+            'APICode':APICodeClass.Visitor_Save.value
+        }, status=400)
     except Exception as e:
         return Response({
             'Status':400,
@@ -184,17 +193,17 @@ def Save_Visitor(request):
 #         if not body_data:
 #             return Response({
 #                 'Status': 400,
-#                 'StatusMsg': "Payload required..!!"
+#                 'StatusMsg': "Payload required"
 #             },status=400)  
 #         if not body_data["e_mail"]:
 #             return Response({
 #                 'Status': 400,
-#                 'StatusMsg': "e_mail is required..!!"
+#                 'StatusMsg': "e_mail is required"
 #             },status=400)  
 #         if not body_data["company_id"]:
 #             return Response({
 #                 'Status': 400,
-#                 'StatusMsg': "cmptransid is required..!!"
+#                 'StatusMsg': "cmptransid is required"
 #             },status=400)  
 #         email = body_data["e_mail"]
 #         cmpid = body_data["company_id"]
@@ -202,7 +211,7 @@ def Save_Visitor(request):
 #         if not visitorEntry:
 #             return Response({
 #                 'Status':400,
-#                 'StatusMsg':"No data found..!!"
+#                 'StatusMsg':"No data found"
 #             },status=400)
 #         serializedData = QitVisitorSerializer(data=visitorEntry)
 #         if serializedData.is_valid():
@@ -224,27 +233,27 @@ def GetVisitorByE_Mail(request):
     try:
         body_data = request.data
         if not body_data:
-            return Response({'Status': 400, 'StatusMsg': "Payload required..!!",'APICode':APICodeClass.Visitor_Mobile_GetByEmail.value}, status=400)  
+            return Response({'Status': 400, 'StatusMsg': "Payload required",'APICode':APICodeClass.Visitor_Mobile_GetByEmail.value}, status=400)  
         
         email = body_data.get("e_mail")
         cmpid = body_data.get("company_id")
         
         if not email:
-            return Response({'Status': 400, 'StatusMsg': "Email is required..!!",'APICode':APICodeClass.Visitor_Mobile_GetByEmail.value}, status=400)  
+            return Response({'Status': 400, 'StatusMsg': "Email is required",'APICode':APICodeClass.Visitor_Mobile_GetByEmail.value}, status=400)  
         if not cmpid:
-            return Response({'Status': 400, 'StatusMsg': "Company ID is required..!!",'APICode':APICodeClass.Visitor_Mobile_GetByEmail.value}, status=400)  
+            return Response({'Status': 400, 'StatusMsg': "Company ID is required",'APICode':APICodeClass.Visitor_Mobile_GetByEmail.value}, status=400)  
 
         companyEntry = QitCompany.objects.filter(transid=cmpid).first()
         if not companyEntry:
             return Response( {
                 'Status': 400,
-                'StatusMsg': "Company not found..!!",
+                'StatusMsg': "Company not found",
                 'APICode':APICodeClass.Visitor_Mobile_GetByEmail.value
             }, status=400)
 
         visitor_entry = QitVisitormaster.objects.filter(e_mail=email, cmptransid=cmpid).first()
         if not visitor_entry:
-            return Response({'Status': 400, 'StatusMsg': "No data found..!!",'APICode':APICodeClass.Visitor_Mobile_GetByEmail.value}, status=400)
+            return Response({'Status': 400, 'StatusMsg': "No data found",'APICode':APICodeClass.Visitor_Mobile_GetByEmail.value}, status=400)
 
         serialized_data = QitVisitorSerializer(visitor_entry)
         return Response(serialized_data.data, status=200)
@@ -258,7 +267,7 @@ def GetVisitorByE_Mail(request):
 def GetAllVisitor(request,status,cid):
     try:
         if not cid:
-            return Response({'Status': 400, 'StatusMsg': "Company Id requied..!!",'APICode':APICodeClass.Visitor_Get.value}, status=400)
+            return Response({'Status': 400, 'StatusMsg': "Company Id requied",'APICode':APICodeClass.Visitor_Get.value}, status=400)
         # queryset = QitVisitorinout.objects.filter(cmptransid=cid)
         # queryset = QitVisitorinout.objects.filter(cmptransid=cid)
         # entrydate_info = [(type(obj.entrydate), obj.entrydate) for obj in queryset]  # Collect type and value of entrydate field
@@ -278,7 +287,7 @@ def GetAllVisitor(request,status,cid):
         if not companyEntry:
             return Response( {
                 'Status': 400,
-                'StatusMsg': "Company not found..!!",
+                'StatusMsg': "Company not found",
                 'APICode':APICodeClass.Visitor_Get.value
             }, status=400)
         if status.upper() == "ALL":
@@ -290,9 +299,9 @@ def GetAllVisitor(request,status,cid):
         
             # queryset = QitVisitorinout.objects.filter(cmptransid=cid,status="P",checkintime=today).order_by('-checkintime', '-entrydate')
         else:
-            return Response({'Status': 400, 'StatusMsg': "Invalid state..!!",'APICode':APICodeClass.Visitor_Get.value}, status=400)
+            return Response({'Status': 400, 'StatusMsg': "Invalid state",'APICode':APICodeClass.Visitor_Get.value}, status=400)
         if not queryset:
-            return Response({'Status': 400, 'StatusMsg': "No data..!!",'APICode':APICodeClass.Visitor_Get.value}, status=400)
+            return Response({'Status': 400, 'StatusMsg': "No data",'APICode':APICodeClass.Visitor_Get.value}, status=400)
         serializer = QitVisitorinoutGETSerializer(queryset, many=True)
         return Response({'Data':serializer.data,'APICode':APICodeClass.Visitor_Get.value},status=200)
     except Exception as e:
@@ -304,21 +313,21 @@ def GetAllVisitor(request,status,cid):
 def GetVisitorDetail(request,vid,cid):
     try:
         if not cid:
-            return Response({'Status': 400, 'StatusMsg': "Company Id requied..!!",'APICode':APICodeClass.Visitor_GetById.value}, status=400)
+            return Response({'Status': 400, 'StatusMsg': "Company Id requied",'APICode':APICodeClass.Visitor_GetById.value}, status=400)
         if not vid:
-            return Response({'Status': 400, 'StatusMsg': "Visitor Id requied..!!",'APICode':APICodeClass.Visitor_GetById.value}, status=400)
+            return Response({'Status': 400, 'StatusMsg': "Visitor Id requied",'APICode':APICodeClass.Visitor_GetById.value}, status=400)
         
 
         companyEntry = QitCompany.objects.filter(transid=cid).first()
         if not companyEntry:
             return Response( {
                 'Status': 400,
-                'StatusMsg': "Company not found..!!",
+                'StatusMsg': "Company not found",
                 'APICode':APICodeClass.Visitor_GetById.value
             }, status=400)
         queryset = QitVisitorinout.objects.filter(cmptransid=cid,transid=vid).first()
         if not queryset:
-            return Response({'Status': 400, 'StatusMsg': "No data..!!",'APICode':APICodeClass.Visitor_GetById.value}, status=400)
+            return Response({'Status': 400, 'StatusMsg': "No data",'APICode':APICodeClass.Visitor_GetById.value}, status=400)
         serializer = QitVisitorinoutGETSerializer(queryset, many=False)
         return Response({'Data':serializer.data,'APICode':APICodeClass.Visitor_GetById.value},status=200)
     except Exception as e:
@@ -331,35 +340,35 @@ def verifyVisitor(request):
     try:
         reqData = request.data
         if not reqData:
-            return Response({'Status': 400, 'StatusMsg': "Payload required..!!",'APICode':APICodeClass.Visitor_Verify.value}, status=400)  
+            return Response({'Status': 400, 'StatusMsg': "Payload required",'APICode':APICodeClass.Visitor_Verify.value}, status=400)  
         if not reqData["company_id"]:
-            return Response({'Status': 400, 'StatusMsg': "company_id required..!!",'APICode':APICodeClass.Visitor_Verify.value}, status=400)
+            return Response({'Status': 400, 'StatusMsg': "company_id required",'APICode':APICodeClass.Visitor_Verify.value}, status=400)
         if not reqData["visitor_id"]:
-            return Response({'Status': 400, 'StatusMsg': "visitor_id required..!!",'APICode':APICodeClass.Visitor_Verify.value}, status=400)
+            return Response({'Status': 400, 'StatusMsg': "visitor_id required",'APICode':APICodeClass.Visitor_Verify.value}, status=400)
         if not reqData["status"]:
-            return Response({'Status': 400, 'StatusMsg': "status required..!!",'APICode':APICodeClass.Visitor_Verify.value}, status=400) 
+            return Response({'Status': 400, 'StatusMsg': "status required",'APICode':APICodeClass.Visitor_Verify.value}, status=400) 
         state =  reqData["status"]
         if state.upper() != "A" and state.upper() != "R":
-            return Response({'Status': 400, 'StatusMsg': "Enter valid status..!!",'APICode':APICodeClass.Visitor_Verify.value}, status=400)   
+            return Response({'Status': 400, 'StatusMsg': "Enter valid status",'APICode':APICodeClass.Visitor_Verify.value}, status=400)   
         if state.upper() == "R":
             if not reqData["reason"]:
-                return Response({'Status': 400, 'StatusMsg': "reason required..!!",'APICode':APICodeClass.Visitor_Verify.value}, status=400)  
+                return Response({'Status': 400, 'StatusMsg': "reason required",'APICode':APICodeClass.Visitor_Verify.value}, status=400)  
 
         companyEntry = QitCompany.objects.filter(transid=reqData["company_id"]).first()
         if not companyEntry:
             return Response( {
                 'Status': 400,
-                'StatusMsg': "Company not found..!!",
+                'StatusMsg': "Company not found",
                 'APICode':APICodeClass.Visitor_Verify.value
             }, status=400)
 
         inoutEntry = QitVisitorinout.objects.filter(transid=reqData["visitor_id"],cmptransid=reqData["company_id"]).first()
         if not inoutEntry:
-            return Response({'Status': 400, 'StatusMsg': "Data not found..!!",'APICode':APICodeClass.Visitor_Verify.value}, status=400)
+            return Response({'Status': 400, 'StatusMsg': "Data not found",'APICode':APICodeClass.Visitor_Verify.value}, status=400)
         if inoutEntry.status.upper() == "A":
-            return Response({'Status': 400, 'StatusMsg': "Visitor already approved..!!",'APICode':APICodeClass.Visitor_Verify.value}, status=400)
+            return Response({'Status': 400, 'StatusMsg': "Visitor already approved",'APICode':APICodeClass.Visitor_Verify.value}, status=400)
         if inoutEntry.status.upper() == "R":
-            return Response({'Status': 400, 'StatusMsg': "Visitor already rejected..!!",'APICode':APICodeClass.Visitor_Verify.value}, status=400)
+            return Response({'Status': 400, 'StatusMsg': "Visitor already rejected",'APICode':APICodeClass.Visitor_Verify.value}, status=400)
         
         # Timeslot validation
         timeslot = inoutEntry.timeslot
@@ -382,8 +391,8 @@ def verifyVisitor(request):
                 
                 if current_datetime_utc > timeslot_datetime_utc:
                     if current_datetime_utc.date() != timeslot_datetime_utc.date():
-                        return Response({'Status': 400, 'StatusMsg': "Cannot verify. Timeslot is more than one day old..!!",'APICode':APICodeClass.Visitor_Verify.value}, status=400)   
-                    # return Response({'Status': 400, 'StatusMsg': "Cannot verify. Timeslot is more than one day old..!!"}, status=400)
+                        return Response({'Status': 400, 'StatusMsg': "Cannot verify. Timeslot is more than one day old",'APICode':APICodeClass.Visitor_Verify.value}, status=400)   
+                    # return Response({'Status': 400, 'StatusMsg': "Cannot verify. Timeslot is more than one day old"}, status=400)
             except Exception as e:
                 return Response({'Status': 400, 'StatusMsg': f"Error processing timeslot: {str(e)}",'APICode':APICodeClass.Visitor_Verify.value}, status=400)
         
@@ -396,7 +405,7 @@ def verifyVisitor(request):
         inoutEntry.save()
         common.send_visitors(inoutEntry,reqData["company_id"],"verify")
 
-        return Response({'Status': 200, 'StatusMsg': "Status updated..!!",'APICode':APICodeClass.Visitor_Verify.value}, status=200)
+        return Response({'Status': 200, 'StatusMsg': "Status updated",'APICode':APICodeClass.Visitor_Verify.value}, status=200)
     except Exception as e:
         return Response({'Status': 400, 'StatusMsg': str(e),'APICode':APICodeClass.Visitor_Verify.value}, status=400)
          
@@ -407,32 +416,32 @@ def chkStatus(request):
     try:
         body_data = request.data
         if not body_data:
-            return Response({'Status': 400, 'StatusMsg': "Payload required..!!",'APICode':APICodeClass.Visitor_Mobile_ChkStatus.value}, status=400)  
+            return Response({'Status': 400, 'StatusMsg': "Payload required",'APICode':APICodeClass.Visitor_Mobile_ChkStatus.value}, status=400)  
         
         email = body_data.get("e_mail")
         cmpid = body_data.get("company_id")
         
         if not email:
-            return Response({'Status': 400, 'StatusMsg': "Email is required..!!",'APICode':APICodeClass.Visitor_Mobile_ChkStatus.value}, status=400)  
+            return Response({'Status': 400, 'StatusMsg': "Email is required",'APICode':APICodeClass.Visitor_Mobile_ChkStatus.value}, status=400)  
         if not cmpid:
-            return Response({'Status': 400, 'StatusMsg': "Company ID is required..!!",'APICode':APICodeClass.Visitor_Mobile_ChkStatus.value}, status=400)  
+            return Response({'Status': 400, 'StatusMsg': "Company ID is required",'APICode':APICodeClass.Visitor_Mobile_ChkStatus.value}, status=400)  
         
         companyEntry = QitCompany.objects.filter(transid=cmpid).first()
         if not companyEntry:
             return Response( {
                 'isSaved':"N",
                 'Status': 400,
-                'StatusMsg': "Company not found..!!",
+                'StatusMsg': "Company not found",
                 'APICode':APICodeClass.Visitor_Mobile_ChkStatus.value
             }, status=400)
 
         visitor_entry = QitVisitormaster.objects.filter(e_mail=email, cmptransid=cmpid).first()
         if not visitor_entry:
-            return Response({'Status': 400, 'StatusMsg': "Visitor data not found..!!",'APICode':APICodeClass.Visitor_Mobile_ChkStatus.value}, status=400)
+            return Response({'Status': 400, 'StatusMsg': "Visitor data not found",'APICode':APICodeClass.Visitor_Mobile_ChkStatus.value}, status=400)
         
         inOutEntry = QitVisitorinout.objects.filter(visitortansid=visitor_entry.transid).order_by("-entrydate").first()
         if not inOutEntry:
-            return Response({'Status': 400, 'StatusMsg': "Visitor request entry not found..!!",'APICode':APICodeClass.Visitor_Mobile_ChkStatus.value}, status=400)
+            return Response({'Status': 400, 'StatusMsg': "Visitor request entry not found",'APICode':APICodeClass.Visitor_Mobile_ChkStatus.value}, status=400)
         
         if inOutEntry.checkinstatus:
             return Response({
@@ -457,39 +466,39 @@ def checkoutVisitor(request):
     try:
         body_data = request.data
         if not body_data:
-            return Response({'Status': 400, 'StatusMsg': "Payload required..!!",'APICode':APICodeClass.Visitor_Mobile_ChkOutByV.value}, status=400)  
+            return Response({'Status': 400, 'StatusMsg': "Payload required",'APICode':APICodeClass.Visitor_Mobile_ChkOutByV.value}, status=400)  
         
         email = body_data.get("e_mail")
         cmpid = body_data.get("company_id")
         
         if not email:
-            return Response({'Status': 400, 'StatusMsg': "Email is required..!!",'APICode':APICodeClass.Visitor_Mobile_ChkOutByV.value}, status=400)  
+            return Response({'Status': 400, 'StatusMsg': "Email is required",'APICode':APICodeClass.Visitor_Mobile_ChkOutByV.value}, status=400)  
         if not cmpid:
-            return Response({'Status': 400, 'StatusMsg': "Company ID is required..!!",'APICode':APICodeClass.Visitor_Mobile_ChkOutByV.value}, status=400)  
+            return Response({'Status': 400, 'StatusMsg': "Company ID is required",'APICode':APICodeClass.Visitor_Mobile_ChkOutByV.value}, status=400)  
         
         companyEntry = QitCompany.objects.filter(transid=cmpid).first()
         if not companyEntry:
             return Response( {
                 'isSaved':"N",
                 'Status': 400,
-                'StatusMsg': "Company not found..!!",
+                'StatusMsg': "Company not found",
                 'APICode':APICodeClass.Visitor_Mobile_ChkOutByV.value
             }, status=400)
 
         visitor_entry = QitVisitormaster.objects.filter(e_mail=email, cmptransid=cmpid).first()
         if not visitor_entry:
-            return Response({'Status': 400, 'StatusMsg': "Visitor data not found..!!",'APICode':APICodeClass.Visitor_Mobile_ChkOutByV.value}, status=400)
+            return Response({'Status': 400, 'StatusMsg': "Visitor data not found",'APICode':APICodeClass.Visitor_Mobile_ChkOutByV.value}, status=400)
 
         
         inOutEntry = QitVisitorinout.objects.filter(visitortansid=visitor_entry.transid).order_by("-entrydate").first()
         if not inOutEntry:
-            return Response({'Status': 400, 'StatusMsg': "Visitor checkin entry not found..!!",'APICode':APICodeClass.Visitor_Mobile_ChkOutByV.value}, status=400)
+            return Response({'Status': 400, 'StatusMsg': "Visitor checkin entry not found",'APICode':APICodeClass.Visitor_Mobile_ChkOutByV.value}, status=400)
         
         if inOutEntry.status.upper() != "A":
-            return Response({'Status': 400, 'StatusMsg': "Visitor status is not approve..!!",'APICode':APICodeClass.Visitor_Mobile_ChkOutByV.value}, status=400)
+            return Response({'Status': 400, 'StatusMsg': "Visitor status is not approve",'APICode':APICodeClass.Visitor_Mobile_ChkOutByV.value}, status=400)
         
         if inOutEntry.checkinstatus.upper() == "O":
-            return Response({'Status': 400, 'StatusMsg': "Visitor already checked out..!!",'APICode':APICodeClass.Visitor_Mobile_ChkOutByV.value}, status=400)
+            return Response({'Status': 400, 'StatusMsg': "Visitor already checked out",'APICode':APICodeClass.Visitor_Mobile_ChkOutByV.value}, status=400)
 
 
         
@@ -498,7 +507,7 @@ def checkoutVisitor(request):
 
         inOutEntry.save()
 
-        return Response({'Status': 200, 'StatusMsg': "Checkout successfullyy..!!",'APICode':APICodeClass.Visitor_Mobile_ChkOutByV.value}, status=200)
+        return Response({'Status': 200, 'StatusMsg': "Checkout successfullyy",'APICode':APICodeClass.Visitor_Mobile_ChkOutByV.value}, status=200)
         
     except Exception as e:
         return Response({'Status': 400, 'StatusMsg': "An error occurred: {}".format(str(e)),'APICode':APICodeClass.Visitor_Mobile_ChkOutByV.value}, status=400)
@@ -510,7 +519,7 @@ def EditVerifyVisitor(request):
     try:
         body_data = request.data
         if not body_data:
-            return Response({'Status': 400, 'StatusMsg': "Payload required..!!",'APICode':APICodeClass.Visitor_Edit.value}, status=400)
+            return Response({'Status': 400, 'StatusMsg': "Payload required",'APICode':APICodeClass.Visitor_Edit.value}, status=400)
 
         vid = body_data.get("visitor_id")
         cmpid = body_data.get("company_id")
@@ -526,21 +535,21 @@ def EditVerifyVisitor(request):
         anyhardware = body_data.get("anyhardware")
 
         if not vid:
-            return Response({'Status': 400, 'StatusMsg': "Visitor ID is required..!!",'APICode':APICodeClass.Visitor_Edit.value}, status=400)
+            return Response({'Status': 400, 'StatusMsg': "Visitor ID is required",'APICode':APICodeClass.Visitor_Edit.value}, status=400)
         if not cmpid:
-            return Response({'Status': 400, 'StatusMsg': "Company ID is required..!!",'APICode':APICodeClass.Visitor_Edit.value}, status=400)
+            return Response({'Status': 400, 'StatusMsg': "Company ID is required",'APICode':APICodeClass.Visitor_Edit.value}, status=400)
         if not did:
-            return Response({'Status': 400, 'StatusMsg': "Department ID is required..!!",'APICode':APICodeClass.Visitor_Edit.value}, status=400)
+            return Response({'Status': 400, 'StatusMsg': "Department ID is required",'APICode':APICodeClass.Visitor_Edit.value}, status=400)
         if not vname:
-            return Response({'Status': 400, 'StatusMsg': "Vendor name is required..!!",'APICode':APICodeClass.Visitor_Edit.value}, status=400)
+            return Response({'Status': 400, 'StatusMsg': "Vendor name is required",'APICode':APICodeClass.Visitor_Edit.value}, status=400)
         if not vcmpname:
-            return Response({'Status': 400, 'StatusMsg': "Company name is required..!!",'APICode':APICodeClass.Visitor_Edit.value}, status=400)
+            return Response({'Status': 400, 'StatusMsg': "Company name is required",'APICode':APICodeClass.Visitor_Edit.value}, status=400)
         if not vlocation:
-            return Response({'Status': 400, 'StatusMsg': "Company Location is required..!!",'APICode':APICodeClass.Visitor_Edit.value}, status=400)
+            return Response({'Status': 400, 'StatusMsg': "Company Location is required",'APICode':APICodeClass.Visitor_Edit.value}, status=400)
         if not cnctperson:
-            return Response({'Status': 400, 'StatusMsg': "Contact person name is required..!!",'APICode':APICodeClass.Visitor_Edit.value}, status=400)
+            return Response({'Status': 400, 'StatusMsg': "Contact person name is required",'APICode':APICodeClass.Visitor_Edit.value}, status=400)
         if not purposeofvisit:
-            return Response({'Status': 400, 'StatusMsg': "Purpose of Visit is required..!!",'APICode':APICodeClass.Visitor_Edit.value}, status=400)
+            return Response({'Status': 400, 'StatusMsg': "Purpose of Visit is required",'APICode':APICodeClass.Visitor_Edit.value}, status=400)
         
         
         timeslot = body_data.get("timeslot")
@@ -554,44 +563,44 @@ def EditVerifyVisitor(request):
                 if timeslot_datetime_utc < current_datetime_utc:
                     return Response({
                         'Status': 400,
-                        'StatusMsg': "Timeslot cannot be in the past..!!",
+                        'StatusMsg': "Timeslot cannot be in the past",
                         'APICode':APICodeClass.Visitor_Edit.value
                     }, status=400)
                 one_day_ahead = current_datetime_utc + timezone.timedelta(days=1)
                 if timeslot_datetime_utc >= one_day_ahead:
                     return Response({
                         'Status': 400,
-                        'StatusMsg': "Timeslot cannot be more than one day in the future..!!",
+                        'StatusMsg': "Timeslot cannot be more than one day in the future",
                         'APICode':APICodeClass.Visitor_Edit.value
                     }, status=400)
             except (ValueError, TypeError) as e:
                 return Response({
                     'Status': 400,
-                    'StatusMsg': "Invalid timeslot format..!!",
+                    'StatusMsg': "Invalid timeslot format",
                     'APICode':APICodeClass.Visitor_Edit.value
                 }, status=400)
 
         companyEntry = QitCompany.objects.filter(transid=cmpid).first()
         if not companyEntry:
-            return Response({'isSaved': "N", 'Status': 400, 'StatusMsg': "Company not found..!!",'APICode':APICodeClass.Visitor_Edit.value}, status=400)
+            return Response({'isSaved': "N", 'Status': 400, 'StatusMsg': "Company not found",'APICode':APICodeClass.Visitor_Edit.value}, status=400)
 
         visitorInOut_entry = QitVisitorinout.objects.filter(transid=vid, cmptransid=cmpid).first()
         if not visitorInOut_entry:
-            return Response({'Status': 400, 'StatusMsg': "Visitor data not found..!!",'APICode':APICodeClass.Visitor_Edit.value}, status=400)
+            return Response({'Status': 400, 'StatusMsg': "Visitor data not found",'APICode':APICodeClass.Visitor_Edit.value}, status=400)
 
         if not visitorInOut_entry.createdby:
-            return Response({'Status': 400, 'StatusMsg': "Visitor entry done by external..!!",'APICode':APICodeClass.Visitor_Edit.value}, status=400)
+            return Response({'Status': 400, 'StatusMsg': "Visitor entry done by external",'APICode':APICodeClass.Visitor_Edit.value}, status=400)
         
         if visitorInOut_entry.status.upper() == "A":
-            return Response({'Status': 400, 'StatusMsg': "Visitor status is approved..!!",'APICode':APICodeClass.Visitor_Edit.value}, status=400)
+            return Response({'Status': 400, 'StatusMsg': "Visitor status is approved",'APICode':APICodeClass.Visitor_Edit.value}, status=400)
 
         visitor_entry = visitorInOut_entry.visitortansid  # Access the related QitVisitormaster object directly
         if not visitor_entry:
-            return Response({'Status': 400, 'StatusMsg': "Visitor master data not found..!!",'APICode':APICodeClass.Visitor_Edit.value}, status=400)
+            return Response({'Status': 400, 'StatusMsg': "Visitor master data not found",'APICode':APICodeClass.Visitor_Edit.value}, status=400)
 
         department_entry = QitDepartment.objects.filter(transid=did, cmptransid=cmpid).first()
         if not department_entry:
-            return Response({'Status': 400, 'StatusMsg': "Department data not found..!!",'APICode':APICodeClass.Visitor_Edit.value}, status=400)
+            return Response({'Status': 400, 'StatusMsg': "Department data not found",'APICode':APICodeClass.Visitor_Edit.value}, status=400)
 
         # Update visitor_entry fields
         visitor_entry.vname = body_data.get("vname", visitor_entry.vname)
@@ -609,42 +618,42 @@ def EditVerifyVisitor(request):
         visitorInOut_entry.status = "P"
         visitorInOut_entry.save()
 
-        return Response({'Status': 200, 'StatusMsg': "Visitor data saved successfully..!!",'APICode':APICodeClass.Visitor_Edit.value}, status=200)
+        return Response({'Status': 200, 'StatusMsg': "Visitor data saved successfully",'APICode':APICodeClass.Visitor_Edit.value}, status=200)
 
     except Exception as e:
         return Response({'Status': 400, 'StatusMsg': "An error occurred: {}".format(str(e)),'APICode':APICodeClass.Visitor_Edit.value}, status=400)
     # try:
     #     body_data = request.data
     #     if not body_data:
-    #         return Response({'Status': 400, 'StatusMsg': "Payload required..!!"}, status=400)  
+    #         return Response({'Status': 400, 'StatusMsg': "Payload required"}, status=400)  
         
     #     vid = body_data.get("visitor_id")
     #     cmpid = body_data.get("company_id")
     #     did = body_data.get("department_id")
         
     #     if not vid:
-    #         return Response({'Status': 400, 'StatusMsg': "Visitor ID is required..!!"}, status=400)  
+    #         return Response({'Status': 400, 'StatusMsg': "Visitor ID is required"}, status=400)  
     #     if not cmpid:
-    #         return Response({'Status': 400, 'StatusMsg': "Company ID is required..!!"}, status=400)  
+    #         return Response({'Status': 400, 'StatusMsg': "Company ID is required"}, status=400)  
     #     if not did:
-    #         return Response({'Status': 400, 'StatusMsg': "Department ID is required..!!"}, status=400)  
+    #         return Response({'Status': 400, 'StatusMsg': "Department ID is required"}, status=400)  
         
     #     companyEntry = QitCompany.objects.filter(transid=cmpid).first()
     #     if not companyEntry:
     #         return Response( {
     #             'isSaved':"N",
     #             'Status': 400,
-    #             'StatusMsg': "Company not found..!!"
+    #             'StatusMsg': "Company not found"
     #         }, status=400)
 
     #     visitorInOut_entry = QitVisitorinout.objects.filter(transid=vid, cmptransid=cmpid).first()
     #     print("here")
     #     if not visitorInOut_entry:
-    #         return Response({'Status': 400, 'StatusMsg': "Visitor data not found..!!"}, status=400)
+    #         return Response({'Status': 400, 'StatusMsg': "Visitor data not found"}, status=400)
         
     #     print("here")
     #     if not visitorInOut_entry.createdby:
-    #         return Response({'Status': 400, 'StatusMsg': "Visitor entry done by external..!!"}, status=400)
+    #         return Response({'Status': 400, 'StatusMsg': "Visitor entry done by external"}, status=400)
  
     #     print("here :",visitorInOut_entry.visitortansid_transid)
     #     visitor_entry = QitVisitormaster.objects.filter(transid=visitorInOut_entry.visitortansid_transid).first()
@@ -653,11 +662,11 @@ def EditVerifyVisitor(request):
     #     print(visitor_entry)
 
     #     if not visitor_entry:
-    #         return Response({'Status': 400, 'StatusMsg': "Visitor data not found..!!"}, status=400)
+    #         return Response({'Status': 400, 'StatusMsg': "Visitor data not found"}, status=400)
         
     #     department_entry = QitDepartment.objects.filter(transid=did,cmptransid=cmpid).first()
     #     if not department_entry:
-    #         return Response({'Status': 400, 'StatusMsg': "Department data not found..!!"}, status=400)
+    #         return Response({'Status': 400, 'StatusMsg': "Department data not found"}, status=400)
         
     #     visitor_entry.vname = body_data.get("vname")
     #     visitor_entry.phone1 = body_data.get("phone1")
@@ -673,7 +682,7 @@ def EditVerifyVisitor(request):
     #     visitor_entry.save()
     #     visitorInOut_entry.save()
 
-    #     return Response({'Status': 200, 'StatusMsg': "Checkout successfullyy..!!"}, status=200)
+    #     return Response({'Status': 200, 'StatusMsg': "Checkout successfullyy"}, status=200)
         
     # except Exception as e:
     #     return Response({'Status': 400, 'StatusMsg': "An error occurred: {}".format(str(e))}, status=400)
@@ -684,41 +693,41 @@ def checkInVisitor(request):
     try:
         body_data = request.data
         if not body_data:
-            return Response({'Status': 400, 'StatusMsg': "Payload required..!!",'APICode':APICodeClass.Visitor_Mobile_ChkOutByV.value}, status=400)  
+            return Response({'Status': 400, 'StatusMsg': "Payload required",'APICode':APICodeClass.Visitor_Mobile_ChkOutByV.value}, status=400)  
         
         email = body_data.get("e_mail")
         cmpid = body_data.get("company_id")
         
         if not email:
-            return Response({'Status': 400, 'StatusMsg': "Email is required..!!",'APICode':APICodeClass.Visitor_Mobile_ChkOutByV.value}, status=400)  
+            return Response({'Status': 400, 'StatusMsg': "Email is required",'APICode':APICodeClass.Visitor_Mobile_ChkOutByV.value}, status=400)  
         if not cmpid:
-            return Response({'Status': 400, 'StatusMsg': "Company ID is required..!!",'APICode':APICodeClass.Visitor_Mobile_ChkOutByV.value}, status=400)  
+            return Response({'Status': 400, 'StatusMsg': "Company ID is required",'APICode':APICodeClass.Visitor_Mobile_ChkOutByV.value}, status=400)  
         today = now().date()
         companyEntry = QitCompany.objects.filter(transid=cmpid).first()
         if not companyEntry:
             return Response( {
                 'isSaved':"N",
                 'Status': 400,
-                'StatusMsg': "Company not found..!!",
+                'StatusMsg': "Company not found",
                 'APICode':APICodeClass.Visitor_Mobile_ChkOutByV.value
             }, status=400)
 
         visitor_entry = QitVisitormaster.objects.filter(e_mail=email, cmptransid=cmpid).first()
         if not visitor_entry:
-            return Response({'Status': 400, 'StatusMsg': "Visitor data not found..!!",'APICode':APICodeClass.Visitor_Mobile_ChkOutByV.value}, status=400)
+            return Response({'Status': 400, 'StatusMsg': "Visitor data not found",'APICode':APICodeClass.Visitor_Mobile_ChkOutByV.value}, status=400)
         
         inOutEntry = QitVisitorinout.objects.filter(visitortansid=visitor_entry.transid).order_by("-entrydate").first()
 
         if inOutEntry.timeslot.date() != today:
-            return Response({'Status': 400, 'StatusMsg': "Visitor checkin entry not for today..!!",'APICode':APICodeClass.Visitor_Mobile_ChkOutByV.value}, status=400)
+            return Response({'Status': 400, 'StatusMsg': "Visitor checkin entry not for today",'APICode':APICodeClass.Visitor_Mobile_ChkOutByV.value}, status=400)
         
         if not inOutEntry:
-            return Response({'Status': 400, 'StatusMsg': "Visitor checkin entry not found..!!",'APICode':APICodeClass.Visitor_Mobile_ChkOutByV.value}, status=400)
+            return Response({'Status': 400, 'StatusMsg': "Visitor checkin entry not found",'APICode':APICodeClass.Visitor_Mobile_ChkOutByV.value}, status=400)
         
         if inOutEntry.status.upper() != "A":
-            return Response({'Status': 400, 'StatusMsg': "Visitor status is not approve..!!",'APICode':APICodeClass.Visitor_Mobile_ChkOutByV.value}, status=400)
+            return Response({'Status': 400, 'StatusMsg': "Visitor status is not approve",'APICode':APICodeClass.Visitor_Mobile_ChkOutByV.value}, status=400)
         if inOutEntry.checkinstatus != None and inOutEntry.checkinstatus.upper() == "I":
-            return Response({'Status': 400, 'StatusMsg': "Visitor already checked In..!!",'APICode':APICodeClass.Visitor_Mobile_ChkOutByV.value}, status=400)
+            return Response({'Status': 400, 'StatusMsg': "Visitor already checked In",'APICode':APICodeClass.Visitor_Mobile_ChkOutByV.value}, status=400)
         
         if inOutEntry.checkinstatus != None and inOutEntry.checkinstatus.upper() == "O":
             return Response({'Status': 400, 'StatusMsg': "Visitor already checked out!!",'APICode':APICodeClass.Visitor_Mobile_ChkOutByV.value}, status=400)
@@ -728,7 +737,7 @@ def checkInVisitor(request):
         inOutEntry.checkinstatus = "I"
         inOutEntry.save()
 
-        return Response({'Status': 200, 'StatusMsg': "Checkin successfullyy..!!",'APICode':APICodeClass.Visitor_Mobile_ChkOutByV.value}, status=200)
+        return Response({'Status': 200, 'StatusMsg': "Checkin successfullyy",'APICode':APICodeClass.Visitor_Mobile_ChkOutByV.value}, status=200)
         
     except Exception as e:
         return Response({'Status': 400, 'StatusMsg': "An error occurred: {}".format(str(e)),'APICode':APICodeClass.Visitor_Mobile_ChkOutByV.value}, status=400)
@@ -785,7 +794,7 @@ def send_email_notification(request):
                 # print("emails : ==> ",emails)
                 send_html_mail(f"reminder",message2,emails)
                 send_html_mail(f"reminder",message1,[visitors_to_remind.visitortansid.e_mail])
-                return Response({'Status': 200, 'StatusMsg': "Send successfullyy..!!",'APICode':APICodeClass.Visitor_Mobile_ChkOutByV.value}, status=200)
+                return Response({'Status': 200, 'StatusMsg': "Send successfullyy",'APICode':APICodeClass.Visitor_Mobile_ChkOutByV.value}, status=200)
             else:
                 print("No visitors found matching the update criteria.")
                 return Response({'Status': 400, 'StatusMsg': "An error occurred: No visitors found matching the update criteria.",'APICode':APICodeClass.Visitor_Mobile_ChkOutByV.value}, status=400)
@@ -798,7 +807,7 @@ def send_email_notification_email(visitor,departmentId,cmpid):
     try:
         # body_data = request.data
         # if not body_data:
-        #     return Response({'Status': 400, 'StatusMsg': "Payload required..!!",'APICode':APICodeClass.Visitor_Mobile_ChkOutByV.value}, status=400)  
+        #     return Response({'Status': 400, 'StatusMsg': "Payload required",'APICode':APICodeClass.Visitor_Mobile_ChkOutByV.value}, status=400)  
         
         # visitor = body_data.get("visitor")
         # departmentId = body_data.get("departmentId")
@@ -823,7 +832,7 @@ def send_email_notification_email(visitor,departmentId,cmpid):
         # print("emails : ==> ",emails)
         send_html_mail(f"reminder",message2,emails)
         send_html_mail(f"reminder",message1,[visitor['vEmail']])
-        # return Response({'Status': 200, 'StatusMsg': "Send successfullyy..!!",'APICode':APICodeClass.Visitor_Mobile_ChkOutByV.value}, status=200)
+        # return Response({'Status': 200, 'StatusMsg': "Send successfullyy",'APICode':APICodeClass.Visitor_Mobile_ChkOutByV.value}, status=200)
     except Exception as e:
         print("Error : ",str(e))
         # return Response({'Status': 400, 'StatusMsg': "An error occurred: {}".format(str(e)),'APICode':APICodeClass.Visitor_Mobile_ChkOutByV.value}, status=400)
