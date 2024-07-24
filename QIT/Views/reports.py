@@ -22,16 +22,16 @@ def GetVisitorReport(request):
         if not body_data:
             return Response({
                 'Status': 400,
-                'StatusMsg': "Payload required..!!"
+                'StatusMsg': "Payload required"
             },status=400)  
         if not cid:
-            return Response({'Status': 400, 'StatusMsg': "Company Id requied..!!"}, status=400)
+            return Response({'Status': 400, 'StatusMsg': "Company Id requied"}, status=400)
 
         companyEntry = QitCompany.objects.filter(transid=cid).first()
         if not companyEntry:
             return Response( {
                 'Status': 400,
-                'StatusMsg': "Company not found..!!"
+                'StatusMsg': "Company not found"
             }, status=400)
 
         from_date = datetime.strptime(fdate, '%Y-%m-%d')
@@ -46,7 +46,7 @@ def GetVisitorReport(request):
             entrydate__range=(from_date, to_date)
         ).order_by('-entrydate')
         if not queryset:
-            return Response({'Status': 400, 'StatusMsg': "No data..!!"}, status=400)
+            return Response({'Status': 400, 'StatusMsg': "No data"}, status=400)
         serializer = QitVisitorinoutGETSerializer(queryset, many=True)
         return Response(serializer.data,status=200)
     except Exception as e:

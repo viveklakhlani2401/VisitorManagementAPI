@@ -19,20 +19,20 @@ from QIT.utils.APICode import APICodeClass
 #             return Response({
 #                 'is_save':"N",
 #                 'Status':400,
-#                 'StatusMsg':"Company not found..!!"
+#                 'StatusMsg':"Company not found"
 #             })
 #         res = QitDepartment.objects.create(deptname=reqData["dept_name"],cmptransid=cmpEntry)
 #         if res:
 #             return Response({
 #                 'is_save':"Y",
 #                 'Status':200,
-#                 'StatusMsg':"Department data saved..!!"
+#                 'StatusMsg':"Department data saved"
 #             })
 #         else:
 #             return Response({
 #                 'is_save':"N",
 #                 'Status':400,
-#                 'StatusMsg':"Error while saving data..!!"
+#                 'StatusMsg':"Error while saving data"
 #             })
 #     except Exception as e:
 #         return Response({
@@ -53,7 +53,7 @@ def SaveDepartment(request):
             return Response({
                 'is_save': "N",
                 'Status': 400,
-                'StatusMsg': "Company not found..!!",
+                'StatusMsg': "Company not found",
                 'APICode':APICodeClass.Department_Add.value
             })
         
@@ -64,7 +64,7 @@ def SaveDepartment(request):
             return Response({
                 'is_save': "N",
                 'Status': 400,
-                'StatusMsg': "Department with the same name already exists..!!",
+                'StatusMsg': "Department with the same name already exists",
                 'APICode':APICodeClass.Department_Add.value
             },status=400)
 
@@ -73,14 +73,14 @@ def SaveDepartment(request):
             return Response({
                 'is_save': "Y",
                 'Status': 200,
-                'StatusMsg': "Department data saved..!!",
+                'StatusMsg': "Department data saved",
                 'APICode':APICodeClass.Department_Add.value
             })
         else:
             return Response({
                 'is_save': "N",
                 'Status': 400,
-                'StatusMsg': "Error while saving data..!!",
+                'StatusMsg': "Error while saving data",
                 'APICode':APICodeClass.Department_Add.value
             },status=400)
     except Exception as e:
@@ -106,10 +106,10 @@ def GetAllDeptByCId(request,cid):
         else:
             cmpEntry = QitCompany.objects.filter(transid=cid).first()
             if not cmpEntry:
-                raise NotFound(detail="Company data not found..!!",code=400)
+                raise NotFound(detail="Company data not found",code=400)
             serializedData = QitDepartment.objects.filter(cmptransid=cmpEntry)
             if not serializedData:
-                raise NotFound(detail="Data not found..!!",code=400)
+                raise NotFound(detail="Data not found",code=400)
             res = DepartmentSerializer(serializedData,many=True)
             return Response({
                 'Data':res.data,
@@ -130,18 +130,18 @@ def EditDepartment(request):
     try:
         reqData = request.data
         if not reqData.get("transid"):
-            raise NotFound(detail="transid is required..!!",code=400)
+            raise NotFound(detail="transid is required",code=400)
         if not reqData.get("deptname"):
-            raise NotFound(detail="deptname is required..!!",code=400)
+            raise NotFound(detail="deptname is required",code=400)
         if not reqData.get("cmptransid"):
-            raise NotFound(detail="cmptransid is required..!!",code=400)
+            raise NotFound(detail="cmptransid is required",code=400)
         
         cmpEntry = QitCompany.objects.filter(transid=reqData["cmptransid"]).first()
         if not cmpEntry:
             return Response({
                 'is_save': "N",
                 'Status': 400,
-                'StatusMsg': "Company not found..!!",
+                'StatusMsg': "Company not found",
                 'APICode':APICodeClass.Department_Edit.value
             })
         
@@ -151,20 +151,20 @@ def EditDepartment(request):
             return Response({
                 'is_save': "N",
                 'Status': 400,
-                'StatusMsg': "Department with the same name already exists..!!",
+                'StatusMsg': "Department with the same name already exists",
                 'APICode':APICodeClass.Department_Edit.value
             },status=400)
         
         deptData = QitDepartment.objects.filter(transid = reqData["transid"],cmptransid=reqData["cmptransid"]).first()
         if not deptData:
-            raise NotFound(detail="Department data not found..!!",code=400)
+            raise NotFound(detail="Department data not found",code=400)
         serialized_data = DepartmentSerializer(deptData, data=reqData, partial=True)
         if serialized_data.is_valid():
             serialized_data.save()
         return Response({
             'is_save':"Y",
             'Status':200,
-            'StatusMsg':"Department data updated..!!",
+            'StatusMsg':"Department data updated",
             'APICode':APICodeClass.Department_Edit.value
         })
     except NotFound as e:
@@ -186,16 +186,16 @@ def EditDepartment(request):
 def DeleteDepartment(request, did, cid):
     try:
         if not did:
-            raise NotFound(detail="Department Id is required..!!")
+            raise NotFound(detail="Department Id is required")
         if not cid:
-            raise NotFound(detail="Company Id is required..!!")
+            raise NotFound(detail="Company Id is required")
 
         try:
             cmpEntry = QitCompany.objects.get(transid=cid)
         except QitCompany.DoesNotExist:
             return Response({
                 'Status': 400, 
-                'StatusMsg': "Company not found..!!",
+                'StatusMsg': "Company not found",
                 'APICode':APICodeClass.Department_Delete.value
             }, status=400)
 
@@ -204,7 +204,7 @@ def DeleteDepartment(request, did, cid):
         except QitDepartment.DoesNotExist:
             return Response({
                 'Status': 400, 
-                'StatusMsg': "Department not found..!!",
+                'StatusMsg': "Department not found",
                 'APICode':APICodeClass.Department_Delete.value
             }, status=400)
 
@@ -212,7 +212,7 @@ def DeleteDepartment(request, did, cid):
             deptEntry.delete()
             return Response({
                 'Status': 200,
-                'StatusMsg': "Department deleted..!!",
+                'StatusMsg': "Department deleted",
                 'APICode':APICodeClass.Department_Delete.value
             }, status=200)
         except IntegrityError as e:
@@ -220,7 +220,7 @@ def DeleteDepartment(request, did, cid):
             if 'foreign key constraint fails'.upper() in str(e).upper():
                 return Response({
                     'Status': 400,
-                    'StatusMsg': "Department already in use..!!",
+                    'StatusMsg': "Department already in use",
                     'APICode':APICodeClass.Department_Delete.value
                 }, status=400)
             else:

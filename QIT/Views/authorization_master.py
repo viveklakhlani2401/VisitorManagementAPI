@@ -54,7 +54,7 @@ def SaveAuthRule(request):
                 return Response({
                     'StatusCode': '400', 
                     'IsSaved': 'N', 
-                    'StatusMsg': 'Company Not found..!!',
+                    'StatusMsg': 'Company Not found',
                     'APICode':APICodeClass.Auth_Rule_Save.value
                 }, status=status.HTTP_400_BAD_REQUEST)
             cmptransidUser = user
@@ -65,7 +65,7 @@ def SaveAuthRule(request):
                 return Response({
                     'StatusCode': '400', 
                     'IsSaved': 'N', 
-                    'StatusMsg': 'User Not found..!!',
+                    'StatusMsg': 'User Not found',
                     'APICode':APICodeClass.Auth_Rule_Save.value
                 }, status=status.HTTP_400_BAD_REQUEST)
             cmptransidUser = user.cmptransid
@@ -74,7 +74,7 @@ def SaveAuthRule(request):
             return Response({
                 'StatusCode': '400', 
                 'IsSaved': 'N', 
-                'StatusMsg': 'User Not found..!!',
+                'StatusMsg': 'User Not found',
                 'APICode':APICodeClass.Auth_Rule_Save.value
             }, status=status.HTTP_400_BAD_REQUEST)
         if str(cmptransidUser.transid).strip() != str(cmptransid).strip():
@@ -151,7 +151,7 @@ def AuthenticationPreSetRule(request):
                 return Response({
                     'StatusCode': '400', 
                     'IsSaved': 'N', 
-                    'StatusMsg': 'Company Not found..!!',
+                    'StatusMsg': 'Company Not found',
                     'APICode':APICodeClass.Auth_Rule_Preset.value
                 }, status=status.HTTP_400_BAD_REQUEST)
             cmptransidUser = user
@@ -162,7 +162,7 @@ def AuthenticationPreSetRule(request):
                 return Response({
                     'StatusCode': '400', 
                     'IsSaved': 'N', 
-                    'StatusMsg': 'User Not found..!!',
+                    'StatusMsg': 'User Not found',
                     'APICode':APICodeClass.Auth_Rule_Preset.value
                 }, status=status.HTTP_400_BAD_REQUEST)
             cmptransidUser = user.cmptransid
@@ -171,7 +171,7 @@ def AuthenticationPreSetRule(request):
             return Response({
                 'StatusCode': '400', 
                 'IsSaved': 'N', 'StatusMsg': 
-                'User Not found..!!',
+                'User Not found',
                 'APICode':APICodeClass.Auth_Rule_Preset.value
             }, status=status.HTTP_400_BAD_REQUEST)
         if str(cmptransidUser.transid).strip() != str(cmptransid).strip():
@@ -264,7 +264,7 @@ def GetAuthRule(request):
                 return Response({
                     'StatusCode': '400', 
                     'IsSaved': 'N', 
-                    'StatusMsg': 'Company Not found..!!',
+                    'StatusMsg': 'Company Not found',
                     'APICode':APICodeClass.Auth_Rule_Get.value
                 }, status=status.HTTP_400_BAD_REQUEST)
             cmptransidUser = user
@@ -275,7 +275,7 @@ def GetAuthRule(request):
                 return Response({
                     'StatusCode': '400', 
                     'IsSaved': 'N', 
-                    'StatusMsg': 'User Not found..!!',
+                    'StatusMsg': 'User Not found',
                     'APICode':APICodeClass.Auth_Rule_Get.value
                 }, status=status.HTTP_400_BAD_REQUEST)
             cmptransidUser = user.cmptransid
@@ -284,7 +284,7 @@ def GetAuthRule(request):
             return Response({
                 'StatusCode': '400', 
                 'IsSaved': 'N', 
-                'StatusMsg': 'User Not found..!!',
+                'StatusMsg': 'User Not found',
                 'APICode':APICodeClass.Auth_Rule_Get.value
             }, status=status.HTTP_400_BAD_REQUEST)
         if str(cmptransidUser.transid).strip() != str(cmptransid).strip():

@@ -28,7 +28,7 @@ def GenerateOTP(request):
         
         return Response({
             'Status': 200,
-            'StatusMsg': "Email sent..!!",
+            'StatusMsg': "Email sent",
             "APICode": APICodeClass.Auth_Generate_OTP.value
         }, status=200)
         

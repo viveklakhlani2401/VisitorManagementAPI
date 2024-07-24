@@ -53,7 +53,7 @@ def SaveNotificationRule(request):
                 return Response({
                     'StatusCode': '400', 
                     'IsSaved': 'N', 
-                    'StatusMsg': 'Company Not found..!!',
+                    'StatusMsg': 'Company Not found',
                     'APICode':APICodeClass.Notification_Rule_Save.value
                 }, status=status.HTTP_400_BAD_REQUEST)
             cmptransidUser = user
@@ -64,7 +64,7 @@ def SaveNotificationRule(request):
                 return Response({
                     'StatusCode': '400', 
                     'IsSaved': 'N', 
-                    'StatusMsg': 'User Not found..!!',
+                    'StatusMsg': 'User Not found',
                     'APICode':APICodeClass.Notification_Rule_Save.value
                 }, status=status.HTTP_400_BAD_REQUEST)
             cmptransidUser = user.cmptransid
@@ -73,7 +73,7 @@ def SaveNotificationRule(request):
             return Response({
                 'StatusCode': '400', 
                 'IsSaved': 'N', 
-                'StatusMsg': 'User Not found..!!',
+                'StatusMsg': 'User Not found',
                 'APICode':APICodeClass.Notification_Rule_Save.value
             }, status=status.HTTP_400_BAD_REQUEST)
         if str(cmptransidUser.transid).strip() != str(cmptransid).strip():
@@ -151,7 +151,7 @@ def NotificationPreSetRule(request):
                 return Response({
                     'StatusCode': '400', 
                     'IsSaved': 'N', 
-                    'StatusMsg': 'Company Not found..!!',
+                    'StatusMsg': 'Company Not found',
                     'APICode':APICodeClass.Notification_Rule_Preset.value
                 }, status=status.HTTP_400_BAD_REQUEST)
             cmptransidUser = user
@@ -162,7 +162,7 @@ def NotificationPreSetRule(request):
                 return Response({
                     'StatusCode': '400', 
                     'IsSaved': 'N', 
-                    'StatusMsg': 'User Not found..!!',
+                    'StatusMsg': 'User Not found',
                     'APICode':APICodeClass.Notification_Rule_Preset.value
                 }, status=status.HTTP_400_BAD_REQUEST)
             cmptransidUser = user.cmptransid
@@ -171,7 +171,7 @@ def NotificationPreSetRule(request):
             return Response({
                 'StatusCode': '400', 
                 'IsSaved': 'N', 
-                'StatusMsg': 'User Not found..!!',
+                'StatusMsg': 'User Not found',
                 'APICode':APICodeClass.Notification_Rule_Preset.value
             }, status=status.HTTP_400_BAD_REQUEST)
         if str(cmptransidUser.transid).strip() != str(cmptransid).strip():
@@ -259,7 +259,7 @@ def GetNotificationRule(request):
                 return Response({
                     'StatusCode': '400', 
                     'IsSaved': 'N', 
-                    'StatusMsg': 'Company Not found..!!',
+                    'StatusMsg': 'Company Not found',
                     'APICode':APICodeClass.Notification_Rule_Get.value
                 }, status=status.HTTP_400_BAD_REQUEST)
             cmptransidUser = user
@@ -270,7 +270,7 @@ def GetNotificationRule(request):
                 return Response({
                     'StatusCode': '400', 
                     'IsSaved': 'N', 
-                    'StatusMsg': 'User Not found..!!',
+                    'StatusMsg': 'User Not found',
                     'APICode':APICodeClass.Notification_Rule_Get.value
                 }, status=status.HTTP_400_BAD_REQUEST)
             cmptransidUser = user.cmptransid
@@ -279,7 +279,7 @@ def GetNotificationRule(request):
             return Response({
                 'StatusCode': '400', 
                 'IsSaved': 'N', 
-                'StatusMsg': 'User Not found..!!',
+                'StatusMsg': 'User Not found',
                 'APICode':APICodeClass.Notification_Rule_Get.value
             }, status=status.HTTP_400_BAD_REQUEST)
         if str(cmptransidUser.transid).strip() != str(cmptransid).strip():
@@ -331,7 +331,7 @@ def SaveNotification(request):
         if not serializer.is_valid():
             return Response({
                 "StatusCode": "400", 
-                "StatusMsg": "Payload is empty or invalid..!!",
+                "StatusMsg": "Payload is empty or invalid",
                 'APICode':APICodeClass.Notification_Get.value
             }, status=status.HTTP_400_BAD_REQUEST)
         
@@ -351,7 +351,7 @@ def SaveNotification(request):
             return Response({
                 "StatusCode": "403", 
                 "IsSaved": "N", 
-                "StatusMsg": "Notification Module is required..!!",
+                "StatusMsg": "Notification Module is required",
                 'APICode':APICodeClass.Notification_Get.value
             }, status=status.HTTP_403_FORBIDDEN)
         
@@ -422,7 +422,7 @@ def GetNotification(request):
         data = request.data
         serializer = GetNotificationClassSerializer(data=data)
         if not serializer.is_valid():
-            return Response({"StatusCode": "400", "StatusMsg": "Payload is empty or invalid..!!"}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"StatusCode": "400", "StatusMsg": "Payload is empty or invalid"}, status=status.HTTP_400_BAD_REQUEST)
         
         notification = serializer.validated_data
         email = notification.get('email')
@@ -453,7 +453,7 @@ def ReadNotification(request):
         if not serializer.is_valid():
             return Response({
                 "StatusCode": "400", 
-                "StatusMsg": "Payload is empty or invalid..!!",
+                "StatusMsg": "Payload is empty or invalid",
                 'APICode':APICodeClass.Notification_Read.value
             }, status=status.HTTP_400_BAD_REQUEST)
         
