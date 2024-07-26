@@ -225,12 +225,14 @@ def update_user(request):
        
         try:
             user = QitUsermaster.objects.get(cmptransid=cmpId, transid=transid)
-            if user.changepassstatus == "0":
-                request.data.pop("password")
+            # if user.changepassstatus == "0":
+            #     request.data.pop("password")
            
             resDB = QitUserlogin.objects.filter(e_mail = user.e_mail).first()
             pwd = request.data.get("password")
+            print(pwd)
             if pwd:
+                print("here : ",pwd)
                 # if not pwd:
                 #     return Response({
                 #         'Status':400,
@@ -243,11 +245,11 @@ def update_user(request):
                 resDB.password = newPassword
                 message1 =  send_credential_email(user.username,user.e_mail,pwd)
                 send_html_mail(f"Updated Credentials",message1,[user.e_mail])
-                resDB.save()
             user.cmpdeptid = deptEntry
             user.gender = body_data.get("gender")
             user.phone = body_data.get("phone")
             user.save()
+            resDB.save()
             return Response({
                 'Status':200,
                 'StatusMsg':"User data updated",
