@@ -55,7 +55,7 @@ def Save_Visitor(request):
             today_start = make_aware(datetime.combine(today, datetime.min.time()))
             today_end = make_aware(datetime.combine(today, datetime.max.time()))
    
-            alreadyEntry = QitVisitorinout.objects.filter(visitortansid=alredyEmailChk,entrydate__range=(today_start, today_end)).order_by("-entrydate")
+            alreadyEntry = QitVisitorinout.objects.filter(visitortansid=alredyEmailChk,entrydate__range=(today_start, today_end),status="P").order_by("-entrydate")
  
             if alreadyEntry:
                 return Response({
@@ -79,7 +79,7 @@ def Save_Visitor(request):
                         'APICode':APICodeClass.Visitor_Save.value
                     }, status=400)
                 one_day_ahead = current_datetime_utc + timezone.timedelta(days=1)
-                if timeslot_datetime_utc >= one_day_ahead:
+                if not body_data.get("createdby") and timeslot_datetime_utc >= one_day_ahead:
                     return Response({
                         'Status': 400,
                         'StatusMsg': "Timeslot cannot be more than one day in the future",
