@@ -230,7 +230,6 @@ def update_user(request):
            
             resDB = QitUserlogin.objects.filter(e_mail = user.e_mail).first()
             pwd = request.data.get("password")
-            print(pwd)
             if pwd:
                 print("here : ",pwd)
                 # if not pwd:

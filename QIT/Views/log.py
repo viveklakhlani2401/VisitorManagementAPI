@@ -52,7 +52,6 @@ def save_log(request):
             return Response({"Status": "400", "IsSaved": is_saved, "StatusMsg": "Provide Log Message"}, status=400)
  
         # if not login_user or login_user.strip() == "" or login_user.lower() == "string":
-        #     print(login_user)
         #     return Response({"Status": "400", "IsSaved": is_saved, "StatusMsg": "Provide Login User"}, status=400)
  
         log = QitApiLog(
