@@ -953,7 +953,6 @@ def getCmpConfig(request,cmpId):
 def saveCmpConfig(request):
     try:
         reqData = request.data
-        print(reqData["OtpVerification"])
         manualVeri = "Y" if reqData["OtpVerification"] == True else "N"
         if manualVeri.upper() != "Y" and manualVeri.upper() != "N":
             return Response({

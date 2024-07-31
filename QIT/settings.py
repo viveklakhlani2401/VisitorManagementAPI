@@ -34,6 +34,7 @@ CORS_ALLOW_ALL_ORIGINS = True
 # Application definition
 
 INSTALLED_APPS = [
+    'django_extensions',
     'daphne',
     'rest_framework',
     'rest_framework_simplejwt',
