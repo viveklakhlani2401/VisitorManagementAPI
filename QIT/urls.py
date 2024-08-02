@@ -16,7 +16,7 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
-from QIT.Views import common,company_master,dept_master,user_master,authorization_master,visitor_master,notification_master,reports,log, test_send_mail
+from QIT.Views import common,company_master,dept_master,user_master,authorization_master,visitor_master,notification_master,reports,log, test_send_mail,master_admin
 from rest_framework.routers import DefaultRouter
 from django.urls import path, include
 
@@ -76,4 +76,5 @@ urlpatterns = [
     path('VMS/Config/GET/<int:cmpId>', common.getCmpConfig),
     path('VMS/Config/Save', common.saveCmpConfig),
     path('test', visitor_master.send_email_notification),
+    path('VMS/GetCompanies', master_admin.getCmpDetails),
 ]
