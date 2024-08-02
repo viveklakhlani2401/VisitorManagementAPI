@@ -16,7 +16,6 @@ def update_checkin_status():
     )
     if visitors_to_update.exists():
         visitors_to_update.update(checkinstatus='O')
-        print("Successfully updated CheckInStatus for", visitors_to_update.count(), "visitors.")
     else:
         print("No visitors found matching the update criteria.")
 
@@ -28,16 +27,13 @@ def reminder_notification():
             timeslot__date=today,
             status='A'
         )
-        print("visitors_to_remind : => ",visitors_data)
         if visitors_data.exists():
             for visitors_to_remind in visitors_data:
                 cmpid = visitors_to_remind.cmptransid
-                print("cmptransid : ",cmpid)
                 statusLink = os.getenv("FRONTEND_URL") + '#/checkstatus/?cmpId=' + cmpid.qrstring
                 verifyLink = os.getenv("FRONTEND_URL") +'#/Verify-Visitors'
                 users = None
                 users = QitUsermaster.objects.filter(username=visitors_to_remind.cnctperson,cmpdeptid=visitors_to_remind.cmpdepartmentid,cmptransid=cmpid)
-                print("users : ",users)
                 emails = []
                 if users:
                     for data in users:
@@ -46,9 +42,6 @@ def reminder_notification():
                     users = QitUsermaster.objects.filter(cmpdeptid=visitors_to_remind.cmpdepartmentid,cmptransid=cmpid)
                     for data in users:
                         emails.append(data.e_mail)
-                # emails.append(visitor['vEmail'])
-                print("Emails : ",emails)
-                print("visitors_to_remind.visitortansid.e_mail : ",visitors_to_remind.visitortansid.e_mail)
                 visitor_dict = {
                 'id': visitors_to_remind.transid,
                 'vName': visitors_to_remind.visitortansid.vname,
@@ -68,12 +61,9 @@ def reminder_notification():
             }
                 message1 =  send_reminder(visitor_dict,"Visiting company reminder",statusLink,"To ensure a smooth check-in process, please click here","CheckIn")
                 message2 =  send_reminder(visitor_dict,"Visitor arrival reminder",verifyLink,"To verify a visitor, please click here","verify now")
-                # print("emails : ==> ",emails)
                 send_html_mail(f"reminder",message2,emails)
                 send_html_mail(f"reminder",message1,[visitors_to_remind.visitortansid.e_mail])
-                print("Notification send successfullyy")
             else:
                 print("No visitors found matching the update criteria.")
-        print("No verified visitors found matching the update criteria.")
     except Exception as e:
         print("An error occurred: {}".format(str(e)))

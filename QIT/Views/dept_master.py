@@ -2,7 +2,7 @@ from rest_framework.views import APIView
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from django.views.decorators.csrf import csrf_exempt
-from QIT.models import QitDepartment,QitCompany
+from QIT.models import QitDepartment,QitCompany, QitUsermaster, QitVisitorinout
 from QIT.serializers import DepartmentSerializer
 from rest_framework.exceptions import NotFound
 from django.db import IntegrityError
@@ -70,6 +70,14 @@ def SaveDepartment(request):
 
         res = QitDepartment.objects.create(deptname=dept_name, cmptransid=cmpEntry)
         if res:
+            existing_default_dept = QitDepartment.objects.filter(cmptransid=cmpEntry, deptname__iexact="Default").first()
+            if existing_default_dept:
+                users_with_default_dept = QitUsermaster.objects.filter(cmpdeptid=existing_default_dept)
+                if not users_with_default_dept.exists():
+                    default_for_visi = QitVisitorinout.objects.filter(cmpdepartmentid=existing_default_dept)
+                    if not default_for_visi:
+                        existing_default_dept.delete()
+                
             return Response({
                 'is_save': "Y",
                 'Status': 200,
@@ -94,7 +102,6 @@ def SaveDepartment(request):
 @csrf_exempt
 @api_view(["GET"])
 def GetAllDeptByCId(request,cid):
-    # print(request.query_params.get("cid"))
     try:
         # cid = request.query_params.get("cid")
         if not cid:
