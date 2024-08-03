@@ -3,14 +3,14 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from QIT.utils.APICode import APICodeClass
 from rest_framework import status
-from QIT.serializers import CompanyMasterDetailsGetSerializer
+from QIT.serializers import CompanyMasterDetailsGetSerializer, MAProfileSerializer
 from QIT.models import QitCompany, QitMasteradmin
 from django.core.cache import cache
 import json
 from dotenv import load_dotenv
 import os
 load_dotenv()
-from .common import create_userlogin,create_MA_notification_auth
+from .common import create_userlogin
 
 @csrf_exempt
 @api_view(['GET'])
@@ -111,4 +111,75 @@ def saveMasterAdminDetails(request):
             'APICode':APICodeClass.Master_Admin_Save.value
         },status=400)  
     
-    
+
+@csrf_exempt
+@api_view(["GET"])
+def GetComapnyDataById(request,cid):
+    try:
+        resDB = QitMasteradmin.objects.get(transid = cid)
+        serializer = MAProfileSerializer(resDB,many=False)
+        if resDB:
+            return Response({
+                'Data':serializer.data,
+                'APICode':APICodeClass.Master_Admin_Get.value
+            })
+        else:
+            return Response({
+                'Status':400,
+                'StatusMsg':"Invalid Company id",
+                'APICode':APICodeClass.Master_Admin_Get.value
+            },status=400)
+    except QitCompany.DoesNotExist:
+        return Response({
+            'Status':400,
+            'StatusMsg':"No data found",
+            'APICode':APICodeClass.Master_Admin_Get.value
+        },status=400)
+    except Exception as e:
+        return Response({
+            'Status':400,
+            'StatusMsg':str(e),
+            'APICode':APICodeClass.Master_Admin_Get.value
+        },status=400)
+
+@csrf_exempt
+@api_view(["PUT"])
+def EditMAComapnyDataById(request):
+    try:
+        reqData = request.data
+        resDB = QitMasteradmin.objects.get(transid = reqData["transid"])
+        if resDB:
+            resDB.bname = reqData["bname"]
+            resDB.blocation = reqData["blocation"]
+            resDB.zipcode = reqData["zipcode"]
+            resDB.city = reqData["city"]
+            resDB.state = reqData["state"]
+            resDB.country = reqData["country"]
+            resDB.phone1 = reqData["phone1"]
+            resDB.phone2 = reqData["phone2"]
+            resDB.websitelink = reqData["websitelink"]
+            resDB.cmplogo = reqData["cmplogo"]
+            resDB.save()
+            return Response({
+                'Status':200,
+                'StatusMsg':"Company data updated",
+                'APICode':APICodeClass.Master_Admin_Edit.value
+            })
+        else:
+            return Response({
+                'Status':400,
+                'StatusMsg':"Invalid Company id",
+                'APICode':APICodeClass.Master_Admin_Edit.value
+            },status=400)
+    except QitMasteradmin.DoesNotExist:
+        return Response({
+            'Status':400,
+            'StatusMsg':"No data found",
+            'APICode':APICodeClass.Master_Admin_Edit.value
+        },status=400)
+    except Exception as e:
+        return Response({
+            'Status':400,
+            'StatusMsg':str(e),
+            'APICode':APICodeClass.Master_Admin_Edit.value
+        },status=400)
