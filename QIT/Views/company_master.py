@@ -43,7 +43,7 @@ def CreateCompany(request):
         if not body_data["blocation"]:
             return Response({
                 'Status':400,
-                'StatusMsg':"BUsinessLocation is required",
+                'StatusMsg':"BusinessLocation is required",
                 'APICode':APICodeClass.Company_Save.value
             },status=400)
         

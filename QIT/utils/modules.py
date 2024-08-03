@@ -32,6 +32,12 @@ module_classes= [
   {
       "text": "General Settings",
       "path": "/generalsettings",
+      "icon": "ri-add-line",
+      "hasAccess": True
+  },
+  {
+      "text": "Configuration",
+      "path": "/Configuration",
       "icon": "ri-settings-4-line",
       "hasAccess": True
   },
@@ -83,6 +89,12 @@ user_module_classes= [
   {
       "text": "General Settings",
       "path": "/generalsettings",
+      "icon": "ri-add-line",
+      "hasAccess": False
+  },
+  {
+      "text": "Configuration",
+      "path": "/Configuration",
       "icon": "ri-settings-4-line",
       "hasAccess": False
   },

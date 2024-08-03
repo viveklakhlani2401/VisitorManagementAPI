@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from django.contrib.auth.hashers import make_password
 
-from .models import QitCompany,QitOtp,QitUserlogin,QitDepartment,QitUsermaster,QitVisitormaster,QitVisitorinout,QitApiLog,QitConfigmaster
+from .models import QitCompany,QitOtp,QitUserlogin,QitDepartment,QitUsermaster,QitVisitormaster,QitVisitorinout,QitApiLog,QitConfigmaster,QitMaNotification, QitMasteradmin
 
 class CompanyMasterSerializer(serializers.ModelSerializer):
     class Meta:
@@ -320,4 +320,11 @@ class GetConfigDataSerializer(serializers.ModelSerializer):
         representation['OtpVerification'] = True if representation.pop("manualverification") == "Y" else False
         representation['SMSType'] = representation.pop("messagetype")
         return representation
+    
+
+class MAProfileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = QitMasteradmin
+        fields = ['transid','e_mail', 'bname', 'blocation','city','state','country','zipcode','address1','address2','phone1','phone2','entrydate','websitelink','cmplogo']
+
  

@@ -78,4 +78,7 @@ urlpatterns = [
     path('test', visitor_master.send_email_notification),
     path('VMS/SuperAdmin/GetCompanies', master_admin.getCmpDetails),
     path('VMS/SuperAdmin/ChangeCmpStatus', master_admin.ActiveComapny),
+    path('VMS/SuperAdmin/Save', master_admin.saveMasterAdminDetails),
+    path('VMS/SuperAdmin/Get/<int:cid>', master_admin.GetComapnyDataById),
+    path('VMS/SuperAdmin/Edit', master_admin.EditMAComapnyDataById),
 ]

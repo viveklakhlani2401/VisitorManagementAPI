@@ -59,6 +59,7 @@ class APICodeClass(Enum):
     Master_Admin_CmpList = 1104
     Master_Admin_CmpStatus = 1105
 
+
 class APICodeMessages:
     messages = {
         APICodeClass.Notification_Add: "Error in adding notification.",

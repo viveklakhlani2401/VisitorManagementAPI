@@ -4,7 +4,7 @@ from .emails import Send_OTP
 from .send_email import send_html_mail
 import random
 import string
-from QIT.models import QitOtp, QitCompany, QitUserlogin,QitAuthenticationrule,QitUsermaster,QitNotifiicationrule, QitConfigmaster
+from QIT.models import QitOtp, QitCompany, QitUserlogin,QitAuthenticationrule,QitUsermaster,QitNotificationrule, QitConfigmaster, QitMaNotification
 from .template import email_template
 import threading
 from django.views.decorators.csrf import csrf_exempt
@@ -104,6 +104,9 @@ def GenerateOTP(request):
         elif role.upper() == "USER":
             # message = f"User OTP : {new_OTP}"
             message = "Here is your OTP for user registration."
+        elif role.upper() == "MA":
+            # message = f"User OTP : {new_OTP}"
+            message = "Here is your OTP for master admin registration."
        
         else:
             return Response({
@@ -536,9 +539,10 @@ def create_comp_notification_auth(useremail, cmptransid, userrole):
         modulesdata = modules.user_module_classes
     elif userrole == "ADMIN":
         modulesdata = modules.module_classes
-    compuserauth = QitNotifiicationrule(user_id=useremail,cmptransid=cmptransid, userrole=userrole,n_rule_detail=modulesdata)
+    compuserauth = QitNotificationrule(user_id=useremail,cmptransid=cmptransid, userrole=userrole,n_rule_detail=modulesdata)
     compuserauth.save()
     return compuserauth
+
 
 @csrf_exempt
 @api_view(['POST'])
@@ -956,7 +960,6 @@ def getCmpConfig(request,cmpId):
 def saveCmpConfig(request):
     try:
         reqData = request.data
-        print(reqData["OtpVerification"])
         manualVeri = "Y" if reqData["OtpVerification"] == True else "N"
         if manualVeri.upper() != "Y" and manualVeri.upper() != "N":
             return Response({
