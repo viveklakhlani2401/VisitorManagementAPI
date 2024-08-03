@@ -872,16 +872,14 @@ def send_email_notification_email(visitor,departmentId,cmpid):
 #         print("Error : ",e)
 #         # return Response({'Status': 400, 'StatusMsg': "An error occurred: {}".format(str(e)),'APICode':APICodeClass.Visitor_Mobile_ChkOutByV.value}, status=400)
 
-
 def send_email_notification_Verification(inoutentry, cmpid, state, createdby):
     try:
         companyEntry = QitCompany.objects.filter(transid=cmpid).first()
         vid = int(inoutentry.visitortansid.transid)
         VisitorEntry = QitVisitormaster.objects.filter(transid=vid).first()
-        
+
         # Given timestamp
         timestamp = inoutentry.timeslot
-        
         iso_format_str = timestamp.isoformat()
         visitor_dict = {
             "cnctperson": inoutentry.cnctperson,
@@ -890,10 +888,8 @@ def send_email_notification_Verification(inoutentry, cmpid, state, createdby):
         }
 
         verifyLink = os.getenv("FRONTEND_URL") + '#/CheckIn/?cmpId=' + companyEntry.qrstring
-
         # Parse the timestamp
         dt = datetime.fromisoformat(iso_format_str.replace("Z", "+00:00"))
-        
         if state == "A":
             message1 = send_reminder(
                 visitor_dict,
@@ -904,23 +900,22 @@ def send_email_notification_Verification(inoutentry, cmpid, state, createdby):
                 f"If you have any questions or need further information, please feel free to contact us at {companyEntry.e_mail}.",
                 "We look forward to welcoming you!"
             )
-            if createdby == None:
+            if createdby is None:
                 message1 = send_reminder(
                     visitor_dict,
-                    f"We are pleased to inform you that your visit to {companyEntry.bname} on {dt.strftime(" %d %B %Y")} at {dt.strftime(" %I:%M %p")} has been approved. Please find the details of your visit below:",
+                    f"We are pleased to inform you that your visit to {companyEntry.bname} on {dt.strftime('%d %B %Y')} at {dt.strftime('%I:%M %p')} has been approved. Please find the details of your visit below:",
                     companyEntry.e_mail,
                     companyEntry.bname,
                     "You may now proceed to enter the premises at the scheduled time.",
                     f"If you have any questions or need further assistance, feel free to contact us at {companyEntry.e_mail}.",
                     "We look forward to welcoming you!"
                 )
-            subject = f"Approval of Your Visit to {companyEntry.bname} on {dt.strftime(" %d %B %Y")} at {dt.strftime(" %I:%M %p")}"
+            subject = f"Approval of Your Visit to {companyEntry.bname} on {dt.strftime('%d %B %Y')} at {dt.strftime('%I:%M %p')}"
             send_html_mail(subject, message1, [VisitorEntry.e_mail])
-        
         elif state == "R":
             message1 = send_reminder_visitor_reject(
                 visitor_dict,
-                f"We regret to inform you that your visit to {companyEntry.bname} on {dt.strftime(" %d %B %Y")} at {dt.strftime(" %I:%M %p")} has not been approved.",
+                f"We regret to inform you that your visit to {companyEntry.bname} on {dt.strftime('%d %B %Y')} at {dt.strftime('%I:%M %p')} has not been approved.",
                 companyEntry.e_mail,
                 companyEntry.bname,
                 f"We apologize for any inconvenience. If you have any questions or need further assistance, please do not hesitate to contact us at {companyEntry.e_mail}.",
@@ -928,6 +923,5 @@ def send_email_notification_Verification(inoutentry, cmpid, state, createdby):
             )
             subject = f"Your Visit to {companyEntry.bname} Has Not Been Approved"
             send_html_mail(subject, message1, [VisitorEntry.e_mail])
-    
     except Exception as e:
         print("Error : ", e)
