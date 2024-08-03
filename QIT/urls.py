@@ -76,5 +76,6 @@ urlpatterns = [
     path('VMS/Config/GET/<int:cmpId>', common.getCmpConfig),
     path('VMS/Config/Save', common.saveCmpConfig),
     path('test', visitor_master.send_email_notification),
-    path('VMS/GetCompanies', master_admin.getCmpDetails),
+    path('VMS/SuperAdmin/GetCompanies', master_admin.getCmpDetails),
+    path('VMS/SuperAdmin/ChangeCmpStatus', master_admin.ActiveComapny),
 ]

@@ -279,6 +279,17 @@ def GetAuthRule(request):
                     'APICode':APICodeClass.Auth_Rule_Get.value
                 }, status=status.HTTP_400_BAD_REQUEST)
             cmptransidUser = user.cmptransid
+        elif 'ADMIN' in data['userrole'].upper():
+            user = QitUsermaster.objects.filter(e_mail=useremail).first()
+            if not user:
+                logger.info("Calling authorization_master saved rule: GetAuthRule(): Error User not found")
+                return Response({
+                    'StatusCode': '400', 
+                    'IsSaved': 'N', 
+                    'StatusMsg': 'User Not found',
+                    'APICode':APICodeClass.Auth_Rule_Get.value
+                }, status=status.HTTP_400_BAD_REQUEST)
+            cmptransidUser = user.cmptransid
         if not user:
             logger.info("Calling authorization_master saved rule: GetAuthRule(): Error User not found")
             return Response({
