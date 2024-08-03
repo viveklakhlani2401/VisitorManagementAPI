@@ -677,7 +677,7 @@ def send_reminder_user(visitor,message,cmpEmail,cmpBname,text,linktext):
                                                                         </p>
                                                                         <!-- <b class="details"> -->
                                                                         <strong>Visitor's Name:</strong>
-                                                                        {dt.strftime(" %d %B %Y")} <br />
+                                                                        {visitor['vName']} <br />
                                                                         <strong>Visit Date:</strong>
                                                                         {dt.strftime(" %d %B %Y")} <br />
                                                                         <strong>Visit Time:</strong>
