@@ -53,6 +53,11 @@ class APICodeClass(Enum):
 
     Config_Get = 9001
 
+    Master_Admin_Save = 1101
+    Master_Admin_Edit = 1102
+    Master_Admin_Get = 1103
+    Master_Admin_CmpList = 1104
+
 
 class APICodeMessages:
     messages = {

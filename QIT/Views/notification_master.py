@@ -3,7 +3,7 @@ from django.views.decorators.csrf import csrf_exempt
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from QIT.models import QitUsermaster, QitAuthenticationrule,QitCompany,QitNotifiicationrule,QitNotificationmaster,QitUserlogin
+from QIT.models import QitUsermaster, QitAuthenticationrule,QitCompany,QitNotificationrule,QitNotificationmaster,QitUserlogin
 from QIT.serializers import GetDataClassSerializer,GetRuleClassSerializer,SetNotificationClassSerializer,GetNotificationClassSerializer,ReadNotificationClassSerializer,GetPreSetDataClassSerializer
 import logging
 import ast
@@ -87,13 +87,13 @@ def SaveNotificationRule(request):
 
         ar_data = module_classes
 
-        existing_rule = QitNotifiicationrule.objects.filter(user_id=user.transid,userrole=data['userrole'].upper()).first()
+        existing_rule = QitNotificationrule.objects.filter(user_id=user.transid,userrole=data['userrole'].upper()).first()
 
         if existing_rule:
             existing_rule.n_rule_detail = ar_data
             existing_rule.save()
         else:
-            new_rule = QitNotifiicationrule(user_id=user.transid,cmptransid=cmptransidUser, n_rule_detail=ar_data,userrole=data['userrole'].upper())
+            new_rule = QitNotificationrule(user_id=user.transid,cmptransid=cmptransidUser, n_rule_detail=ar_data,userrole=data['userrole'].upper())
             new_rule.save()
 
         logger.info("Calling notification_master saved rule: SaveNotificationRule()")
@@ -185,19 +185,19 @@ def NotificationPreSetRule(request):
 
         ar_data = []
 
-        existing_rule = QitNotifiicationrule.objects.filter(user_id=user.transid).first()
+        existing_rule = QitNotificationrule.objects.filter(user_id=user.transid).first()
 
         if existing_rule:
             ar_data = existing_rule.n_rule_detail
             for user in toUsers :
                 userData = role_email_get_data(user['useremail'],user['userrole'])
-                existing_rule = QitNotifiicationrule.objects.filter(user_id=userData.transid).first()
+                existing_rule = QitNotificationrule.objects.filter(user_id=userData.transid).first()
 
                 if existing_rule:
                     existing_rule.n_rule_detail = ar_data
                     existing_rule.save()
                 else:
-                    preset_rule = QitNotifiicationrule(user_id=userData.transid,cmptransid=userData.cmptransid, n_rule_detail=ar_data,userrole=userData.usertype.upper())
+                    preset_rule = QitNotificationrule(user_id=userData.transid,cmptransid=userData.cmptransid, n_rule_detail=ar_data,userrole=userData.usertype.upper())
                     preset_rule.save()
             return Response({
                 'StatusCode': '200', 
@@ -291,7 +291,7 @@ def GetNotificationRule(request):
                 'APICode':APICodeClass.Notification_Rule_Get.value
             }, status=status.HTTP_400_BAD_REQUEST)
        
-        existing_rule = QitNotifiicationrule.objects.filter(user_id=user.transid,cmptransid=cmptransid).first()
+        existing_rule = QitNotificationrule.objects.filter(user_id=user.transid,cmptransid=cmptransid).first()
 
         if existing_rule:
             return Response({
@@ -356,7 +356,7 @@ def SaveNotification(request):
             }, status=status.HTTP_403_FORBIDDEN)
         
         user_ids = []
-        all_rules = QitNotifiicationrule.objects.filter(cmptransid=notification.get('cmptransid'))
+        all_rules = QitNotificationrule.objects.filter(cmptransid=notification.get('cmptransid'))
         for rule in all_rules:
             rule_detail_str = rule.n_rule_detail.decode('utf-8') if isinstance(rule.n_rule_detail, bytes) else rule.n_rule_detail
             rule_detail_list = ast.literal_eval(rule_detail_str)

@@ -57,6 +57,7 @@ class QitCompany(models.Model):
     websitelink = models.CharField(db_column='WebsiteLink', max_length=100, blank=True, null=True)  # Field name made lowercase.
     entrydate = models.DateTimeField(db_column='EntryDate',auto_now=True)  # Field name made lowercase.
     updatedate = models.DateTimeField(db_column='UpdateDate', blank=True, null=True)  # Field name made lowercase.
+    reason = models.CharField(db_column='Reason', max_length=500, blank=True, null=True)  # Field name made lowercase.
 
     class Meta:
         managed = False
@@ -73,7 +74,7 @@ class QitDepartment(models.Model):
         db_table = 'QIT_Department'
 
 
-class QitNotifiicationrule(models.Model):
+class QitNotificationrule(models.Model):
     n_rule_id = models.AutoField(db_column='N_Rule_ID', primary_key=True)  # Field name made lowercase.
     user_id = models.IntegerField(db_column='User_ID')  # Field name made lowercase.
     cmptransid = models.ForeignKey(QitCompany, models.DO_NOTHING, db_column='CmpTransID')  # Field name made lowercase.
@@ -192,4 +193,39 @@ class QitConfigmaster(models.Model):
 
     class Meta:
         managed = False
-        db_table = 'QIT_ConfigMaster'        
+        db_table = 'QIT_ConfigMaster'      
+
+class QitMasteradmin(models.Model):
+    transid = models.AutoField(db_column='TransId', primary_key=True)  # Field name made lowercase.
+    e_mail = models.CharField(db_column='E_Mail', unique=True, max_length=50)  # Field name made lowercase.
+    password = models.CharField(db_column='Password', max_length=100)  # Field name made lowercase.
+    bname = models.CharField(db_column='BName', max_length=200)  # Field name made lowercase.
+    blocation = models.CharField(db_column='BLocation', max_length=500)  # Field name made lowercase.
+    city = models.CharField(db_column='City', max_length=50, blank=True, null=True)  # Field name made lowercase.
+    state = models.CharField(db_column='State', max_length=50, blank=True, null=True)  # Field name made lowercase.
+    country = models.CharField(db_column='Country', max_length=50, blank=True, null=True)  # Field name made lowercase.
+    zipcode = models.CharField(db_column='ZipCode', max_length=20, blank=True, null=True)  # Field name made lowercase.
+    address1 = models.CharField(db_column='Address1', max_length=50, blank=True, null=True)  # Field name made lowercase.
+    address2 = models.CharField(db_column='Address2', max_length=50, blank=True, null=True)  # Field name made lowercase.
+    phone1 = models.CharField(db_column='Phone1', max_length=20, blank=True, null=True)  # Field name made lowercase.
+    phone2 = models.CharField(db_column='Phone2', max_length=20, blank=True, null=True)  # Field name made lowercase.
+    cmplogo = models.TextField(db_column='CmpLogo', blank=True, null=True)  # Field name made lowercase.
+    websitelink = models.CharField(db_column='WebsiteLink', max_length=100, blank=True, null=True)  # Field name made lowercase.
+    entrydate = models.DateTimeField(db_column='EntryDate',auto_now=True)  # Field name made lowercase.
+    updatedate = models.DateTimeField(db_column='UpdateDate', blank=True, null=True)  # Field name made lowercase.
+
+    class Meta:
+        managed = False
+        db_table = 'QIT_MasterAdmin'        
+
+class QitMaNotification(models.Model):
+    transid = models.AutoField(db_column='TransId', primary_key=True)  # Field name made lowercase.
+    cmptransid = models.ForeignKey(QitCompany, models.DO_NOTHING, db_column='CmpTransId')  # Field name made lowercase.
+    receiver_ma = models.ForeignKey('QitMasteradmin', models.DO_NOTHING, db_column='Receiver_MA_Id')  # Field name made lowercase.
+    notification_text = models.TextField(db_column='Notification_Text')  # Field name made lowercase.
+    n_date_time = models.DateTimeField(db_column='N_Date_Time',auto_now=True)  # Field name made lowercase.
+    chk_status = models.CharField(db_column='Chk_Status', max_length=5)  # Field name made lowercase.
+
+    class Meta:
+        managed = False
+        db_table = 'QIT_MA_Notification'
