@@ -94,6 +94,7 @@ def Save_Visitor(request):
         stored_data_json = cache.get(f"otp_{email}")
         dataToSerialize = request.data
         ConfiEntry = QitConfigmaster.objects.get(cmptransid=dataToSerialize['company_id'])
+
         if not dataToSerialize["createdby"] or ConfiEntry.manualverification == "Y":
             if stored_data_json:
                 stored_data = json.loads(stored_data_json)
@@ -135,6 +136,7 @@ def Save_Visitor(request):
         serializer = QitVisitorinoutPOSTSerializer(data=dataToSerialize)
         if serializer.is_valid():
             visitorinout = serializer.save()
+
             state = "Pending"
             if visitorinout['checkinstatus'] == "P" :
                 state = "Pending"
@@ -142,8 +144,10 @@ def Save_Visitor(request):
                 state = "Rejected"
             elif visitorinout['checkinstatus'] == "A" :
                 state = "Approved"
+            # print("Heo:==========")
             visitor_dict = {
                 'id': visitorinout['id'],
+                'transid': visitorinout['visitortansid'].transid,
                 'vName': visitorinout['visitortansid'].vname,
                 'vPhone1':visitorinout['visitortansid'].phone1,
                 'vCmpname': visitorinout['visitortansid'].vcmpname,
@@ -160,6 +164,7 @@ def Save_Visitor(request):
                 'reason': visitorinout['reason'],
                 'sortDate':timezone.now().isoformat()
             }
+            # print("visitor_dict : ",visitor_dict)
             common.send_visitors(visitor_dict,dataToSerialize["cmptransid"],"add")
             send_email_notification_email(visitor_dict,visitorinout['cmpdepartmentid'],companyEntry.transid)
             return Response( {

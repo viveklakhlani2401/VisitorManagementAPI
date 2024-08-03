@@ -31,27 +31,14 @@ class CompanyMasterGetSerializer(serializers.ModelSerializer):
 class CompanyMasterDetailsGetSerializer(serializers.ModelSerializer):
     class Meta:
         model = QitCompany
-        fields = ['transid','e_mail', 'password', 'bname', 'blocation','qrstring','status','entrydate','status']
+        fields = ['transid','qrstring','e_mail', 'phone1', 'bname', 'blocation','address1','zipcode','country','state','city','status','websitelink','entrydate']
     def to_representation(self, instance):
         representation = super().to_representation(instance)
         userData = QitUsermaster.objects.filter(cmptransid=instance.transid)
-        # print(userData.count())
-        
-        for data in userData:
-            print("Company : ",data.cmptransid.transid)
-            print("Data : ",data.e_mail)
-        
-        print("++++++++++")
-        # departmentMaster = instance.cmpdepartmentid
-        # visitormaster = instance.visitortansid
         representation['totaluser'] = userData.count()
-        # representation['vName'] = visitormaster.vname
-        # representation['vPhone1'] = visitormaster.phone1
-        # representation['vCmpname'] = visitormaster.vcmpname
-        # representation['vLocation'] = visitormaster.vlocation
-        # representation['vEmail'] = visitormaster.e_mail
-        # representation['deptId'] = representation.pop("cmpdepartmentid")
-        # representation['deptName'] = departmentMaster.deptname
+        representation['plan'] = 30
+        representation['payment'] = 'Received'
+        representation['valid'] = 10
         return representation
 
 class UserSerializer(serializers.ModelSerializer):
