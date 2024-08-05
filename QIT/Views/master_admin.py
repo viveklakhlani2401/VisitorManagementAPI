@@ -183,3 +183,4 @@ def EditMAComapnyDataById(request):
             'StatusMsg':str(e),
             'APICode':APICodeClass.Master_Admin_Edit.value
         },status=400)
+    

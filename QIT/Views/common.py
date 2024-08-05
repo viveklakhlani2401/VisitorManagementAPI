@@ -429,7 +429,16 @@ def login_view(request):
                 chkUser  = role_email_wise_data(email,password,user.userrole)
                 cmpId = 0
                 cmpLogo = ""
-                if user.userrole == "COMPANY":
+                user_data = dict(user_serializer.data)
+                if user.userrole == "MA":
+                    return Response({
+                        'user': user_data,
+                        'userAuth':"",
+                        'refresh': str(refresh),
+                        'access': str(refresh.access_token),
+                        "APICode": APICodeClass.Auth_LogIn.value
+                    })
+                elif user.userrole == "COMPANY":
                     cmpId = chkUser.transid
                     cmpLogo = chkUser.cmplogo
                 else:
@@ -446,7 +455,6 @@ def login_view(request):
                 # obj = QitAuthenticationrule.objects.all()
                 # obj_list = list(obj.values())
                 json_text = json.dumps(obj.auth_rule_detail)
-                user_data = dict(user_serializer.data)
         
                 user_data['cmpid'] = cmpId
                 user_data['cmpLogo'] = cmpLogo
