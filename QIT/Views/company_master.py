@@ -25,25 +25,25 @@ def CreateCompany(request):
         if not body_data["e_mail"]:
             return Response({
                 'Status':400,
-                'StatusMsg':"Email is required",
+                'StatusMsg':"Email is required.",
                 'APICode':APICodeClass.Company_Save.value
             },status=400)
         if not body_data["password"]:
             return Response({
                 'Status':400,
-                'StatusMsg':"Password is required",
+                'StatusMsg':"Password is required.",
                 'APICode':APICodeClass.Company_Save.value
             },status=400)
         if not body_data["bname"]:
             return Response({
                 'Status':400,
-                'StatusMsg':"BusinessName is required",
+                'StatusMsg':"Business name is required.",
                 'APICode':APICodeClass.Company_Save.value
             },status=400)
         if not body_data["blocation"]:
             return Response({
                 'Status':400,
-                'StatusMsg':"BusinessLocation is required",
+                'StatusMsg':"Business location is required.",
                 'APICode':APICodeClass.Company_Save.value
             },status=400)
         
@@ -64,7 +64,7 @@ def CreateCompany(request):
         if(emailExistInComapny):
             return Response({
                 'Status':400,
-                'StatusMsg':"This email alredy register as comapny",
+                'StatusMsg':"This email is already registered as a company.",
                 'APICode':APICodeClass.Company_Save.value
             },status=400)
         
@@ -111,29 +111,34 @@ def CreateCompany(request):
                         return Response({
                             # 'data': serializer.data,
                             'status': status.HTTP_201_CREATED,
-                            'StatusMsg':"Registered successfully",
+                            'StatusMsg':"Registered successfully.",
                             'encodedString': unique_hash,
                             'APICode':APICodeClass.Company_Save.value
                         })
-                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+                return Response({
+                    'Status': 400,
+                    'StatusMsg': "Invalid data.",
+                    'APICode': APICodeClass.Company_Save.value,
+                    'errors': serializer.errors
+                }, status=status.HTTP_400_BAD_REQUEST)
             else:
                 response = {
                     'Status': 400,
-                    'StatusMsg': "OTP is not verified",
+                    'StatusMsg': "OTP is not verified.",
                     'APICode':APICodeClass.Company_Save.value
                 }
                 return Response(response,status=400)
         else:
             response = {
                     'Status': 400,
-                    'StatusMsg': "Email not found or OTP expired",
+                    'StatusMsg': "Email not found or OTP expired.",
                     'APICode':APICodeClass.Company_Save.value
                 }
             return Response(response,status=400)
     except Exception as e:
         return Response({
             'Status': 400,
-            'StatusMsg': "Error : " + str(e),
+            'StatusMsg': f"An error occurred: {str(e)}",
             'APICode':APICodeClass.Company_Save.value
         },status=400)  
 
@@ -182,7 +187,7 @@ def GetComapnyDataById(request,cid):
     except QitCompany.DoesNotExist:
         return Response({
             'Status':400,
-            'StatusMsg':"No data found",
+            'StatusMsg':"Company not found.",
             'APICode':APICodeClass.Company_GetByCId.value
         },status=400)
     except Exception as e:
@@ -235,7 +240,7 @@ def EditComapnyDataById(request):
     except QitCompany.DoesNotExist:
         return Response({
             'Status':400,
-            'StatusMsg':"No data found",
+            'StatusMsg':"Company data not found.",
             'APICode':APICodeClass.Company_Edit.value
         },status=400)
     except Exception as e:

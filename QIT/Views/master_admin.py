@@ -66,13 +66,13 @@ def ActiveComapny(request):
         else:
             return Response({
                 'Status':400,
-                'StatusMsg':"Invalid Company id",
+                'StatusMsg':"Invalid Company id.",
                 'APICode':APICodeClass.Master_Admin_CmpStatus.value
             },status=400)
     except QitCompany.DoesNotExist:
         return Response({
             'Status':400,
-            'StatusMsg':"No data found",
+            'StatusMsg':"Company data not found.",
             'APICode':APICodeClass.Master_Admin_CmpStatus.value
         },status=400)
     except Exception as e:
@@ -175,7 +175,7 @@ def GetComapnyDataById(request,cid):
     except QitCompany.DoesNotExist:
         return Response({
             'Status':400,
-            'StatusMsg':"No data found",
+            'StatusMsg':"Company data not found.",
             'APICode':APICodeClass.Master_Admin_Get.value
         },status=400)
     except Exception as e:
@@ -217,7 +217,7 @@ def EditMAComapnyDataById(request):
     except QitMasteradmin.DoesNotExist:
         return Response({
             'Status':400,
-            'StatusMsg':"No data found",
+            'StatusMsg':"Master admin data not found.",
             'APICode':APICodeClass.Master_Admin_Edit.value
         },status=400)
     except Exception as e:

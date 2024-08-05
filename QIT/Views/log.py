@@ -149,7 +149,7 @@ def Get_log(request):
         logEntry = QitApiLog.objects.filter(query).order_by('-entrydate')
  
         if not logEntry.exists():
-            return Response({"Status": "400", "StatusMsg": "No Data"}, status=400)
+            return Response({"Status": "400", "StatusMsg": "Log data not found."}, status=400)
  
         serialized_data = QitAPILogSerializer(logEntry, many=True)
         return Response(serialized_data.data)

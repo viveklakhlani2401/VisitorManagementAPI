@@ -83,7 +83,7 @@ class QitNotificationrule(models.Model):
 
     class Meta:
         managed = False
-        db_table = 'QIT_NotifiicationRule'
+        db_table = 'QIT_NotificationRule'
 
 
 class QitOtp(models.Model):

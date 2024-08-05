@@ -256,7 +256,7 @@ def GetVisitorByE_Mail(request):
 
         visitor_entry = QitVisitormaster.objects.filter(e_mail=email, cmptransid=cmpid).first()
         if not visitor_entry:
-            return Response({'Status': 400, 'StatusMsg': "No data found",'APICode':APICodeClass.Visitor_Mobile_GetByEmail.value}, status=400)
+            return Response({'Status': 400, 'StatusMsg': "{email} data not found.",'APICode':APICodeClass.Visitor_Mobile_GetByEmail.value}, status=400)
 
         serialized_data = QitVisitorSerializer(visitor_entry)
         return Response(serialized_data.data, status=200)
@@ -304,7 +304,7 @@ def GetAllVisitor(request,status,cid):
         else:
             return Response({'Status': 400, 'StatusMsg': "Invalid state",'APICode':APICodeClass.Visitor_Get.value}, status=400)
         if not queryset:
-            return Response({'Status': 400, 'StatusMsg': "No data",'APICode':APICodeClass.Visitor_Get.value}, status=400)
+            return Response({'Status': 400, 'StatusMsg': "No visitors found.",'APICode':APICodeClass.Visitor_Get.value}, status=400)
         serializer = QitVisitorinoutGETSerializer(queryset, many=True)
         return Response({'Data':serializer.data,'APICode':APICodeClass.Visitor_Get.value},status=200)
     except Exception as e:
@@ -330,7 +330,7 @@ def GetVisitorDetail(request,vid,cid):
             }, status=400)
         queryset = QitVisitorinout.objects.filter(cmptransid=cid,transid=vid).first()
         if not queryset:
-            return Response({'Status': 400, 'StatusMsg': "No data",'APICode':APICodeClass.Visitor_GetById.value}, status=400)
+            return Response({'Status': 400, 'StatusMsg': "Visitor details not found.",'APICode':APICodeClass.Visitor_GetById.value}, status=400)
         serializer = QitVisitorinoutGETSerializer(queryset, many=False)
         return Response({'Data':serializer.data,'APICode':APICodeClass.Visitor_GetById.value},status=200)
     except Exception as e:
