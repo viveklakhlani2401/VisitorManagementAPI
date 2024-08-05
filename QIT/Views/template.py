@@ -763,7 +763,6 @@ def send_reminder_user(visitor,message,cmpEmail,cmpBname,text,linktext):
     return email_body
 
 
-
 def send_reminder_visitor_reject(visitor,message,cmpEmail,cmpBname,text,message2):
 
     email_body = f"""
