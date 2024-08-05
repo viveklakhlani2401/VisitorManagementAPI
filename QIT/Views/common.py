@@ -68,7 +68,7 @@ def GenerateOTP(request):
         if not request.data:
             return Response({
                 'Status':400,
-                'StatusMsg':"Payload is required",
+                'StatusMsg':"Request payload is missing.",
                 "APICode":APICodeClass.Auth_Generate_OTP.value
             },status=400)
         email = request.data["e_mail"]
@@ -76,13 +76,13 @@ def GenerateOTP(request):
         if not email:
             return Response({
                 'Status':400,
-                'StatusMsg':"e_mail is required",
+                'StatusMsg':"Email is required.",
                 "APICode":APICodeClass.Auth_Generate_OTP.value
             },status=400)
         if not role:
             return Response({
                 'Status':400,
-                'StatusMsg':"role is required",
+                'StatusMsg':"Role is required.",
                 "APICode":APICodeClass.Auth_Generate_OTP.value
             },status=400)
         
@@ -91,7 +91,7 @@ def GenerateOTP(request):
             if userEntry:
                 return Response({
                     'Status':400,
-                    'StatusMsg':"User with this email already exists",
+                    'StatusMsg':"A user with this email already exists.",
                     "APICode":APICodeClass.Auth_Generate_OTP.value
                 },status=400)
         new_OTP = generate_otp()
@@ -111,7 +111,7 @@ def GenerateOTP(request):
         else:
             return Response({
                 'Status':400,
-                'StatusMsg':"Invalid role",
+                'StatusMsg':"The role specified is invalid.",
                 "APICode":APICodeClass.Auth_Generate_OTP.value
             },status=400)
         set_otp(email,new_OTP,role.upper())
@@ -120,13 +120,13 @@ def GenerateOTP(request):
         send_html_mail(f"OTP (One Time Password)",message1,[email])
         return Response({
             'Status':200,
-            'StatusMsg':f"OTP send successfully on email : {email}",
+            'StatusMsg':f"OTP sent successfully to {email}.",
             "APICode":APICodeClass.Auth_Generate_OTP.value
         },status=200)
     except Exception as e:
         return Response({
             'Status':400,
-            'StatusMsg':str(e),
+            'StatusMsg':f"An error occurred: {str(e)}",
             "APICode":APICodeClass.Auth_Generate_OTP.value
         },status=400)
     

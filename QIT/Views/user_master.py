@@ -293,7 +293,7 @@ def delete_user(request, cmpId, transid):
     except QitUsermaster.DoesNotExist:
         return Response({
                     'Status':status.HTTP_404_NOT_FOUND,
-                    'StatusMsg':"No data found",
+                    'StatusMsg':"User data not found.",
                     'APICode':APICodeClass.User_Delete.value  
                 },status=status.HTTP_404_NOT_FOUND)
     try:
@@ -301,16 +301,16 @@ def delete_user(request, cmpId, transid):
     except QitUserlogin.DoesNotExist:
         return Response({
                     'Status':status.HTTP_404_NOT_FOUND,
-                    'StatusMsg':"No data found",
+                    'StatusMsg':"User data not found.",
                     'APICode':APICodeClass.User_Delete.value 
                 },status=status.HTTP_404_NOT_FOUND)
     userLogin.delete()
     user.delete()
     return Response({
-                    'Status':200,
-                    'StatusMsg':"User Data Deleted!!",
-                    'APICode':APICodeClass.User_Delete.value 
-                })
+            'Status':200,
+            'StatusMsg':"User Data Deleted.",
+            'APICode':APICodeClass.User_Delete.value 
+        })
 
 
 @api_view(['PUT'])

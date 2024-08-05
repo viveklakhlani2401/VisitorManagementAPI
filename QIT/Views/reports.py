@@ -46,7 +46,7 @@ def GetVisitorReport(request):
             entrydate__range=(from_date, to_date)
         ).order_by('-entrydate')
         if not queryset:
-            return Response({'Status': 400, 'StatusMsg': "No data"}, status=400)
+            return Response({'Status': 400, 'StatusMsg': "Visitor data not found."}, status=400)
         serializer = QitVisitorinoutGETSerializer(queryset, many=True)
         return Response(serializer.data,status=200)
     except Exception as e:

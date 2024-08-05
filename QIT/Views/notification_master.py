@@ -391,7 +391,7 @@ def SaveNotification(request):
         # sender_user_data = role_email_get_data(sender_user.e_mail,sender_user.userrole)
         new_notifications = []
         with transaction.atomic():
-            for user_id in user_ids:
+            if user_id is not None:
                 notification_entity = QitNotificationmaster(
                     sender_user_id=sender_user,
                     receiver_user_id=user_id.transid,
@@ -402,7 +402,6 @@ def SaveNotification(request):
                 )
                 notification_entity.save()
                 new_notifications.append(notification_entity)
-        send_notification(new_notifications,cmpcheck.transid)
         return Response({
             "StatusCode": "200", 
             "IsSaved": "Y", 
