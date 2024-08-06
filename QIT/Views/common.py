@@ -4,7 +4,7 @@ from .emails import Send_OTP
 from .send_email import send_html_mail
 import random
 import string
-from QIT.models import QitOtp, QitCompany, QitUserlogin,QitAuthenticationrule,QitUsermaster,QitNotificationrule, QitConfigmaster, QitMaNotification
+from QIT.models import QitOtp, QitCompany, QitUserlogin,QitAuthenticationrule,QitUsermaster,QitNotificationrule, QitConfigmaster, QitMaNotification, QitMasteradmin
 from .template import email_template
 import threading
 from django.views.decorators.csrf import csrf_exempt
@@ -433,7 +433,7 @@ def login_view(request):
                 if user.userrole == "MA":
                     return Response({
                         'user': user_data,
-                        'userAuth':"",
+                        'userAuth':modules.Master_module_classes,
                         'refresh': str(refresh),
                         'access': str(refresh.access_token),
                         "APICode": APICodeClass.Auth_LogIn.value
@@ -569,7 +569,7 @@ def Forget_Password_Send_OTP(request):
                 'APICode':APICodeClass.Auth_ForgetPWD_OTP_Cmp.value
             },status=400)
         
-        if resDB.userrole == "COMPANY":
+        if resDB.userrole == "COMPANY" or resDB.userrole == "MA":
             new_OTP = generate_otp()
             # globalOTPStorage['email'] = body_data["e_mail"]
             # globalOTPStorage['otp'] = new_OTP
@@ -754,7 +754,6 @@ def generate_newPassword(request):
             stored_data = json.loads(stored_data_json)
             stored_status = stored_data['status']
             if stored_status == 1 :
-                resDB1 = QitCompany.objects.filter(e_mail = body_data["e_mail"]).first()
                 resDB = QitUserlogin.objects.filter(e_mail = body_data["e_mail"]).first()
                 if not resDB:
                     return Response({
@@ -762,6 +761,22 @@ def generate_newPassword(request):
                         'StatusMsg':"Invalid User",
                         "APICode":APICodeClass.Auth_GenerateNewPWD_Cmp.value
                     },status=400)
+
+                if resDB.userrole == "MA":
+                    resDB1 = QitMasteradmin.objects.filter(e_mail = body_data["e_mail"]).first()
+                    newPassword = make_password(body_data["password"])
+                    resDB.password = newPassword
+                    resDB.save()
+                    resDB1.password = newPassword
+                    resDB1.save()
+                    return Response({
+                        'Status':200,
+                        'StatusMsg':"Company Password Updated",
+                        'Role':"Company",
+                        "APICode":APICodeClass.Auth_GenerateNewPWD_Cmp.value
+                    })
+                
+                resDB1 = QitCompany.objects.filter(e_mail = body_data["e_mail"]).first()
                 
                 if resDB.userrole == "COMPANY":
                     newPassword = make_password(body_data["password"])

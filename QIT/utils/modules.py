@@ -111,3 +111,32 @@ user_module_classes= [
     "hasAccess": False
   }
 ]
+
+Master_module_classes= [
+  {
+    "text": "List of Companies",
+    "path": "/Company",
+    "icon": "ri-user-add-line",
+    "hasAccess": True
+  },
+  {
+    "text": "Notification",
+    "path": "/notification",
+    "icon": "ri-notification-4-line",
+    "hasAccess": True
+  },
+  {
+    "text": "Profile",
+    "path": "/profile",
+    "icon": "ri-user-line",
+    "hasAccess": True
+  },
+  {
+    "text": "General Settings",
+    "path": "/generalsettings",
+    "icon": "ri-add-line",
+    "hasAccess": True
+  },
+]
+
+
