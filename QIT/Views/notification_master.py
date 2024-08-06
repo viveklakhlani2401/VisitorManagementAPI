@@ -402,6 +402,7 @@ def SaveNotification(request):
                 )
                 notification_entity.save()
                 new_notifications.append(notification_entity)
+        send_notification(new_notifications,cmpcheck.transid)
         return Response({
             "StatusCode": "200", 
             "IsSaved": "Y", 

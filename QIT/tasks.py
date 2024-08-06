@@ -38,6 +38,7 @@ def reminder_notification():
                 print("visitors_to_remind.status: ",visitors_to_remind.status)
                 # companyEntry = QitCompany.objects.filter(transid=cmpid).first()
                 statusLink = os.getenv("FRONTEND_URL") + '#/checkstatus/?cmpId=' + companyEntry.qrstring
+                checkLink = os.getenv("FRONTEND_URL") + '#/CheckIn/?cmpId=' + companyEntry.qrstring
                 verifyLink = os.getenv("FRONTEND_URL") +'#/Verify-Visitors'
                 
                 users = None
@@ -79,7 +80,7 @@ def reminder_notification():
                         f"This is a friendly reminder of your upcoming visit to {companyEntry.bname}. Here are the details of your scheduled visit:",
                         companyEntry.e_mail,
                         companyEntry.bname,
-                        f"<p>Next Steps:</p><p>Check-In Instructions: Upon arrival, please scan the QR code or please click the following link to check in: <a href={verifyLink} class='button'>Check In</a></p>",
+                        f"<p>Next Steps:</p><p>Check-In Instructions: Upon arrival, please scan the QR code or please click the following link to check in: <a href={checkLink} class='button'>Check In</a></p>",
                         f"If you have any questions or need further information, please feel free to contact us at {companyEntry.e_mail}.",
                         "We look forward to your visit!"
                     )
