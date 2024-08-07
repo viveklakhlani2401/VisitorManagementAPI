@@ -433,7 +433,7 @@ def login_view(request):
                 if user.userrole == "MA":
                     return Response({
                         'user': user_data,
-                        'userAuth':modules.Master_module_classes,
+                        'userAuth':str(modules.Master_module_classes),
                         'refresh': str(refresh),
                         'access': str(refresh.access_token),
                         "APICode": APICodeClass.Auth_LogIn.value
