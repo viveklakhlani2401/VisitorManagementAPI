@@ -373,6 +373,12 @@ def role_email_wise_data(e_mail,password,role):
             return user
         else:
             return None
+    elif role == "MA":
+        user = QitMasteradmin.objects.filter(e_mail=e_mail).first()
+        if user and check_password(password, user.password):
+            return user
+        else:
+            return None
         
 def role_email_get_data(e_mail,role):
     if role == "COMPANY":
@@ -431,9 +437,10 @@ def login_view(request):
                 cmpLogo = ""
                 user_data = dict(user_serializer.data)
                 if user.userrole == "MA":
+                    user_data['cmpLogo'] = chkUser.cmplogo
                     return Response({
                         'user': user_data,
-                        'userAuth':modules.Master_module_classes,
+                        'userAuth':str(modules.Master_module_classes),
                         'refresh': str(refresh),
                         'access': str(refresh.access_token),
                         "APICode": APICodeClass.Auth_LogIn.value

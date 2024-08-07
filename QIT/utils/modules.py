@@ -131,12 +131,10 @@ Master_module_classes= [
     "icon": "ri-user-line",
     "hasAccess": True
   },
-  {
-    "text": "General Settings",
-    "path": "/generalsettings",
-    "icon": "ri-add-line",
-    "hasAccess": True
-  },
+  # {
+  #   "text": "General Settings",
+  #   "path": "/generalsettings",
+  #   "icon": "ri-add-line",
+  #   "hasAccess": True
+  # },
 ]
-
-
