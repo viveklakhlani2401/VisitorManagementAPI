@@ -37,7 +37,7 @@ class CompanyMasterDetailsGetSerializer(serializers.ModelSerializer):
         userData = QitUsermaster.objects.filter(cmptransid=instance.transid)
         representation['totaluser'] = userData.count()
         representation['plan'] = 30
-        representation['payment'] = 'Received'
+        representation['payment'] = 'Received' if representation['status']=="A" else "Due"
         representation['valid'] = 10
         return representation
 
