@@ -407,6 +407,7 @@ def verifyVisitor(request):
                 inoutEntry.checkinstatus = "I"
         inoutEntry.save()
         common.send_visitors(inoutEntry,reqData["company_id"],"verify")
+        print("verify visitor")
         send_email_notification_Verification(inoutEntry,reqData["company_id"],state.upper(),inoutEntry.createdby)
 
         return Response({'Status': 200, 'StatusMsg': "Status updated",'APICode':APICodeClass.Visitor_Verify.value}, status=200)
@@ -570,13 +571,13 @@ def EditVerifyVisitor(request):
                         'StatusMsg': "Timeslot cannot be in the past",
                         'APICode':APICodeClass.Visitor_Edit.value
                     }, status=400)
-                one_day_ahead = current_datetime_utc + timezone.timedelta(days=1)
-                if timeslot_datetime_utc >= one_day_ahead:
-                    return Response({
-                        'Status': 400,
-                        'StatusMsg': "Timeslot cannot be more than one day in the future",
-                        'APICode':APICodeClass.Visitor_Edit.value
-                    }, status=400)
+                # one_day_ahead = current_datetime_utc + timezone.timedelta(days=1)
+                # if timeslot_datetime_utc >= one_day_ahead:
+                #     return Response({
+                #         'Status': 400,
+                #         'StatusMsg': "Timeslot cannot be more than one day in the future",
+                #         'APICode':APICodeClass.Visitor_Edit.value
+                #     }, status=400)
             except (ValueError, TypeError) as e:
                 return Response({
                     'Status': 400,
@@ -621,7 +622,26 @@ def EditVerifyVisitor(request):
         visitorInOut_entry.anyhardware = body_data.get("anyhardware", visitorInOut_entry.anyhardware)
         visitorInOut_entry.status = "P"
         visitorInOut_entry.save()
-
+        visitor_dict = {
+            'id': visitorInOut_entry.visitortansid.transid,
+            'transid': visitorInOut_entry.visitortansid.transid,
+            'vName': visitor_entry.vname,
+            'vPhone1':visitor_entry.phone1,
+            'vCmpname': visitor_entry.vcmpname,
+            'vLocation': visitor_entry.vlocation,
+            'deptId': department_entry.transid,
+            'deptName': department_entry.deptname,
+            'vEmail': visitor_entry.e_mail,
+            'cnctperson': visitorInOut_entry.cnctperson,
+            'timeslot':  visitorInOut_entry.timeslot,
+            'purposeofvisit': visitorInOut_entry.purposeofvisit,
+            'reason': visitorInOut_entry.reason,
+            # 'sortDate':timezone.now().isoformat()
+        }
+        print("visitor_dict : ",visitor_dict)
+        print("visitorInOut_entry : ",visitorInOut_entry)
+        common.send_visitors(visitor_dict,body_data.get("company_id"),"add")
+        send_email_notification_email_edited(visitor_dict,department_entry.transid,companyEntry.transid)
         return Response({'Status': 200, 'StatusMsg': "Visitor data saved successfully",'APICode':APICodeClass.Visitor_Edit.value}, status=200)
 
     except Exception as e:
@@ -740,7 +760,7 @@ def checkInVisitor(request):
         inOutEntry.checkintime = datetime.now()
         inOutEntry.checkinstatus = "I"
         inOutEntry.save()
-
+        send_email_checkin_notification_user(inOutEntry,cmpid)
         return Response({'Status': 200, 'StatusMsg': "Checkin successfullyy",'APICode':APICodeClass.Visitor_Mobile_ChkOutByV.value}, status=200)
         
     except Exception as e:
@@ -837,6 +857,46 @@ def send_email_notification_email(visitor,departmentId,cmpid):
         print("Error : ",str(e))
         # return Response({'Status': 400, 'StatusMsg': "An error occurred: {}".format(str(e)),'APICode':APICodeClass.Visitor_Mobile_ChkOutByV.value}, status=400)
 
+def send_email_notification_email_edited(visitor,departmentId,cmpid):
+    try:
+        # body_data = request.data
+        # if not body_data:
+        #     return Response({'Status': 400, 'StatusMsg': "Payload required",'APICode':APICodeClass.Visitor_Mobile_ChkOutByV.value}, status=400)  
+        
+        # visitor = body_data.get("visitor")
+        # departmentId = body_data.get("departmentId")
+        # cmpid = body_data.get("cmpid")
+        print("visitor : ",visitor)
+        print("departmentId : ",departmentId)
+        print("cmpid : ",cmpid)
+        print("visitor['cnctperson'] : ",visitor['cnctperson'])
+        companyEntry = QitCompany.objects.filter(transid=cmpid).first()
+        statusLink = os.getenv("FRONTEND_URL") + '#/checkstatus/?cmpId=' + companyEntry.qrstring
+        verifyLink = os.getenv("FRONTEND_URL") +'#/Verify-Visitors'
+        users = None
+        users = QitUsermaster.objects.filter(username=visitor['cnctperson'],cmptransid=cmpid)
+        emails = []
+        if users:
+            for data in users:
+                emails.append(data.e_mail)
+        else:
+            users = QitUsermaster.objects.filter(cmpdeptid=departmentId,cmptransid=cmpid)
+            for data in users:
+                emails.append(data.e_mail)
+        # emails.append(visitor['vEmail'])
+        
+        print("====>",emails)
+        
+        message1 =  send_reminder(visitor,f"Thank you for registering again to visit {companyEntry.bname} Your visit details are as follows:",companyEntry.e_mail,companyEntry.bname,"Your registration is currently pending approval",f"You can check the status of your registration by clicking the following link: <a href={statusLink} class='button'>Check Status</a>",f"Please wait for the approval. If you have any questions or need further information, please do not hesitate to contact us at {companyEntry.e_mail}")
+        message2 =  send_reminder_user(visitor,f"A visitor has registered again to meet you at {companyEntry.bname} Your approval is required to confirm the visit. Please review the details below and provide your approval at your earliest convenience.",companyEntry.e_mail,companyEntry.bname,"Upon your approval, the visitor will be notified to enter the premises. Thank you for your prompt attention to this matter.",f"To verify and approve the visitor, please click the following link: <a href={verifyLink} class='button'>Check Status</a>")
+        # print("emails : ==> ",emails)
+        send_html_mail(f"Visitor Register again",message2,emails)
+        send_html_mail(f"Visitor Registration Received",message1,[visitor['vEmail']])
+        # return Response({'Status': 200, 'StatusMsg': "Send successfullyy",'APICode':APICodeClass.Visitor_Mobile_ChkOutByV.value}, status=200)
+    except Exception as e:
+        print("Error : ",str(e))
+        # return Response({'Status': 400, 'StatusMsg': "An error occurred: {}".format(str(e)),'APICode':APICodeClass.Visitor_Mobile_ChkOutByV.value}, status=400)
+
 # def send_email_notification_Verification(inoutentry,cmpid,state):
 #     try:
 #         companyEntry = QitCompany.objects.filter(transid=cmpid).first()
@@ -874,6 +934,7 @@ def send_email_notification_email(visitor,departmentId,cmpid):
 
 def send_email_notification_Verification(inoutentry, cmpid, state, createdby):
     try:
+        print("===========================================?")
         companyEntry = QitCompany.objects.filter(transid=cmpid).first()
         vid = int(inoutentry.visitortansid.transid)
         VisitorEntry = QitVisitormaster.objects.filter(transid=vid).first()
@@ -900,6 +961,17 @@ def send_email_notification_Verification(inoutentry, cmpid, state, createdby):
                 f"If you have any questions or need further information, please feel free to contact us at {companyEntry.e_mail}.",
                 "We look forward to welcoming you!"
             )
+            message2 =  send_reminder(visitor_dict,
+                                      f"This it to inform you a visitor has registered to meet you at {companyEntry.bname}. Please review the details below :",
+                                      companyEntry.e_mail,
+                                      companyEntry.bname,"","","")
+            users = QitUsermaster.objects.filter(username=inoutentry.cnctperson,cmptransid=cmpid)
+            emails = []
+            if users:
+                for data in users:
+                    emails.append(data.e_mail)
+            print("emails: ",emails)
+            print("your approval : ")
             if createdby is None:
                 message1 = send_reminder(
                     visitor_dict,
@@ -911,7 +983,9 @@ def send_email_notification_Verification(inoutentry, cmpid, state, createdby):
                     "We look forward to welcoming you!"
                 )
             subject = f"Approval of Your Visit to {companyEntry.bname} on {dt.strftime('%d %B %Y')} at {dt.strftime('%I:%M %p')}"
+            subject1 = f"Approval of Visitor to meet you on {dt.strftime('%d %B %Y')} at {dt.strftime('%I:%M %p')}"
             send_html_mail(subject, message1, [VisitorEntry.e_mail])
+            send_html_mail(subject1, message2, emails)
         elif state == "R":
             message1 = send_reminder_visitor_reject(
                 visitor_dict,
@@ -923,5 +997,37 @@ def send_email_notification_Verification(inoutentry, cmpid, state, createdby):
             )
             subject = f"Your Visit to {companyEntry.bname} Has Not Been Approved"
             send_html_mail(subject, message1, [VisitorEntry.e_mail])
+    except Exception as e:
+        print("Error : ", e)
+
+def send_email_checkin_notification_user(inoutentry, cmpid):
+    try:
+        companyEntry = QitCompany.objects.filter(transid=cmpid).first()
+        vid = int(inoutentry.visitortansid.transid)
+        VisitorEntry = QitVisitormaster.objects.filter(transid=vid).first()
+
+        # Given timestamp
+        timestamp = inoutentry.timeslot
+        iso_format_str = timestamp.isoformat()
+        visitor_dict = {
+            "cnctperson": inoutentry.cnctperson,
+            "vName": VisitorEntry.vname,
+            "timeslot": iso_format_str
+        }
+
+        # Parse the timestamp
+        dt = datetime.fromisoformat(iso_format_str.replace("Z", "+00:00"))
+        message2 =  send_reminder(visitor_dict,
+                    f"This it to inform you a visitor has arriaved to meet you at {companyEntry.bname}. Please review the details below :",
+                    companyEntry.e_mail,
+                    companyEntry.bname,"","","")
+        users = QitUsermaster.objects.filter(username=inoutentry.cnctperson,cmptransid=cmpid)
+        emails = []
+        if users:
+            for data in users:
+                emails.append(data.e_mail)
+        
+        subject1 = f"{VisitorEntry.vname} has checked-in to meet you"
+        send_html_mail(subject1, message2, emails)
     except Exception as e:
         print("Error : ", e)
