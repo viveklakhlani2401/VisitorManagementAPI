@@ -375,7 +375,7 @@ def SaveNotification(request):
                 "StatusMsg": "No users found for the specified module.",
                 'APICode':APICodeClass.Notification_Get.value
             }, status=status.HTTP_404_NOT_FOUND)
-        
+        print("user_ids : ",user_ids)
         if notification['sender_email'] != "0":
             sender_user = QitUserlogin.objects.filter(e_mail=notification['sender_email']).first()
             if not sender_user:
@@ -391,7 +391,7 @@ def SaveNotification(request):
         # sender_user_data = role_email_get_data(sender_user.e_mail,sender_user.userrole)
         new_notifications = []
         with transaction.atomic():
-            for user_id in user_ids:
+            for user_id in user_ids: 
                 if user_id is not None:
                     notification_entity = QitNotificationmaster(
                         sender_user_id=sender_user,
