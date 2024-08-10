@@ -437,6 +437,7 @@ def login_view(request):
                 cmpLogo = ""
                 user_data = dict(user_serializer.data)
                 if user.userrole == "MA":
+                    user_data['cmpid'] = chkUser.transid
                     user_data['cmpLogo'] = chkUser.cmplogo
                     return Response({
                         'user': user_data,
@@ -446,9 +447,19 @@ def login_view(request):
                         "APICode": APICodeClass.Auth_LogIn.value
                     })
                 elif user.userrole == "COMPANY":
+                    if chkUser.status == "I":
+                        return Response({
+                            'detail': 'Company is inactive.',
+                            "APICode":APICodeClass.Auth_LogIn.value
+                        }, status=400)
                     cmpId = chkUser.transid
                     cmpLogo = chkUser.cmplogo
                 else:
+                    if chkUser.cmptransid.status == "I":
+                        return Response({
+                            'detail': 'Company is inactive.',
+                            "APICode":APICodeClass.Auth_LogIn.value
+                        }, status=400)
                     cmpId = chkUser.cmptransid.transid
                     cmpLogo = chkUser.cmptransid.cmplogo
                 if chkUser == None:

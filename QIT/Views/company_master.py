@@ -14,9 +14,135 @@ from QIT.serializers import CompanyMasterGetSerializer
 from django.core.cache import cache
 import json
 from QIT.utils.APICode import APICodeClass
-from QIT.models import QitDepartment
+from QIT.models import QitDepartment, QitMasteradmin
 
 # Register Company API
+# @csrf_exempt
+# @api_view(["POST"])
+# def CreateCompany(request):
+#     body_data = request.data
+#     try:
+#         if not body_data["e_mail"]:
+#             return Response({
+#                 'Status':400,
+#                 'StatusMsg':"Email is required.",
+#                 'APICode':APICodeClass.Company_Save.value
+#             },status=400)
+#         if not body_data["password"]:
+#             return Response({
+#                 'Status':400,
+#                 'StatusMsg':"Password is required.",
+#                 'APICode':APICodeClass.Company_Save.value
+#             },status=400)
+#         if not body_data["bname"]:
+#             return Response({
+#                 'Status':400,
+#                 'StatusMsg':"Business name is required.",
+#                 'APICode':APICodeClass.Company_Save.value
+#             },status=400)
+#         if not body_data["blocation"]:
+#             return Response({
+#                 'Status':400,
+#                 'StatusMsg':"Business location is required.",
+#                 'APICode':APICodeClass.Company_Save.value
+#             },status=400)
+        
+#         # OTPEntry = QitOtp.objects.filter(e_mail=body_data["e_mail"]).first()
+#         # if OTPEntry is None:
+#         #     return Response({
+#         #         'Status': 400,
+#         #         'StatusMsg': "Email is not verified."
+#         #     })
+ 
+#         # if OTPEntry.status != 'Y':
+#         #     return Response({
+#         #         'Status': 400,
+#         #         'StatusMsg': "OTP is not verified"
+#         #     })
+        
+#         emailExistInComapny = QitCompany.objects.filter(e_mail = body_data["e_mail"])
+#         if(emailExistInComapny):
+#             return Response({
+#                 'Status':400,
+#                 'StatusMsg':"This email is already registered as a company.",
+#                 'APICode':APICodeClass.Company_Save.value
+#             },status=400)
+        
+#         # OTPEntry = QitOtp.objects.filter(e_mail=body_data["e_mail"]).first()
+#         # if OTPEntry is None:
+#         #     return Response({
+#         #         'Status': 400,
+#         #         'StatusMsg': "No entry found for this email."
+#         #     })
+
+
+#         # if OTPEntry.status != 'Y':
+#         #     return Response({
+#         #         'Status': 400,
+#         #         'StatusMsg': "This Company is not verified"
+#         #     })
+#         stored_data_json = cache.get(f"otp_{body_data['e_mail']}")
+#         if stored_data_json:
+#             stored_data = json.loads(stored_data_json)
+#             stored_status = stored_data['status']
+#             stored_role = stored_data['role']
+#             if stored_status == 1 and stored_role.upper() == "COMPANY" :
+#                 serializer = CompanyMasterSerializer(data=request.data)
+#                 if serializer.is_valid():
+#                     company_master = serializer.save()
+#                     company_master.status = "A"
+#                     unique_string = f"{body_data['e_mail']}_{body_data['bname']}_{body_data['blocation']}"
+#                     unique_hash = hashlib.sha256(unique_string.encode('utf-8')).hexdigest()
+#                     company_master.qrstring = unique_hash
+#                     company_master.save()
+#                     QitDepartment.objects.create(deptname="Default", cmptransid=company_master)
+#                     create_userlogin(body_data["e_mail"],body_data["password"],"COMPANY")
+#                     create_comp_auth(company_master.transid,company_master,"COMPANY")
+#                     create_comp_notification_auth(company_master.transid,company_master,"COMPANY")
+#                     create_comp_config(company_master)
+#                     frontendURL = os.getenv("FRONTEND_URL")
+#                     if QitCompany.objects.filter(transid=company_master.transid).exists():
+#                         frontendURL = os.getenv("FRONTEND_URL")
+#                         if frontendURL is None:
+#                             return Response({
+#                                 'error':serializer.errors,
+#                                 'APICode':APICodeClass.Company_Save.value
+#                             }, status=status.HTTP_400_BAD_REQUEST)
+#                         return Response({
+#                             # 'data': serializer.data,
+#                             'status': status.HTTP_201_CREATED,
+#                             'StatusMsg':"Registered successfully.",
+#                             'encodedString': unique_hash,
+#                             'APICode':APICodeClass.Company_Save.value
+#                         })
+#                 return Response({
+#                     'Status': 400,
+#                     'StatusMsg': "Invalid data.",
+#                     'APICode': APICodeClass.Company_Save.value,
+#                     'errors': serializer.errors
+#                 }, status=status.HTTP_400_BAD_REQUEST)
+#             else:
+#                 response = {
+#                     'Status': 400,
+#                     'StatusMsg': "OTP is not verified.",
+#                     'APICode':APICodeClass.Company_Save.value
+#                 }
+#                 return Response(response,status=400)
+#         else:
+#             response = {
+#                     'Status': 400,
+#                     'StatusMsg': "Email not found or OTP expired.",
+#                     'APICode':APICodeClass.Company_Save.value
+#                 }
+#             return Response(response,status=400)
+#     except Exception as e:
+#         return Response({
+#             'Status': 400,
+#             'StatusMsg': f"An error occurred: {str(e)}",
+#             'APICode':APICodeClass.Company_Save.value
+#         },status=400)  
+
+
 @csrf_exempt
 @api_view(["POST"])
 def CreateCompany(request):
@@ -59,9 +185,13 @@ def CreateCompany(request):
         #         'Status': 400,
         #         'StatusMsg': "OTP is not verified"
         #     })
+
+        print("hello :",body_data["e_mail"])
         
         emailExistInComapny = QitCompany.objects.filter(e_mail = body_data["e_mail"])
+        print(emailExistInComapny)
         if(emailExistInComapny):
+            print("here")
             return Response({
                 'Status':400,
                 'StatusMsg':"This email is already registered as a company.",
@@ -81,66 +211,77 @@ def CreateCompany(request):
         #         'Status': 400,
         #         'StatusMsg': "This Company is not verified"
         #     })
-        stored_data_json = cache.get(f"otp_{body_data['e_mail']}")
-        if stored_data_json:
-            stored_data = json.loads(stored_data_json)
-            stored_status = stored_data['status']
-            stored_role = stored_data['role']
-            if stored_status == 1 and stored_role.upper() == "COMPANY" :
-                serializer = CompanyMasterSerializer(data=request.data)
-                if serializer.is_valid():
-                    company_master = serializer.save()
-                    company_master.status = "A"
-                    unique_string = f"{body_data['e_mail']}_{body_data['bname']}_{body_data['blocation']}"
-                    unique_hash = hashlib.sha256(unique_string.encode('utf-8')).hexdigest()
-                    company_master.qrstring = unique_hash
-                    company_master.save()
-                    QitDepartment.objects.create(deptname="Default", cmptransid=company_master)
-                    create_userlogin(body_data["e_mail"],body_data["password"],"COMPANY")
-                    create_comp_auth(company_master.transid,company_master,"COMPANY")
-                    create_comp_notification_auth(company_master.transid,company_master,"COMPANY")
-                    create_comp_config(company_master)
-                    frontendURL = os.getenv("FRONTEND_URL")
-                    if QitCompany.objects.filter(transid=company_master.transid).exists():
-                        frontendURL = os.getenv("FRONTEND_URL")
-                        if frontendURL is None:
-                            return Response({
-                                'error':serializer.errors,
-                                'APICode':APICodeClass.Company_Save.value
-                            }, status=status.HTTP_400_BAD_REQUEST)
-                        return Response({
-                            # 'data': serializer.data,
-                            'status': status.HTTP_201_CREATED,
-                            'StatusMsg':"Registered successfully.",
-                            'encodedString': unique_hash,
-                            'APICode':APICodeClass.Company_Save.value
-                        })
-                return Response({
-                    'Status': 400,
-                    'StatusMsg': "Invalid data.",
-                    'APICode': APICodeClass.Company_Save.value,
-                    'errors': serializer.errors
-                }, status=status.HTTP_400_BAD_REQUEST)
+        if body_data["createdby"]=="" or body_data["createdby"]==None:
+            stored_data_json = cache.get(f"otp_{body_data['e_mail']}")
+            if stored_data_json:
+                stored_data = json.loads(stored_data_json)
+                stored_status = stored_data['status']
+                stored_role = stored_data['role']
+                if stored_status != 1 and stored_role.upper() != "COMPANY" : 
+                    return Response({
+                        'Status': 400,
+                        'StatusMsg': "Invalid data.",
+                        'APICode': APICodeClass.Company_Save.value,
+                        # 'errors': serializer.errors
+                    }, status=status.HTTP_400_BAD_REQUEST)
+                else:
+                    response = {
+                        'Status': 400,
+                        'StatusMsg': "OTP is not verified.",
+                        'APICode':APICodeClass.Company_Save.value
+                    }
+                    return Response(response,status=400)
             else:
                 response = {
-                    'Status': 400,
-                    'StatusMsg': "OTP is not verified.",
-                    'APICode':APICodeClass.Company_Save.value
-                }
+                        'Status': 400,
+                        'StatusMsg': "Email not found or OTP expired.",
+                        'APICode':APICodeClass.Company_Save.value
+                    }
                 return Response(response,status=400)
-        else:
-            response = {
-                    'Status': 400,
-                    'StatusMsg': "Email not found or OTP expired.",
+            
+        emailExistInMasterComapny = QitMasteradmin.objects.filter(transid = body_data["createdby"])
+        if not emailExistInMasterComapny:
+            return Response({
+                'Status':400,
+                'StatusMsg':"Created by company not found.",
+                'APICode':APICodeClass.Company_Save.value
+            },status=400)
+        
+        serializer = CompanyMasterSerializer(data=request.data)
+        if serializer.is_valid():
+            company_master = serializer.save()
+            company_master.status = "A"
+            unique_string = f"{body_data['e_mail']}_{body_data['bname']}_{body_data['blocation']}"
+            unique_hash = hashlib.sha256(unique_string.encode('utf-8')).hexdigest()
+            company_master.qrstring = unique_hash
+            company_master.save()
+            QitDepartment.objects.create(deptname="Default", cmptransid=company_master)
+            create_userlogin(body_data["e_mail"],body_data["password"],"COMPANY")
+            create_comp_auth(company_master.transid,company_master,"COMPANY")
+            create_comp_notification_auth(company_master.transid,company_master,"COMPANY")
+            create_comp_config(company_master)
+            frontendURL = os.getenv("FRONTEND_URL")
+            if QitCompany.objects.filter(transid=company_master.transid).exists():
+                frontendURL = os.getenv("FRONTEND_URL")
+                if frontendURL is None:
+                    return Response({
+                        'error':serializer.errors,
+                        'APICode':APICodeClass.Company_Save.value
+                    }, status=status.HTTP_400_BAD_REQUEST)
+                return Response({
+                    # 'data': serializer.data,
+                    'status': status.HTTP_201_CREATED,
+                    'StatusMsg':"Registered successfully.",
+                    'encodedString': unique_hash,
                     'APICode':APICodeClass.Company_Save.value
-                }
-            return Response(response,status=400)
+                })
     except Exception as e:
         return Response({
             'Status': 400,
             'StatusMsg': f"An error occurred: {str(e)}",
             'APICode':APICodeClass.Company_Save.value
         },status=400)  
+
 
 
 @csrf_exempt

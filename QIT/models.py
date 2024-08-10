@@ -55,6 +55,7 @@ class QitCompany(models.Model):
     isactive = models.CharField(db_column='IsActive', max_length=2)  # Field name made lowercase.
     cmplogo = models.TextField(db_column='CmpLogo', blank=True, null=True)  # Field name made lowercase.
     websitelink = models.CharField(db_column='WebsiteLink', max_length=100, blank=True, null=True)  # Field name made lowercase.
+    createdby = models.IntegerField(db_column='CreatedBy', blank=True, null=True)  # Field name made lowercase.
     entrydate = models.DateTimeField(db_column='EntryDate',auto_now=True)  # Field name made lowercase.
     updatedate = models.DateTimeField(db_column='UpdateDate', blank=True, null=True)  # Field name made lowercase.
     reason = models.CharField(db_column='Reason', max_length=500, blank=True, null=True)  # Field name made lowercase.
