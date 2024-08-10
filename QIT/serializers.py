@@ -16,7 +16,7 @@ class GenerateOTPSerializer(serializers.ModelSerializer):
 class CompanyMasterSerializer(serializers.ModelSerializer):
     class Meta:
         model = QitCompany
-        fields = ['e_mail', 'password', 'bname', 'blocation']
+        fields = ['e_mail', 'password', 'bname', 'blocation','city','state','country','zipcode','phone1','websitelink','createdby']
 
     def create(self, validated_data):
         # Encrypt the password

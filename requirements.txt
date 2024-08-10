@@ -5,6 +5,7 @@ django-cors-headers==4.3.1
 django-mssql-backend==2.8.1
 djangorestframework==3.15.1
 djangorestframework-simplejwt==5.3.1
+django-extensions==3.2.3
 mssql-django==1.5
 mypy==1.6.1
 mypy-extensions==1.0.0
@@ -29,3 +30,4 @@ python-dateutil==2.9.0.post0
 python-crontab==3.1.0
 django-celery-beat==2.6.0
 django-celery-results==2.5.1
+Werkzeug==3.0.3
