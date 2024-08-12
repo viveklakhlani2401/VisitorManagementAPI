@@ -31,7 +31,7 @@ class CompanyMasterGetSerializer(serializers.ModelSerializer):
 class CompanyMasterDetailsGetSerializer(serializers.ModelSerializer):
     class Meta:
         model = QitCompany
-        fields = ['transid','qrstring','e_mail', 'phone1', 'bname', 'blocation','address1','zipcode','country','state','city','status','websitelink','entrydate']
+        fields = ['transid','qrstring','e_mail', 'phone1', 'bname', 'blocation','address1','zipcode','country','state','city','status','websitelink','entrydate','reason']
     def to_representation(self, instance):
         representation = super().to_representation(instance)
         userData = QitUsermaster.objects.filter(cmptransid=instance.transid)
