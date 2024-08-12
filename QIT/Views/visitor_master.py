@@ -271,20 +271,6 @@ def GetAllVisitor(request,status,cid):
     try:
         if not cid:
             return Response({'Status': 400, 'StatusMsg': "Company Id requied",'APICode':APICodeClass.Visitor_Get.value}, status=400)
-        # queryset = QitVisitorinout.objects.filter(cmptransid=cid)
-        # queryset = QitVisitorinout.objects.filter(cmptransid=cid)
-        # entrydate_info = [(type(obj.entrydate), obj.entrydate) for obj in queryset]  # Collect type and value of entrydate field
-        
-        # print("Entrydate info:", entrydate_info)  # Debug statement
- 
-        # queryset = queryset.annotate(
-        #     sorting_date=Case(
-        #         When(checkintime=False, then=F('checkindatetime')),
-        #         default=F('entrydate'),
-        #         output_field=models.DateTimeField()
-        #     )
-        # ).order_by('-sorting_date')
-        
  
         companyEntry = QitCompany.objects.filter(transid=cid).first()
         if not companyEntry:
@@ -293,13 +279,20 @@ def GetAllVisitor(request,status,cid):
                 'StatusMsg': "Company not found",
                 'APICode':APICodeClass.Visitor_Get.value
             }, status=400)
+        # if status.upper() == "ALL":
+        #     queryset = QitVisitorinout.objects.filter(cmptransid=cid).order_by('-entrydate','-checkintime')
+        # elif status.upper() == "P":
+        #     today = timezone.now().date()
+        #     # queryset = QitVisitorinout.objects.filter(cmptransid=cid,status="P").order_by('-checkintime', '-entrydate')
+        #     queryset = QitVisitorinout.objects.annotate(entrydate_date=Cast('entrydate', DateField())).filter(cmptransid=cid, status="P", entrydate_date=today).order_by('-checkintime', '-entrydate')
         if status.upper() == "ALL":
-            queryset = QitVisitorinout.objects.filter(cmptransid=cid).order_by('-entrydate','-checkintime')
+            queryset = QitVisitorinout.objects.filter(cmptransid=cid).select_related('cmpdepartmentid', 'visitortansid').order_by('-entrydate', '-checkintime')
         elif status.upper() == "P":
             today = timezone.now().date()
-            # queryset = QitVisitorinout.objects.filter(cmptransid=cid,status="P").order_by('-checkintime', '-entrydate')
-            queryset = QitVisitorinout.objects.annotate(entrydate_date=Cast('entrydate', DateField())).filter(cmptransid=cid, status="P", entrydate_date=today).order_by('-checkintime', '-entrydate')
-        
+            queryset = QitVisitorinout.objects.annotate(entrydate_date=Cast('entrydate', DateField())).filter(
+                cmptransid=cid, status="P", entrydate_date=today
+            ).select_related('cmpdepartmentid', 'visitortansid').order_by('-checkintime', '-entrydate')
+
             # queryset = QitVisitorinout.objects.filter(cmptransid=cid,status="P",checkintime=today).order_by('-checkintime', '-entrydate')
         else:
             return Response({'Status': 400, 'StatusMsg': "Invalid state",'APICode':APICodeClass.Visitor_Get.value}, status=400)
