@@ -17,7 +17,7 @@ class QitApiLog(models.Model):
     jsonpayload = models.TextField(db_column='JsonPayload', blank=True, null=True)  # Field name made lowercase.
     loginuser = models.CharField(db_column='LoginUser', max_length=50, blank=True, null=True)  # Field name made lowercase.
     cmptransid = models.IntegerField(db_column='CmpTransId', blank=True, null=True)  # Field name made lowercase.
-    entrydate = models.DateTimeField(db_column='EntryDate', auto_now=True)  # Field name made lowercase.
+    entrydate = models.DateTimeField(db_column='EntryDate', auto_now_add=True)  # Field name made lowercase.
     error_id = models.CharField(db_column='Error_ID', max_length=6, blank=True, null=True)  # Field name made lowercase.
 
     class Meta:
@@ -56,7 +56,7 @@ class QitCompany(models.Model):
     cmplogo = models.TextField(db_column='CmpLogo', blank=True, null=True)  # Field name made lowercase.
     websitelink = models.CharField(db_column='WebsiteLink', max_length=100, blank=True, null=True)  # Field name made lowercase.
     createdby = models.IntegerField(db_column='CreatedBy', blank=True, null=True)  # Field name made lowercase.
-    entrydate = models.DateTimeField(db_column='EntryDate',auto_now=True)  # Field name made lowercase.
+    entrydate = models.DateTimeField(db_column='EntryDate',auto_now_add=True)  # Field name made lowercase.
     updatedate = models.DateTimeField(db_column='UpdateDate', blank=True, null=True)  # Field name made lowercase.
     reason = models.CharField(db_column='Reason', max_length=500, blank=True, null=True)  # Field name made lowercase.
 
@@ -125,7 +125,7 @@ class QitUsermaster(models.Model):
     gender = models.CharField(db_column='Gender', max_length=7, null=True)  # Field name made lowercase.
     useravatar = models.TextField(db_column='UserAvatar', blank=True, null=True)  # Field name made lowercase.
     changepassstatus = models.CharField(db_column='ChangePassStatus', max_length=2,default=0)  # Field name made lowercase.
-    entrydate = models.DateTimeField(db_column='EntryDate',auto_now=True)  # Field name made lowercase.
+    entrydate = models.DateTimeField(db_column='EntryDate',auto_now_add=True)  # Field name made lowercase.
     updateddate = models.DateTimeField(db_column='UpdatedDate', blank=True, null=True)  # Field name made lowercase.
     usertype = models.CharField(db_column='UserType', max_length=45, blank=True, null=True)  # Field name made lowercase.
     createdby = models.TextField(db_column='CreatedBy', blank=True, null=True)  # Field name made lowercase.
@@ -149,7 +149,7 @@ class QitVisitorinout(models.Model):
     status = models.CharField(db_column='Status', max_length=2)  # Field name made lowercase.
     checkintime = models.DateTimeField(db_column='CheckInTime', blank=True, null=True)  # Field name made lowercase.
     checkouttime = models.DateTimeField(db_column='CheckOutTime', blank=True, null=True)  # Field name made lowercase.
-    entrydate = models.DateTimeField(db_column='EntryDate',auto_now=True)  # Field name made lowercase.
+    entrydate = models.DateTimeField(db_column='EntryDate',auto_now_add=True)  # Field name made lowercase.
     createdby = models.TextField(db_column='CreatedBy', blank=True, null=True)  # Field name made lowercase.
     visitortansid = models.ForeignKey('QitVisitormaster', models.DO_NOTHING, db_column='VisitorTansId')  # Field name made lowercase.
 
@@ -177,7 +177,7 @@ class QitNotificationmaster(models.Model):
     sender_user_id = models.IntegerField(db_column='Sender_User_Id',blank=True,null=True)  # Field name made lowercase.
     receiver_user_id = models.IntegerField(db_column='Receiver_User_Id')  # Field name made lowercase.
     notification_text = models.TextField(db_column='Notification_Text')  # Field name made lowercase.
-    n_date_time = models.DateTimeField(db_column='N_Date_Time',auto_now=True)  # Field name made lowercase.
+    n_date_time = models.DateTimeField(db_column='N_Date_Time',auto_now_add=True)  # Field name made lowercase.
     chk_status = models.CharField(db_column='Chk_Status', max_length=5)  # Field name made lowercase.
     cmptransid = models.ForeignKey(QitCompany, models.DO_NOTHING, db_column='CmpTransId')  # Field name made lowercase.
 
@@ -212,7 +212,7 @@ class QitMasteradmin(models.Model):
     phone2 = models.CharField(db_column='Phone2', max_length=20, blank=True, null=True)  # Field name made lowercase.
     cmplogo = models.TextField(db_column='CmpLogo', blank=True, null=True)  # Field name made lowercase.
     websitelink = models.CharField(db_column='WebsiteLink', max_length=100, blank=True, null=True)  # Field name made lowercase.
-    entrydate = models.DateTimeField(db_column='EntryDate',auto_now=True)  # Field name made lowercase.
+    entrydate = models.DateTimeField(db_column='EntryDate',auto_now_add=True)  # Field name made lowercase.
     updatedate = models.DateTimeField(db_column='UpdateDate', blank=True, null=True)  # Field name made lowercase.
 
     class Meta:
@@ -224,7 +224,7 @@ class QitMaNotification(models.Model):
     cmptransid = models.ForeignKey(QitCompany, models.DO_NOTHING, db_column='CmpTransId')  # Field name made lowercase.
     receiver_ma = models.ForeignKey('QitMasteradmin', models.DO_NOTHING, db_column='Receiver_MA_Id')  # Field name made lowercase.
     notification_text = models.TextField(db_column='Notification_Text')  # Field name made lowercase.
-    n_date_time = models.DateTimeField(db_column='N_Date_Time',auto_now=True)  # Field name made lowercase.
+    n_date_time = models.DateTimeField(db_column='N_Date_Time',auto_now_add=True)  # Field name made lowercase.
     chk_status = models.CharField(db_column='Chk_Status', max_length=5)  # Field name made lowercase.
 
     class Meta:

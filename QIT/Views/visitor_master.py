@@ -295,13 +295,20 @@ def GetAllVisitor(request,status,cid):
                 'StatusMsg': "Company not found",
                 'APICode':APICodeClass.Visitor_Get.value
             }, status=400)
+        # if status.upper() == "ALL":
+        #     queryset = QitVisitorinout.objects.filter(cmptransid=cid).order_by('-entrydate','-checkintime')
+        # elif status.upper() == "P":
+        #     today = timezone.now().date()
+        #     # queryset = QitVisitorinout.objects.filter(cmptransid=cid,status="P").order_by('-checkintime', '-entrydate')
+        #     queryset = QitVisitorinout.objects.annotate(entrydate_date=Cast('entrydate', DateField())).filter(cmptransid=cid, status="P", entrydate_date=today).order_by('-checkintime', '-entrydate')
         if status.upper() == "ALL":
-            queryset = QitVisitorinout.objects.filter(cmptransid=cid,entrydate__year=current_year, entrydate__month=current_month).order_by('-entrydate','-checkintime')
+            queryset = QitVisitorinout.objects.filter(cmptransid=cid).select_related('cmpdepartmentid', 'visitortansid').order_by('-entrydate', '-checkintime')
         elif status.upper() == "P":
             today = timezone.now().date()
-            # queryset = QitVisitorinout.objects.filter(cmptransid=cid,status="P").order_by('-checkintime', '-entrydate')
-            queryset = QitVisitorinout.objects.annotate(entrydate_date=Cast('entrydate', DateField())).filter(cmptransid=cid, status="P", entrydate_date=today).order_by('-checkintime', '-entrydate')
-        
+            queryset = QitVisitorinout.objects.annotate(entrydate_date=Cast('entrydate', DateField())).filter(
+                cmptransid=cid, status="P", entrydate_date=today
+            ).select_related('cmpdepartmentid', 'visitortansid').order_by('-checkintime', '-entrydate')
+
             # queryset = QitVisitorinout.objects.filter(cmptransid=cid,status="P",checkintime=today).order_by('-checkintime', '-entrydate')
         else:
             return Response({'Status': 400, 'StatusMsg': "Invalid state",'APICode':APICodeClass.Visitor_Get.value}, status=400)
