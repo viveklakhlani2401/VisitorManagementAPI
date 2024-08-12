@@ -763,7 +763,7 @@ def send_reminder_user(visitor,message,cmpEmail,cmpBname,text,linktext):
     return email_body
 
 
-def send_reminder_visitor_reject(visitor,message,cmpEmail,cmpBname,text,message2):
+def send_reminder_visitor_reject(visitor,message,reason,cmpEmail,cmpBname,text,message2):
 
     email_body = f"""
 <html>
@@ -840,6 +840,14 @@ def send_reminder_visitor_reject(visitor,message,cmpEmail,cmpBname,text,message2
                                                                     <div
                                                                         style="font-family:Montserrat,Helvetica,Arial,sans-serif;font-size:14px;font-weight:500;text-align:left;color:#001420">
                                                                         {message}</div>
+                                                                </td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td align="left"
+                                                                    style="font-size:0px;padding:5px 25px;word-break:break-word">
+                                                                    <div
+                                                                        style="font-family:Montserrat,Helvetica,Arial,sans-serif;font-size:14px;font-weight:500;text-align:left;color:#001420">
+                                                                        {reason}</div>
                                                                 </td>
                                                             </tr>
                                                             <tr>

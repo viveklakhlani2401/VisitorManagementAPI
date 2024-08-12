@@ -157,7 +157,8 @@ def Save_Visitor(request):
                 'vEmail': visitorinout['visitortansid'].e_mail,
                 'state': state,
                 'status': visitorinout['checkinstatus'],
-                'addedBy': visitorinout['createdby'],
+                'addedBy': 'Company' if visitorinout['createdby'] else 'External',
+                # 'addedBy': visitorinout['createdby'],
                 'cnctperson': visitorinout['cnctperson'],
                 'timeslot':  visitorinout['timeslot'].isoformat() if visitorinout['timeslot'] else None,
                 'purposeofvisit': visitorinout['purposeofvisit'],
@@ -271,6 +272,21 @@ def GetAllVisitor(request,status,cid):
     try:
         if not cid:
             return Response({'Status': 400, 'StatusMsg': "Company Id requied",'APICode':APICodeClass.Visitor_Get.value}, status=400)
+        # queryset = QitVisitorinout.objects.filter(cmptransid=cid)
+        # queryset = QitVisitorinout.objects.filter(cmptransid=cid)
+        # entrydate_info = [(type(obj.entrydate), obj.entrydate) for obj in queryset]  # Collect type and value of entrydate field
+        
+        # print("Entrydate info:", entrydate_info)  # Debug statement
+ 
+        # queryset = queryset.annotate(
+        #     sorting_date=Case(
+        #         When(checkintime=False, then=F('checkindatetime')),
+        #         default=F('entrydate'),
+        #         output_field=models.DateTimeField()
+        #     )
+        # ).order_by('-sorting_date')
+        current_year = timezone.now().year
+        current_month = timezone.now().month
  
         companyEntry = QitCompany.objects.filter(transid=cid).first()
         if not companyEntry:
@@ -504,7 +520,7 @@ def checkoutVisitor(request):
         inOutEntry.checkinstatus = "O"
 
         inOutEntry.save()
-
+        common.send_visitors(inOutEntry,cmpid,"verify")
         return Response({'Status': 200, 'StatusMsg': "Checkout successfullyy",'APICode':APICodeClass.Visitor_Mobile_ChkOutByV.value}, status=200)
         
     except Exception as e:
@@ -753,6 +769,7 @@ def checkInVisitor(request):
         inOutEntry.checkintime = datetime.now()
         inOutEntry.checkinstatus = "I"
         inOutEntry.save()
+        common.send_visitors(inOutEntry,cmpid,"verify")
         send_email_checkin_notification_user(inOutEntry,cmpid)
         return Response({'Status': 200, 'StatusMsg': "Checkin successfullyy",'APICode':APICodeClass.Visitor_Mobile_ChkOutByV.value}, status=200)
         
@@ -927,7 +944,6 @@ def send_email_notification_email_edited(visitor,departmentId,cmpid):
 
 def send_email_notification_Verification(inoutentry, cmpid, state, createdby):
     try:
-        print("===========================================?")
         companyEntry = QitCompany.objects.filter(transid=cmpid).first()
         vid = int(inoutentry.visitortansid.transid)
         VisitorEntry = QitVisitormaster.objects.filter(transid=vid).first()
@@ -938,7 +954,8 @@ def send_email_notification_Verification(inoutentry, cmpid, state, createdby):
         visitor_dict = {
             "cnctperson": inoutentry.cnctperson,
             "vName": VisitorEntry.vname,
-            "timeslot": iso_format_str
+            "timeslot": iso_format_str,
+            "purposeofvisit":inoutentry.purposeofvisit
         }
 
         verifyLink = os.getenv("FRONTEND_URL") + '#/CheckIn/?cmpId=' + companyEntry.qrstring
@@ -954,10 +971,10 @@ def send_email_notification_Verification(inoutentry, cmpid, state, createdby):
                 f"If you have any questions or need further information, please feel free to contact us at {companyEntry.e_mail}.",
                 "We look forward to welcoming you!"
             )
-            message2 =  send_reminder(visitor_dict,
+            message2 =  send_reminder_user(visitor_dict,
                                       f"This it to inform you a visitor has registered to meet you at {companyEntry.bname}. Please review the details below :",
                                       companyEntry.e_mail,
-                                      companyEntry.bname,"","","")
+                                      companyEntry.bname,"","")
             users = QitUsermaster.objects.filter(username=inoutentry.cnctperson,cmptransid=cmpid)
             emails = []
             if users:
@@ -983,6 +1000,7 @@ def send_email_notification_Verification(inoutentry, cmpid, state, createdby):
             message1 = send_reminder_visitor_reject(
                 visitor_dict,
                 f"We regret to inform you that your visit to {companyEntry.bname} on {dt.strftime('%d %B %Y')} at {dt.strftime('%I:%M %p')} has not been approved.",
+                f"Reason : {inoutentry.reason}",
                 companyEntry.e_mail,
                 companyEntry.bname,
                 f"We apologize for any inconvenience. If you have any questions or need further assistance, please do not hesitate to contact us at {companyEntry.e_mail}.",
@@ -1005,15 +1023,16 @@ def send_email_checkin_notification_user(inoutentry, cmpid):
         visitor_dict = {
             "cnctperson": inoutentry.cnctperson,
             "vName": VisitorEntry.vname,
-            "timeslot": iso_format_str
+            "timeslot": iso_format_str,
+            "purposeofvisit":inoutentry.purposeofvisit
         }
 
         # Parse the timestamp
         dt = datetime.fromisoformat(iso_format_str.replace("Z", "+00:00"))
-        message2 =  send_reminder(visitor_dict,
+        message2 =  send_reminder_user(visitor_dict,
                     f"This it to inform you a visitor has arriaved to meet you at {companyEntry.bname}. Please review the details below :",
                     companyEntry.e_mail,
-                    companyEntry.bname,"","","")
+                    companyEntry.bname,"","")
         users = QitUsermaster.objects.filter(username=inoutentry.cnctperson,cmptransid=cmpid)
         emails = []
         if users:
