@@ -907,10 +907,16 @@ def send_visitors(visitor,cmptransid,type):
     # print("Visitor Data : ",visitor)
     # print("user_ids : ",user_ids)
     if type == "verify":
+        state_mapping = {
+            'I': 'Check in',
+            'O': 'Check Out'
+        }
         visitor_dict = {
-            'transid': visitor.visitortansid.transid,
+            # 'transid': visitor.visitortansid.transid,
+            'transid': visitor.transid,
             'status': visitor.status,
-            'reason': visitor.reason
+            'reason': visitor.reason,
+            'checkinstatus':state_mapping.get(visitor.checkinstatus, None)
         }
         for user_id in user_ids:
             if user_id is not None:
