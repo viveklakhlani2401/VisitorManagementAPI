@@ -212,6 +212,7 @@ def CreateCompany(request):
         #         'StatusMsg': "This Company is not verified"
         #     })
         if body_data["createdby"]=="" or body_data["createdby"]==None:
+            print("here in verification")
             stored_data_json = cache.get(f"otp_{body_data['e_mail']}")
             if stored_data_json:
                 stored_data = json.loads(stored_data_json)
@@ -225,12 +226,40 @@ def CreateCompany(request):
                         # 'errors': serializer.errors
                     }, status=status.HTTP_400_BAD_REQUEST)
                 else:
-                    response = {
-                        'Status': 400,
-                        'StatusMsg': "OTP is not verified.",
-                        'APICode':APICodeClass.Company_Save.value
-                    }
-                    return Response(response,status=400)
+                    print("not in if")
+                    serializer = CompanyMasterSerializer(data=request.data)
+                    if serializer.is_valid():
+                        company_master = serializer.save()
+                        company_master.status = "A"
+                        unique_string = f"{body_data['e_mail']}_{body_data['bname']}_{body_data['blocation']}"
+                        unique_hash = hashlib.sha256(unique_string.encode('utf-8')).hexdigest()
+                        company_master.qrstring = unique_hash
+                        company_master.save()
+                        QitDepartment.objects.create(deptname="Default", cmptransid=company_master)
+                        create_userlogin(body_data["e_mail"],body_data["password"],"COMPANY")
+                        create_comp_auth(company_master.transid,company_master,"COMPANY")
+                        create_comp_notification_auth(company_master.transid,company_master,"COMPANY")
+                        create_comp_config(company_master)
+                        frontendURL = os.getenv("FRONTEND_URL")
+                        if QitCompany.objects.filter(transid=company_master.transid).exists():
+                            frontendURL = os.getenv("FRONTEND_URL")
+                            if frontendURL is None:
+                                return Response({
+                                    'error':serializer.errors,
+                                    'APICode':APICodeClass.Company_Save.value
+                                }, status=status.HTTP_400_BAD_REQUEST)
+                            return Response({
+                                # 'data': serializer.data,
+                                'status': status.HTTP_201_CREATED,
+                                'StatusMsg':"Registered successfully.",
+                                'encodedString': unique_hash,
+                                'APICode':APICodeClass.Company_Save.value
+                            }, status=200)
+                    else:
+                        return Response({
+                            'error':serializer.errors,
+                            'APICode':APICodeClass.Company_Save.value
+                        }, status=status.HTTP_400_BAD_REQUEST)
             else:
                 response = {
                         'Status': 400,
@@ -238,14 +267,14 @@ def CreateCompany(request):
                         'APICode':APICodeClass.Company_Save.value
                     }
                 return Response(response,status=400)
-            
-        emailExistInMasterComapny = QitMasteradmin.objects.filter(transid = body_data["createdby"])
-        if not emailExistInMasterComapny:
-            return Response({
-                'Status':400,
-                'StatusMsg':"Created by company not found.",
-                'APICode':APICodeClass.Company_Save.value
-            },status=400)
+        else:   
+            emailExistInMasterComapny = QitMasteradmin.objects.filter(transid = body_data["createdby"])
+            if not emailExistInMasterComapny:
+                return Response({
+                    'Status':400,
+                    'StatusMsg':"Created by company not found.",
+                    'APICode':APICodeClass.Company_Save.value
+                },status=400)
         
         serializer = CompanyMasterSerializer(data=request.data)
         if serializer.is_valid():
@@ -281,7 +310,6 @@ def CreateCompany(request):
             'StatusMsg': f"An error occurred: {str(e)}",
             'APICode':APICodeClass.Company_Save.value
         },status=400)  
-
 
 
 @csrf_exempt

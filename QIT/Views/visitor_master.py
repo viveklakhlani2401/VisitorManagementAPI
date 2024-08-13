@@ -305,8 +305,8 @@ def GetAllVisitor(request,status,cid):
             queryset = QitVisitorinout.objects.filter(cmptransid=cid).select_related('cmpdepartmentid', 'visitortansid').order_by('-entrydate', '-checkintime')
         elif status.upper() == "P":
             today = timezone.now().date()
-            queryset = QitVisitorinout.objects.annotate(entrydate_date=Cast('entrydate', DateField())).filter(
-                cmptransid=cid, status="P", entrydate_date=today
+            queryset = QitVisitorinout.objects.annotate(entrydate_date=Cast('timeslot', DateField())).filter(
+                cmptransid=cid, status="P", entrydate_date__gte=today
             ).select_related('cmpdepartmentid', 'visitortansid').order_by('-checkintime', '-entrydate')
 
             # queryset = QitVisitorinout.objects.filter(cmptransid=cid,status="P",checkintime=today).order_by('-checkintime', '-entrydate')
