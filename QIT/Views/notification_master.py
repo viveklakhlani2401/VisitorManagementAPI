@@ -3,13 +3,13 @@ from django.views.decorators.csrf import csrf_exempt
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from QIT.models import QitUsermaster, QitAuthenticationrule,QitCompany,QitNotificationrule,QitNotificationmaster,QitUserlogin
-from QIT.serializers import GetDataClassSerializer,GetRuleClassSerializer,SetNotificationClassSerializer,GetNotificationClassSerializer,ReadNotificationClassSerializer,GetPreSetDataClassSerializer
+from QIT.models import QitUsermaster, QitAuthenticationrule,QitCompany,QitNotificationrule,QitNotificationmaster,QitUserlogin,QitMasteradmin,QitMaNotification
+from QIT.serializers import GetDataClassSerializer,GetRuleClassSerializer,SetNotificationClassSerializer,GetNotificationClassSerializer,ReadNotificationClassSerializer,GetPreSetDataClassSerializer,SetSaNotificationClassSerializer
 import logging
 import ast
 from datetime import datetime
 from django.db import transaction
-from .common import email_wise_data_filter,role_email_get_data,send_notification,time_since
+from .common import email_wise_data_filter,role_email_get_data,send_notification,time_since,send_sa_notification
 from QIT.utils.APICode import APICodeClass
 
 logger = logging.getLogger(__name__)
@@ -368,7 +368,7 @@ def SaveNotification(request):
                     user_id = chk_user_comp_id(userdata.e_mail)
                     user_ids.append(user_id)
                     break
-       
+
         if not user_ids:
             return Response({
                 "StatusCode": "404", 
@@ -417,6 +417,68 @@ def SaveNotification(request):
             'APICode':APICodeClass.Notification_Get.value
         }, status=status.HTTP_400_BAD_REQUEST)
     
+@api_view(['POST'])
+def SaveSaNotification(request):
+    try:
+        data = request.data
+        serializer = SetSaNotificationClassSerializer(data=data)
+        if not serializer.is_valid():
+            return Response({
+                "StatusCode": "400", 
+                "StatusMsg": "Payload is empty or invalid",
+                'APICode':APICodeClass.Notification_Get.value
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        notification = serializer.validated_data
+       
+        user_ids = []
+        cmpid_data = 0
+        all_users = QitMasteradmin.objects.filter()
+        for user in all_users:
+            cmpid_data = user.transid
+            user_id = chk_user_comp_id(user.e_mail)
+            user_ids.append(user_id)
+            break
+                
+        if not user_ids:
+            return Response({
+                "StatusCode": "404", 
+                "StatusMsg": "No users found for the specified module.",
+                'APICode':APICodeClass.Notification_Get.value
+            }, status=status.HTTP_404_NOT_FOUND)
+        print("user_ids : ",user_ids)
+        
+        SaUser  = QitMasteradmin.objects.filter(transid=cmpid_data).first()
+        # print("Sa_User : ",SaUser.e_mail)
+        # sender_user_data = role_email_get_data(sender_user.e_mail,sender_user.userrole)
+        new_notifications = []
+        with transaction.atomic():
+            for user_id in user_ids: 
+                if user_id is not None:
+                    notification_entity = QitMaNotification(
+                        cmptransid=SaUser.transid,
+                        receiver_ma_id=user_id.transid,
+                        notification_text=notification['notification_text'],
+                        n_date_time=datetime.now(),
+                        chk_status='P'
+                    )
+                    notification_entity.save()
+                    new_notifications.append(notification_entity)
+        send_sa_notification(new_notifications,cmpid_data)
+        return Response({
+            "StatusCode": "200", 
+            "IsSaved": "Y", 
+            "StatusMsg": "Notification Added successfully..",
+            'APICode':APICodeClass.Notification_Get.value
+        }, status=status.HTTP_200_OK)
+    except Exception as ex:
+        return Response({
+            "StatusCode": "400", 
+            "StatusMsg": str(ex),
+            'APICode':APICodeClass.Notification_Get.value
+        }, status=status.HTTP_400_BAD_REQUEST)
+    
+
 @api_view(['POST'])
 def GetNotification(request):
     try:
@@ -481,6 +543,101 @@ def ReadNotification(request):
         notifications = QitNotificationmaster.objects.filter(
             transid=transid,
             receiver_user_id = _user.transid,
+            cmptransid = cmptransid
+        ).first()
+        if notifications is not None:
+            if notifications.chk_status == 'A':
+                return Response({
+                    "StatusCode": "404", 
+                    "StatusMsg": "Notification already read.",
+                    'APICode':APICodeClass.Notification_Read.value
+                }, status=status.HTTP_404_NOT_FOUND)
+            notifications.chk_status = 'A'
+            notifications.save()
+            return Response({
+                "StatusCode": "200", 
+                "IsSaved": "Y", 
+                "StatusMsg": "Notification Read successfully..",
+                'APICode':APICodeClass.Notification_Read.value
+            }, status=status.HTTP_200_OK)
+        else:
+            return Response({
+                "StatusCode": "404", 
+                "StatusMsg": "Notification not found.",
+                'APICode':APICodeClass.Notification_Read.value
+            }, status=status.HTTP_404_NOT_FOUND)
+    except Exception as ex:
+        return Response({
+            "StatusCode": "400", 
+            "StatusMsg": str(ex),
+            'APICode':APICodeClass.Notification_Read.value
+        }, status=status.HTTP_400_BAD_REQUEST)
+    
+@api_view(['POST'])
+def GetSaNotification(request):
+    try:
+        data = request.data
+        serializer = GetNotificationClassSerializer(data=data)
+        if not serializer.is_valid():
+            return Response({"StatusCode": "400", "StatusMsg": "Payload is empty or invalid"}, status=status.HTTP_400_BAD_REQUEST)
+        
+        notification = serializer.validated_data
+        email = notification.get('email')
+        cmptransid = notification.get('cmptransid')
+        cmpcheck = QitMasteradmin.objects.filter(transid=cmptransid).first()
+        if not cmpcheck:
+            return Response({'StatusCode': '400', 'IsSaved': 'N', 'StatusMsg': 'Invalid company'}, status=status.HTTP_400_BAD_REQUEST)
+        _user = QitUserlogin.objects.filter(e_mail=email).first()
+        if not _user:
+            return Response({"StatusCode": "404", "StatusMsg": "user not found."}, status=status.HTTP_404_NOT_FOUND)
+
+        notifications = QitMaNotification.objects.filter(
+            receiver_ma_id = _user.transid,
+            cmptransid = cmptransid
+        ).values('transid', 'notification_text', 'n_date_time', 'chk_status').order_by('-n_date_time')
+        for notification in notifications:
+            if 'n_date_time' in notification:
+                notification['n_date_time'] = time_since(notification['n_date_time'])
+        return Response({"StatusCode": "200", "notifications": notifications}, status=status.HTTP_200_OK)
+    except Exception as ex:
+        return Response({"StatusCode": "400", "StatusMsg": str(ex)}, status=status.HTTP_400_BAD_REQUEST)
+    
+@api_view(['POST'])
+def ReadSaNotification(request):
+    try:
+        data = request.data
+        serializer = ReadNotificationClassSerializer(data=data)
+        if not serializer.is_valid():
+            return Response({
+                "StatusCode": "400", 
+                "StatusMsg": "Payload is empty or invalid",
+                'APICode':APICodeClass.Notification_Read.value
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        notification = serializer.validated_data
+        transid = notification.get('transid')
+        email = notification.get('email')
+        cmptransid = notification.get('cmptransid')
+        cmpcheck = QitMasteradmin.objects.filter(transid=cmptransid).first()
+        print("cmpcheck : ",cmpcheck)
+        if not cmpcheck:
+            return Response({
+                'StatusCode': '400', 
+                'IsSaved': 'N', 
+                'StatusMsg': 'Invalid company',
+                'APICode':APICodeClass.Notification_Read.value
+            }, status=status.HTTP_400_BAD_REQUEST)
+        _user = QitUserlogin.objects.filter(e_mail=email).first()
+        if not _user:
+            return Response({
+                "StatusCode": "404", 
+                "StatusMsg": "user not found.",
+                'APICode':APICodeClass.Notification_Read.value
+            }, status=status.HTTP_404_NOT_FOUND)
+
+        notifications = QitMaNotification.objects.filter(
+            transid=transid,
+            receiver_ma_id = _user.transid,
             cmptransid = cmptransid
         ).first()
         if notifications is not None:
