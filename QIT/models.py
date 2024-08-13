@@ -219,10 +219,21 @@ class QitMasteradmin(models.Model):
         managed = False
         db_table = 'QIT_MasterAdmin'        
 
+# class QitMaNotification(models.Model):
+#     transid = models.AutoField(db_column='TransId', primary_key=True)  # Field name made lowercase.
+#     cmptransid = models.IntegerField(db_column='CmpTransId')  # Field name made lowercase.
+#     receiver_ma_id = models.IntegerField(db_column='Receiver_MA_Id')  # Field name made lowercase.
+#     notification_text = models.TextField(db_column='Notification_Text')  # Field name made lowercase.
+#     n_date_time = models.DateTimeField(db_column='N_Date_Time',auto_now=True)  # Field name made lowercase.
+#     chk_status = models.CharField(db_column='Chk_Status', max_length=5)  # Field name made lowercase.
+
+#     class Meta:
+#         managed = False
+#         db_table = 'QIT_MA_Notification'
 class QitMaNotification(models.Model):
     transid = models.AutoField(db_column='TransId', primary_key=True)  # Field name made lowercase.
-    cmptransid = models.ForeignKey(QitCompany, models.DO_NOTHING, db_column='CmpTransId')  # Field name made lowercase.
-    receiver_ma = models.ForeignKey('QitMasteradmin', models.DO_NOTHING, db_column='Receiver_MA_Id')  # Field name made lowercase.
+    cmptransid = models.IntegerField(db_column='CmpTransId')  # Field name made lowercase.
+    receiver_ma_id = models.IntegerField(db_column='Receiver_MA_Id')  # Field name made lowercase.
     notification_text = models.TextField(db_column='Notification_Text')  # Field name made lowercase.
     n_date_time = models.DateTimeField(db_column='N_Date_Time',auto_now_add=True)  # Field name made lowercase.
     chk_status = models.CharField(db_column='Chk_Status', max_length=5)  # Field name made lowercase.

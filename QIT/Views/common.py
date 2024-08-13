@@ -901,6 +901,24 @@ def send_notification(notifications,cmptransid):
             }
         )
 
+def send_sa_notification(notifications,cmptransid):
+    channel_layer = get_channel_layer()
+    for notification in notifications:
+        n_date_time = time_since(notification.n_date_time)
+        notification_dict = {
+            'transid': notification.transid,
+            'notification_text': notification.notification_text,
+            'n_date_time': n_date_time,
+            'chk_status': notification.chk_status,
+        }
+        async_to_sync(channel_layer.group_send)(
+            f"sa_{notification.receiver_ma_id}_cmp{cmptransid}",
+            {
+                'type': 'new_sa_notification',
+                'notification': notification_dict
+            }
+        )
+
 def send_visitors(visitor,cmptransid,type):
     channel_layer = get_channel_layer()
     user_ids = getAuthenticatedUser("Visitors",cmptransid)

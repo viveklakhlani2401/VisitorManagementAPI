@@ -124,6 +124,9 @@ class SetNotificationClassSerializer(serializers.Serializer):
     notification_text = serializers.CharField(max_length=255)
     cmptransid = serializers.IntegerField()
 
+class SetSaNotificationClassSerializer(serializers.Serializer):
+    notification_text = serializers.CharField(max_length=255)
+
 class GetNotificationClassSerializer(serializers.Serializer):
     email = serializers.CharField(max_length=255)
     cmptransid = serializers.IntegerField()
