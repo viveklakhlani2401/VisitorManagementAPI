@@ -160,11 +160,12 @@ class SocketConsumer(AsyncWebsocketConsumer):
     # End Visitor
 
     # Send Notifications
-    async def handle_send_notification_event(self, data):
+    async def handle_send_notification_event(self, data,cmp):
         today = timezone.now().date()
         notifications = await sync_to_async(list)(
         QitNotificationmaster.objects.filter(
             receiver_user_id=data,
+            cmptransid=cmp,
             n_date_time__date=today
         ).order_by('-n_date_time').values('transid', 'notification_text', 'n_date_time', 'chk_status')
         )
@@ -223,7 +224,8 @@ class SocketConsumer(AsyncWebsocketConsumer):
             await self.handle_send_visitor_event(data)
         elif event_type == 'send_notifications':
             data = text_data_json.get('usrid')
-            await self.handle_send_notification_event(data)
+            cmpid = text_data_json.get('cmpid')
+            await self.handle_send_notification_event(data,cmpid)
         elif event_type == 'send_sa_notification':
             await self.send_data_to_specific_user(self.user_id, self.cmp_id)
         else:
